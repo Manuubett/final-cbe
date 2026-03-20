@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBE Mark Sheet | Kenya CBC School Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#07111f;--ink2:#1b2e45;--ink3:#344d66;
+  --mist:#f5f8ff;--mist2:#eaf0fb;--mist3:#dce6f7;
+  --sky:#1a56db;--sky2:#0e3fbf;--sky3:#2d6ef0;
+  --gold:#d97706;--gold2:#f59e0b;--goldbg:rgba(245,158,11,.08);
+  --green:#059669;--greenbg:rgba(5,150,105,.08);--greentx:#065f46;
+  --border:#d5e0f2;--border2:#c0d0ec;
+  --sh:0 1px 4px rgba(15,35,70,.07);
+  --sh2:0 12px 40px rgba(15,35,70,.12);
+  --sh3:0 32px 80px rgba(15,35,70,.18);
+  --r:14px;--r2:9px;
+}
+
+html{scroll-behavior:smooth}
+body{
+  font-family:'Sora',sans-serif;
+  background:var(--mist);color:var(--ink);
+  font-size:14px;min-height:100vh;overflow-x:hidden;
+}
+
+/* ══ NOISE TEXTURE ══ */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity:.5;
+}
+
+/* ══ NAVBAR ══ */
+nav{
+  position:sticky;top:0;z-index:200;
+  background:rgba(245,248,255,.92);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+  padding:0 40px;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.nav-logo{
+  width:36px;height:36px;border-radius:9px;
+  background:linear-gradient(135deg,var(--sky),#3b82f6);
+  display:grid;place-items:center;font-size:18px;
+  box-shadow:0 4px 14px rgba(26,86,219,.35);flex-shrink:0;
+}
+.nav-title{font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-.3px}
+.nav-sub{font-size:10px;color:var(--ink3);letter-spacing:.4px}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-pill{
+  font-size:10.5px;font-weight:700;padding:4px 12px;
+  border-radius:20px;letter-spacing:.3px;
+  background:var(--mist2);color:var(--ink3);
+  border:1px solid var(--border);
+  font-family:'DM Mono',monospace;
+}
+.nav-cta{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 18px;border-radius:var(--r2);
+  background:var(--sky);color:#fff;
+  font-size:12.5px;font-weight:700;
+  text-decoration:none;border:none;cursor:pointer;
+  transition:all .15s;box-shadow:0 3px 12px rgba(26,86,219,.3);
+}
+.nav-cta:hover{background:var(--sky2);transform:translateY(-1px)}
+
+/* ══ HERO ══ */
+.hero{
+  position:relative;z-index:1;
+  max-width:1120px;margin:0 auto;
+  padding:80px 40px 70px;
+  display:grid;grid-template-columns:1fr 1fr;
+  align-items:center;gap:60px;
+}
+
+/* Decorative arc */
+.hero::after{
+  content:'';position:absolute;
+  top:-120px;right:-180px;
+  width:680px;height:680px;border-radius:50%;
+  background:radial-gradient(circle at 40% 40%,rgba(26,86,219,.07) 0%,transparent 65%);
+  pointer-events:none;z-index:-1;
+}
+
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'DM Mono',monospace;font-size:10.5px;font-weight:500;
+  color:var(--gold);letter-spacing:1.4px;text-transform:uppercase;
+  margin-bottom:20px;
+  padding:4px 12px 4px 8px;
+  background:var(--goldbg);border:1px solid rgba(245,158,11,.2);
+  border-radius:20px;width:fit-content;
+}
+.hero-eyebrow::before{content:'●';font-size:7px;color:var(--gold2)}
+
+h1{
+  font-family:'Sora',sans-serif;
+  font-size:clamp(38px,5vw,56px);font-weight:800;
+  line-height:1.04;letter-spacing:-.8px;margin-bottom:22px;color:var(--ink);
+}
+h1 em{
+  font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;
+  background:linear-gradient(130deg,var(--sky),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+.hero-desc{
+  font-size:15px;color:var(--ink3);line-height:1.8;
+  max-width:460px;margin-bottom:36px;font-weight:400;
+}
+
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:44px}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 26px;border-radius:var(--r2);
+  background:var(--sky);color:#fff;
+  font-family:'Sora',sans-serif;font-size:14px;font-weight:700;
+  text-decoration:none;border:none;cursor:pointer;
+  transition:all .15s;box-shadow:0 5px 18px rgba(26,86,219,.38);
+}
+.btn-primary:hover{background:var(--sky2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,86,219,.45)}
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 24px;border-radius:var(--r2);
+  background:transparent;color:var(--ink2);
+  font-family:'Sora',sans-serif;font-size:14px;font-weight:600;
+  text-decoration:none;border:1.5px solid var(--border2);cursor:pointer;
+  transition:all .15s;
+}
+.btn-ghost:hover{border-color:var(--sky);color:var(--sky);background:rgba(26,86,219,.04)}
+
+.hero-proof{
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+}
+.proof-item{
+  display:flex;flex-direction:column;gap:2px;
+  padding-left:16px;border-left:2px solid var(--border2);
+}
+.proof-val{
+  font-family:'Sora',sans-serif;font-size:22px;font-weight:800;color:var(--ink);
+}
+.proof-lbl{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;font-weight:600}
+
+/* ══ HERO RIGHT — MOCK DASHBOARD ══ */
+.hero-visual{
+  background:var(--mist);
+  border:1.5px solid var(--border);
+  border-radius:var(--r);
+  box-shadow:var(--sh3);
+  overflow:hidden;
+  animation:floatUp .7s .1s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes floatUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes slideLeft{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:none}}
+
+.vis-bar{
+  background:var(--ink);padding:9px 16px;
+  display:flex;align-items:center;gap:8px;
+}
+.vis-dots{display:flex;gap:5px}
+.vis-dot{width:9px;height:9px;border-radius:50%}
+.vis-dot:nth-child(1){background:#ef4444}
+.vis-dot:nth-child(2){background:#f59e0b}
+.vis-dot:nth-child(3){background:#22c55e}
+.vis-tab{
+  margin-left:8px;font-family:'DM Mono',monospace;font-size:9.5px;
+  color:rgba(255,255,255,.45);letter-spacing:.4px;
+}
+
+.vis-body{padding:18px}
+
+.vis-school-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);
+}
+.vis-school-name{font-size:12px;font-weight:700;color:var(--ink)}
+.vis-badge{
+  font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:3px;
+  font-family:'DM Mono',monospace;letter-spacing:.3px;
+  background:var(--greenbg);color:var(--greentx);border:1px solid rgba(5,150,105,.2);
+}
+
+.vis-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.vis-stat{
+  background:#fff;border:1px solid var(--border);
+  border-radius:8px;padding:10px;text-align:center;
+}
+.vs-num{font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:var(--ink)}
+.vs-lbl{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+
+.vis-table-head{
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr;
+  gap:4px;padding:0 10px;margin-bottom:6px;
+}
+.vth{font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;font-family:'DM Mono',monospace}
+
+.vis-rows{display:flex;flex-direction:column;gap:4px}
+.vis-row{
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr;
+  gap:4px;padding:8px 10px;
+  background:#fff;border:1px solid var(--border);border-radius:7px;
+  align-items:center;
+}
+.vr-name{font-size:11.5px;font-weight:600;color:var(--ink)}
+.vr-score{font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:var(--ink2)}
+.vr-lvl{
+  font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;
+  font-family:'DM Mono',monospace;width:fit-content;
+}
+.lvl-ee{background:rgba(34,197,94,.12);color:#15803d}
+.lvl-me{background:rgba(26,86,219,.1);color:var(--sky2)}
+.lvl-ae{background:rgba(245,158,11,.1);color:var(--gold)}
+.vr-bar-wrap{height:5px;background:var(--mist2);border-radius:3px;overflow:hidden}
+.vr-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--sky),#60a5fa)}
+
+.vis-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:12px;padding-top:12px;border-top:1px solid var(--border);
+}
+.vis-save{
+  font-size:10.5px;font-weight:700;padding:5px 12px;
+  background:var(--sky);color:#fff;border-radius:5px;
+  font-family:'DM Mono',monospace;
+}
+.vis-sync{font-size:9.5px;color:var(--green);font-weight:700;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:4px}
+.vis-sync::before{content:'●';font-size:7px;animation:syncpulse 2s infinite}
+@keyframes syncpulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ══ VS EXCEL SECTION ══ */
+.vs-section{
+  position:relative;z-index:1;
+  background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:70px 40px;
+}
+.vs-inner{max-width:1120px;margin:0 auto}
+.section-eyebrow{
+  font-family:'DM Mono',monospace;font-size:10px;
+  color:var(--sky);letter-spacing:1.6px;text-transform:uppercase;
+  margin-bottom:12px;display:flex;align-items:center;gap:10px;
+}
+.section-eyebrow::before{content:'';width:28px;height:1.5px;background:var(--sky)}
+.section-title{
+  font-family:'Sora',sans-serif;font-size:clamp(26px,3.5vw,38px);
+  font-weight:800;color:var(--ink);margin-bottom:10px;letter-spacing:-.5px;line-height:1.1;
+}
+.section-sub{font-size:14px;color:var(--ink3);line-height:1.7;max-width:520px;margin-bottom:48px}
+
+.vs-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+.vs-col{border-radius:var(--r);overflow:hidden;border:1.5px solid var(--border)}
+.vs-col-head{
+  padding:14px 20px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border);
+}
+.vs-col.bad .vs-col-head{background:#fff8f8}
+.vs-col.good .vs-col-head{background:linear-gradient(135deg,#f0f7ff,#eaf4ff)}
+.vs-col-icon{font-size:20px}
+.vs-col-title{font-size:13px;font-weight:700;color:var(--ink)}
+.vs-col-badge{
+  margin-left:auto;font-size:9.5px;font-weight:700;padding:2px 9px;border-radius:20px;
+  font-family:'DM Mono',monospace;letter-spacing:.3px;
+}
+.vs-col.bad .vs-col-badge{background:#fee2e2;color:#991b1b}
+.vs-col.good .vs-col-badge{background:var(--greenbg);color:var(--greentx)}
+
+.vs-items{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.vs-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 12px;border-radius:8px;
+  border:1px solid var(--border);background:var(--mist);
+}
+.vs-col.good .vs-item{background:#f8fcff;border-color:#d0e4ff}
+.vs-col.bad .vs-item{background:#fffafa;border-color:#ffd5d5}
+.vs-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.vs-text{flex:1}
+.vs-text strong{display:block;font-size:12px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.vs-text span{font-size:11.5px;color:var(--ink3);line-height:1.5}
+
+/* ══ FEATURES ══ */
+.features-section{
+  position:relative;z-index:1;
+  max-width:1120px;margin:0 auto;padding:80px 40px;
+}
+.feat-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px;
+}
+.feat-card{
+  background:#fff;border:1.5px solid var(--border);
+  border-radius:var(--r);padding:28px 24px;
+  display:flex;flex-direction:column;gap:14px;
+  transition:border-color .2s,transform .2s,box-shadow .2s;
+  animation:floatUp .5s ease both;
+}
+.feat-card:nth-child(1){animation-delay:.05s}
+.feat-card:nth-child(2){animation-delay:.1s}
+.feat-card:nth-child(3){animation-delay:.15s}
+.feat-card:nth-child(4){animation-delay:.2s}
+.feat-card:nth-child(5){animation-delay:.25s}
+.feat-card:nth-child(6){animation-delay:.3s}
+.feat-card:hover{
+  border-color:var(--sky);transform:translateY(-4px);
+  box-shadow:0 16px 48px rgba(26,86,219,.1);
+}
+.feat-ico{
+  width:46px;height:46px;border-radius:11px;
+  display:grid;place-items:center;font-size:22px;flex-shrink:0;
+}
+.fc-blue{background:rgba(26,86,219,.1)}
+.fc-gold{background:rgba(245,158,11,.1)}
+.fc-green{background:rgba(5,150,105,.1)}
+.fc-red{background:rgba(220,38,38,.09)}
+.fc-teal{background:rgba(20,184,166,.1)}
+.fc-purple{background:rgba(139,92,246,.1)}
+.feat-title{font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.2px}
+.feat-body{font-size:12.5px;color:var(--ink3);line-height:1.75;flex:1}
+.feat-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:700;color:var(--sky);
+  font-family:'DM Mono',monospace;letter-spacing:.3px;
+}
+.feat-tag::before{content:'→'}
+
+/* ══ SPEED SECTION ══ */
+.speed-section{
+  position:relative;z-index:1;
+  background:var(--ink);
+  padding:70px 40px;
+  overflow:hidden;
+}
+.speed-section::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 20% 50%,rgba(26,86,219,.18) 0%,transparent 55%),
+             radial-gradient(ellipse at 80% 50%,rgba(245,158,11,.08) 0%,transparent 55%);
+  pointer-events:none;
+}
+.speed-inner{max-width:1120px;margin:0 auto;position:relative;z-index:1}
+.speed-title{
+  font-family:'Sora',sans-serif;
+  font-size:clamp(26px,3.5vw,40px);font-weight:800;
+  color:#fff;letter-spacing:-.5px;line-height:1.1;
+  margin-bottom:10px;
+}
+.speed-title span{
+  background:linear-gradient(130deg,#60a5fa,var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.speed-sub{font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;max-width:500px;margin-bottom:52px}
+
+.speed-compare{
+  display:grid;grid-template-columns:1fr auto 1fr;
+  gap:24px;align-items:center;
+}
+.speed-box{
+  border-radius:var(--r);padding:24px;
+  border:1px solid rgba(255,255,255,.08);
+}
+.speed-box.old{background:rgba(255,255,255,.04)}
+.speed-box.new{background:linear-gradient(135deg,rgba(26,86,219,.18),rgba(26,86,219,.08));border-color:rgba(26,86,219,.3)}
+.sb-label{
+  font-family:'DM Mono',monospace;font-size:10px;
+  letter-spacing:1.2px;text-transform:uppercase;margin-bottom:16px;
+}
+.speed-box.old .sb-label{color:rgba(255,255,255,.35)}
+.speed-box.new .sb-label{color:#7eb3ff}
+.sb-title{
+  font-family:'Sora',sans-serif;font-size:18px;font-weight:700;
+  color:#fff;margin-bottom:18px;
+}
+.sb-list{display:flex;flex-direction:column;gap:8px}
+.sb-item{
+  display:flex;align-items:flex-start;gap:8px;
+  font-size:12px;color:rgba(255,255,255,.6);line-height:1.5;
+}
+.speed-box.old .sb-item::before{content:'✕';color:#f87171;flex-shrink:0;font-weight:700}
+.speed-box.new .sb-item::before{content:'✓';color:#4ade80;flex-shrink:0;font-weight:700}
+.speed-vs{
+  font-family:'Sora',sans-serif;font-size:11px;font-weight:700;
+  color:rgba(255,255,255,.3);letter-spacing:2px;text-align:center;
+}
+
+.speed-metrics{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:16px;margin-top:40px;
+}
+.sm-card{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+  border-radius:var(--r2);padding:20px;text-align:center;
+}
+.sm-val{
+  font-family:'Sora',sans-serif;font-size:32px;font-weight:800;
+  background:linear-gradient(135deg,#60a5fa,var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;margin-bottom:6px;
+}
+.sm-lbl{font-size:10.5px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+
+/* ══ REGISTER CTA ══ */
+.register-section{
+  position:relative;z-index:1;
+  max-width:1120px;margin:0 auto;
+  padding:80px 40px;
+  text-align:center;
+}
+.reg-label{
+  font-family:'DM Mono',monospace;font-size:10px;
+  color:var(--sky);letter-spacing:1.6px;text-transform:uppercase;
+  margin-bottom:16px;display:inline-flex;align-items:center;gap:8px;
+}
+.reg-label::before,.reg-label::after{content:'';width:20px;height:1.5px;background:var(--sky)}
+.reg-title{
+  font-family:'Sora',sans-serif;
+  font-size:clamp(28px,4vw,46px);font-weight:800;
+  color:var(--ink);letter-spacing:-.6px;line-height:1.08;
+  margin-bottom:14px;
+}
+.reg-title em{
+  font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;
+  color:var(--sky);
+}
+.reg-sub{
+  font-size:15px;color:var(--ink3);line-height:1.75;
+  max-width:520px;margin:0 auto 44px;
+}
+
+.reg-cards{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:24px;max-width:800px;margin:0 auto 44px;
+}
+.reg-card{
+  border-radius:var(--r);padding:40px 36px;
+  text-align:left;
+  transition:box-shadow .2s,transform .2s;
+  text-decoration:none;color:inherit;display:block;
+  position:relative;overflow:hidden;
+}
+.reg-card.admin{
+  background:linear-gradient(140deg,#1a56db 0%,#1447c0 100%);
+  box-shadow:0 8px 32px rgba(26,86,219,.38);
+}
+.reg-card.admin:hover{
+  transform:translateY(-6px);
+  box-shadow:0 20px 52px rgba(26,86,219,.55);
+}
+.reg-card.teacher{
+  background:linear-gradient(140deg,#059669 0%,#047857 100%);
+  box-shadow:0 8px 32px rgba(5,150,105,.38);
+}
+.reg-card.teacher:hover{
+  transform:translateY(-6px);
+  box-shadow:0 20px 52px rgba(5,150,105,.52);
+}
+.reg-card::after{
+  content:'';position:absolute;
+  bottom:-50px;right:-50px;
+  width:180px;height:180px;border-radius:50%;
+  background:rgba(255,255,255,.07);pointer-events:none;
+}
+.reg-card::before{
+  content:'';position:absolute;
+  top:-40px;left:-40px;
+  width:120px;height:120px;border-radius:50%;
+  background:rgba(255,255,255,.05);pointer-events:none;
+}
+.reg-card-icon{
+  font-size:42px;margin-bottom:18px;
+  display:block;position:relative;z-index:1;
+}
+.reg-card-title{
+  font-family:'Sora',sans-serif;font-size:26px;font-weight:800;
+  color:#fff;margin-bottom:10px;letter-spacing:-.4px;
+  position:relative;z-index:1;
+}
+.reg-card-desc{
+  font-size:13.5px;color:rgba(255,255,255,.78);
+  line-height:1.75;margin-bottom:28px;
+  position:relative;z-index:1;
+}
+.reg-card-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:15px 28px;border-radius:9px;
+  font-size:15px;font-weight:700;
+  font-family:'Sora',sans-serif;
+  transition:all .15s;position:relative;z-index:1;
+  background:rgba(255,255,255,.2);
+  color:#fff;
+  border:2px solid rgba(255,255,255,.4);
+  width:100%;justify-content:space-between;
+}
+.reg-card:hover .reg-card-btn{
+  background:rgba(255,255,255,.3);
+  border-color:rgba(255,255,255,.65);
+}
+.reg-card-arrow{transition:transform .15s;display:inline-block;font-size:18px}
+.reg-card:hover .reg-card-arrow{transform:translateX(6px)}
+
+.reg-login-note{
+  font-size:12.5px;color:var(--ink3);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.reg-login-note a{color:var(--sky);font-weight:600;text-decoration:none}
+.reg-login-note a:hover{text-decoration:underline}
+
+/* ══ TRUST BAR ══ */
+.trust-strip{
+  position:relative;z-index:1;
+  background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:28px 40px;
+  display:flex;align-items:center;justify-content:center;
+  gap:40px;flex-wrap:wrap;
+}
+.trust-item{
+  display:flex;align-items:center;gap:8px;
+  font-size:12.5px;color:var(--ink3);font-weight:500;
+}
+.trust-item strong{color:var(--ink);font-weight:700}
+.trust-sep{width:1px;height:28px;background:var(--border)}
+
+/* ══ FOOTER ══ */
+footer{
+  position:relative;z-index:1;
+  background:var(--ink2);
+  padding:24px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;
+}
+.foot-brand{display:flex;align-items:center;gap:8px}
+.foot-logo{width:26px;height:26px;border-radius:6px;background:var(--sky);display:grid;place-items:center;font-size:13px}
+.foot-name{font-size:12px;font-weight:700;color:rgba(255,255,255,.7)}
+.foot-sub{font-size:10px;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace;letter-spacing:.3px}
+.foot-links{display:flex;gap:20px;flex-wrap:wrap}
+.foot-link{font-size:11.5px;color:rgba(255,255,255,.4);text-decoration:none;transition:color .12s;font-weight:500}
+.foot-link:hover{color:rgba(255,255,255,.75)}
+
+/* ══ WHATSAPP FAB ══ */
+.wa-fab{
+  position:fixed;bottom:28px;right:28px;z-index:500;
+  width:56px;height:56px;border-radius:50%;
+  background:#25d366;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 24px rgba(37,211,102,.45);
+  text-decoration:none;font-size:27px;
+  transition:all .18s;
+  animation:fabIn .6s .8s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes fabIn{from{opacity:0;transform:scale(0.5) translateY(20px)}to{opacity:1;transform:none}}
+.wa-fab:hover{transform:scale(1.1);box-shadow:0 10px 32px rgba(37,211,102,.55)}
+.wa-fab-tooltip{
+  position:absolute;right:66px;white-space:nowrap;
+  background:var(--ink);color:#fff;
+  font-size:12px;font-weight:600;
+  padding:5px 12px;border-radius:6px;
+  opacity:0;pointer-events:none;
+  transition:opacity .15s;
+}
+.wa-fab:hover .wa-fab-tooltip{opacity:1}
+.wa-fab-tooltip::after{
+  content:'';position:absolute;right:-5px;top:50%;transform:translateY(-50%);
+  width:0;height:0;border:5px solid transparent;border-right:none;
+  border-left-color:var(--ink);
+}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:1024px){
+  .feat-grid{grid-template-columns:repeat(2,1fr)}
+  .speed-metrics{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  nav{padding:0 20px}
+  .hero{grid-template-columns:1fr;padding:48px 20px 40px;gap:40px}
+  .hero-visual{display:none}
+  .vs-grid{grid-template-columns:1fr}
+  .feat-grid{grid-template-columns:1fr}
+  .speed-compare{grid-template-columns:1fr;grid-template-rows:auto auto auto}
+  .speed-vs{padding:6px 0}
+  .speed-metrics{grid-template-columns:repeat(2,1fr)}
+  .reg-cards{grid-template-columns:1fr;max-width:440px}
+  .vs-section,.features-section,.register-section,.speed-section{padding:48px 20px}
+  .trust-strip{padding:20px;gap:20px}
+  .trust-sep{display:none}
+  footer{padding:20px;flex-direction:column;align-items:flex-start;gap:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ NAVBAR ══ -->
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="nav-logo">📊</div>
+    <div>
+      <div class="nav-title">CBE Mark Sheet</div>
+      <div class="nav-sub">Kenya CBC · Grades 7–9</div>
+    </div>
+  </a>
+  <div class="nav-right">
+    <span class="nav-pill">CBC SYSTEM</span>
+    <a href="#register" class="nav-cta">Get Started →</a>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div style="animation:slideLeft .55s cubic-bezier(.22,1,.36,1) both">
+    <div class="hero-eyebrow">Kenya CBC · Junior School</div>
+    <h1>
+      Mark Sheets.<br>Reports. Results.<br><em>Instantly.</em>
+    </h1>
+    <p class="hero-desc">
+      The fastest way to produce CBC mark sheets, class reports and performance analysis for Grades 7–9. Replace spreadsheets with a system built for Kenya's Junior School curriculum.
+    </p>
+    <div class="hero-actions">
+      <a href="#register" class="btn-primary">🚀 Create Free Account →</a>
+      <a href="#features" class="btn-ghost">See How It Works</a>
+    </div>
+    <div class="hero-proof">
+      <div class="proof-item">
+        <div class="proof-val">9</div>
+        <div class="proof-lbl">CBC Subjects</div>
+      </div>
+      <div class="proof-item">
+        <div class="proof-val">8</div>
+        <div class="proof-lbl">Performance Levels</div>
+      </div>
+      <div class="proof-item">
+        <div class="proof-val">0</div>
+        <div class="proof-lbl">Spreadsheets</div>
+      </div>
+      <div class="proof-item">
+        <div class="proof-val">☁️</div>
+        <div class="proof-lbl">Cloud Sync</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="vis-bar">
+      <div class="vis-dots">
+        <div class="vis-dot"></div>
+        <div class="vis-dot"></div>
+        <div class="vis-dot"></div>
+      </div>
+      <span class="vis-tab">marksheet.html — Grade 8 North</span>
+    </div>
+    <div class="vis-body">
+      <div class="vis-school-header">
+        <span class="vis-school-name">Grade 8 · North Stream · Term 2, 2025</span>
+        <span class="vis-badge">✓ LIVE</span>
+      </div>
+      <div class="vis-stats">
+        <div class="vis-stat">
+          <div class="vs-num">38</div>
+          <div class="vs-lbl">Students</div>
+        </div>
+        <div class="vis-stat">
+          <div class="vs-num" style="color:var(--sky)">67.4</div>
+          <div class="vs-lbl">Class Avg</div>
+        </div>
+        <div class="vis-stat">
+          <div class="vs-num" style="color:var(--green)">92%</div>
+          <div class="vs-lbl">Above AE</div>
+        </div>
+      </div>
+      <div class="vis-table-head">
+        <span class="vth">Student</span>
+        <span class="vth">Score</span>
+        <span class="vth">Level</span>
+        <span class="vth">Progress</span>
+      </div>
+      <div class="vis-rows">
+        <div class="vis-row">
+          <span class="vr-name">Akinyi, Faith</span>
+          <span class="vr-score">84.5</span>
+          <span class="vr-lvl lvl-ee">EE</span>
+          <div class="vr-bar-wrap"><div class="vr-bar" style="width:85%;background:linear-gradient(90deg,var(--green),#34d399)"></div></div>
+        </div>
+        <div class="vis-row">
+          <span class="vr-name">Kamau, Brian</span>
+          <span class="vr-score">71.0</span>
+          <span class="vr-lvl lvl-me">ME</span>
+          <div class="vr-bar-wrap"><div class="vr-bar" style="width:71%"></div></div>
+        </div>
+        <div class="vis-row">
+          <span class="vr-name">Otieno, Kevin</span>
+          <span class="vr-score">63.2</span>
+          <span class="vr-lvl lvl-ae">AE</span>
+          <div class="vr-bar-wrap"><div class="vr-bar" style="width:63%;background:linear-gradient(90deg,var(--gold),#fbbf24)"></div></div>
+        </div>
+        <div class="vis-row">
+          <span class="vr-name">Wanjiku, Grace</span>
+          <span class="vr-score">79.8</span>
+          <span class="vr-lvl lvl-me">ME</span>
+          <div class="vr-bar-wrap"><div class="vr-bar" style="width:80%"></div></div>
+        </div>
+      </div>
+      <div class="vis-footer">
+        <span class="vis-save">💾 Save Results</span>
+        <span class="vis-sync">Syncing to cloud</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TRUST STRIP ══ -->
+<div class="trust-strip">
+  <div class="trust-item">🔒 <strong>Secure</strong> role-based access</div>
+  <div class="trust-sep"></div>
+  <div class="trust-item">☁️ <strong>Firebase</strong> real-time cloud</div>
+  <div class="trust-sep"></div>
+  <div class="trust-item">🖨️ <strong>Branded</strong> print-ready reports</div>
+  <div class="trust-sep"></div>
+  <div class="trust-item">📱 <strong>Works</strong> on any device</div>
+  <div class="trust-sep"></div>
+  <div class="trust-item">🇰🇪 <strong>Built</strong> for Kenya CBC</div>
+</div>
+
+<!-- ══ VS EXCEL ══ -->
+<div class="vs-section">
+  <div class="vs-inner">
+    <div class="section-eyebrow">Why switch</div>
+    <div class="section-title">Leave the spreadsheet behind</div>
+    <div class="section-sub">Every term, teachers waste hours formatting Excel sheets, fixing formula errors, and merging files. There is a better way.</div>
+
+    <div class="vs-grid">
+      <div class="vs-col bad">
+        <div class="vs-col-head">
+          <span class="vs-col-icon">📋</span>
+          <span class="vs-col-title">Excel / Manual Sheets</span>
+          <span class="vs-col-badge">THE OLD WAY</span>
+        </div>
+        <div class="vs-items">
+          <div class="vs-item">
+            <span class="vs-icon">⏱️</span>
+            <div class="vs-text"><strong>Hours to compile each report</strong><span>Copying marks from paper to Excel, checking formulas, fixing merged cells — repeated for every class, every term.</span></div>
+          </div>
+          <div class="vs-item">
+            <span class="vs-icon">🔀</span>
+            <div class="vs-text"><strong>No collaboration</strong><span>Each teacher keeps their own file. Admin has to collect, merge and re-check everything manually before printing.</span></div>
+          </div>
+          <div class="vs-item">
+            <span class="vs-icon">🖨️</span>
+            <div class="vs-text"><strong>Formatting nightmares</strong><span>Print layout breaks, school header missing, wrong font — someone has to fix it every time before reports go out.</span></div>
+          </div>
+          <div class="vs-item">
+            <span class="vs-icon">💾</span>
+            <div class="vs-text"><strong>Lost data, version confusion</strong><span>"Which file is the final one?" USB drives fail. Emails get lost. Three copies of the same file — none match.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vs-col good">
+        <div class="vs-col-head">
+          <span class="vs-col-icon">📊</span>
+          <span class="vs-col-title">CBE Mark Sheet System</span>
+          <span class="vs-col-badge">THE SMART WAY</span>
+        </div>
+        <div class="vs-items">
+          <div class="vs-item">
+            <span class="vs-icon">⚡</span>
+            <div class="vs-text"><strong>Reports in seconds</strong><span>Enter marks once. CBC levels (EE, ME, AE, BE) calculate live. Class report and analysis generate instantly at the click of a button.</span></div>
+          </div>
+          <div class="vs-item">
+            <span class="vs-icon">☁️</span>
+            <div class="vs-text"><strong>Real-time collaboration</strong><span>Teachers save marks to the cloud. Admin sees results live from any device — no file collection, no waiting, no merging.</span></div>
+          </div>
+          <div class="vs-item">
+            <span class="vs-icon">🎨</span>
+            <div class="vs-text"><strong>Branded reports, every time</strong><span>Set your school name, logo and motto once in Settings. Every report carries your branding automatically when printed.</span></div>
+          </div>
+          <div class="vs-item">
+            <span class="vs-icon">🔐</span>
+            <div class="vs-text"><strong>One source of truth</strong><span>All data lives securely in Firebase. Nothing to lose, nothing to merge. Every teacher sees only their class. Admin sees everything.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FEATURES ══ -->
+<div class="features-section" id="features">
+  <div class="section-eyebrow">What you get</div>
+  <div class="section-title">Everything your school needs</div>
+  <div class="section-sub">A complete CBC management platform — from student admission to end-of-term reports, all in one place.</div>
+
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-ico fc-blue">⚡</div>
+      <div class="feat-title">Instant CBC Level Calculation</div>
+      <div class="feat-body">Type a mark and EE, ME, AE, BE levels calculate automatically. No formulas to write. No errors. The system knows the CBC grading scale built in.</div>
+      <span class="feat-tag">Live calculation</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ico fc-gold">🖨️</div>
+      <div class="feat-title">Print-Ready Branded Reports</div>
+      <div class="feat-body">Every class report and mark sheet carries your school's name, logo and motto. Set it once in School Settings and it appears on every printout, every term.</div>
+      <span class="feat-tag">Auto branding</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ico fc-green">📈</div>
+      <div class="feat-title">Powerful Class Analysis</div>
+      <div class="feat-body">See subject averages, performance distribution charts, top performers and those needing support — all generated from the marks already in the system. No extra work.</div>
+      <span class="feat-tag">One-click analysis</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ico fc-teal">☁️</div>
+      <div class="feat-title">Real-Time Cloud Sync</div>
+      <div class="feat-body">Marks saved by a teacher are instantly visible to the admin. No USBs, no email attachments, no version confusion. Firebase keeps everything in sync across all devices.</div>
+      <span class="feat-tag">Firestore powered</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ico fc-red">🔐</div>
+      <div class="feat-title">Role-Based Access Control</div>
+      <div class="feat-body">Teachers see only their assigned class. Admins control everything. No teacher can access another class's data. Built-in approval system before any account goes live.</div>
+      <span class="feat-tag">Secure by design</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-ico fc-purple">🎓</div>
+      <div class="feat-title">Student Admission & Records</div>
+      <div class="feat-body">Register students with full details, assign to grades and streams, generate admission numbers, and export records. All student data is always up to date and searchable.</div>
+      <span class="feat-tag">Complete records</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SPEED ══ -->
+<div class="speed-section">
+  <div class="speed-inner">
+    <div class="section-eyebrow" style="color:rgba(255,255,255,.4)">The numbers</div>
+    <div class="speed-title">How much faster is <span>CBE Mark Sheet</span>?</div>
+    <div class="speed-sub">A class of 40 students, 9 subjects. Here's the time comparison for producing one term's class report.</div>
+
+    <div class="speed-compare">
+      <div class="speed-box old">
+        <div class="sb-label">Excel / Manual</div>
+        <div class="sb-title">3–5 hours per class</div>
+        <div class="sb-list">
+          <div class="sb-item">Manually typing marks from paper registers</div>
+          <div class="sb-item">Writing and checking CBC level formulas</div>
+          <div class="sb-item">Formatting layout, adding school header</div>
+          <div class="sb-item">Collecting files from each teacher</div>
+          <div class="sb-item">Merging and checking for errors before printing</div>
+        </div>
+      </div>
+      <div class="speed-vs">VS</div>
+      <div class="speed-box new">
+        <div class="sb-label">CBE Mark Sheet</div>
+        <div class="sb-title">Under 20 minutes</div>
+        <div class="sb-list">
+          <div class="sb-item">Marks entered directly — levels auto-calculate</div>
+          <div class="sb-item">Report generated instantly from saved marks</div>
+          <div class="sb-item">School branding applied automatically</div>
+          <div class="sb-item">Admin sees all classes live in real time</div>
+          <div class="sb-item">Print straight from the browser — no editing</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="speed-metrics">
+      <div class="sm-card">
+        <div class="sm-val">9</div>
+        <div class="sm-lbl">CBC Subjects built in</div>
+      </div>
+      <div class="sm-card">
+        <div class="sm-val">0</div>
+        <div class="sm-lbl">Spreadsheets needed</div>
+      </div>
+      <div class="sm-card">
+        <div class="sm-val">100%</div>
+        <div class="sm-lbl">Cloud-based storage</div>
+      </div>
+      <div class="sm-card">
+        <div class="sm-val">&lt;1s</div>
+        <div class="sm-lbl">Report generation time</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REGISTER CTA ══ -->
+<div class="register-section" id="register">
+  <div class="reg-label">Get started today</div>
+  <div class="reg-title">Ready to run your school<br><em>the smarter way?</em></div>
+  <p class="reg-sub">Create your account in under two minutes. No credit card required to start. Choose your role and get full access immediately.</p>
+
+  <div class="reg-cards">
+    <a class="reg-card admin" href="registration.html">
+      <div class="reg-card-icon">⚙️</div>
+      <div class="reg-card-title">School Admin</div>
+      <div class="reg-card-desc">Register your school as an administrator. Set up your institution, manage teachers, view all results, configure school settings and generate reports across all classes.</div>
+      <span class="reg-card-btn">Register as Admin <span class="reg-card-arrow">→</span></span>
+    </a>
+    <a class="reg-card teacher" href="login.html">
+      <div class="reg-card-icon">📊</div>
+      <div class="reg-card-title">Teacher</div>
+      <div class="reg-card-desc">Register as a class teacher. Enter marks for your assigned class, view CBC levels in real time and print your class mark sheet instantly.</div>
+      <span class="reg-card-btn">Register as Teacher <span class="reg-card-arrow">→</span></span>
+    </a>
+  </div>
+
+  <div class="reg-login-note">
+    Already have an account? <a href="login.html">Sign in here →</a>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="foot-brand">
+    <div class="foot-logo">📊</div>
+    <div>
+      <div class="foot-name">CBE Mark Sheet System</div>
+      <div class="foot-sub">Kenya CBC · Junior School · Grades 7–9</div>
+    </div>
+  </div>
+  <div class="foot-links">
+    <a href="#" class="foot-link">Register</a>
+    <a href="#" class="foot-link">Teacher Login</a>
+    <a href="#" class="foot-link">Admin</a>
+    
+  </div>
+</footer>
+
+<!-- ══ WHATSAPP FAB ══ -->
+<a class="wa-fab" href="https://wa.me/254704518130?text=Hello%2C%20I%20am%20interested%20in%20CBE%20Mark%20Sheet%20System%20for%20my%20school." target="_blank" rel="noopener" title="Chat on WhatsApp">
+  <span class="wa-fab-tooltip">💬 Contact Us on WhatsApp</span>
+  💬
+</a>
+
+<script>
+// Animate elements as they scroll into view
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, {threshold: 0.1});
+
+document.querySelectorAll('.feat-card, .why-card, .vs-col, .reg-card').forEach(el => {
+  el.style.transition = 'opacity .5s ease, transform .5s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>

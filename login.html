@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBE Mark Sheet | Teacher Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Familjen+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c1220;
+  --surface:#111927;
+  --surf2:#172033;
+  --border:#1e2d45;
+  --border2:#253450;
+  --text:#e0e8f8;
+  --text2:#7a90b8;
+  --text3:#3d5070;
+  --accent:#1a56db;
+  --ah:#1447c0;
+  --alight:#172050;
+  --success:#059669;
+  --err:#dc2626;
+  --gold:#fbbf24;
+  --sh:0 1px 3px rgba(0,0,0,.3);
+  --sh2:0 20px 60px rgba(0,0,0,.5);
+  --r:12px;--r2:8px;
+}
+
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:13px;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  position:relative;
+  overflow:hidden;
+}
+
+/* ── BACKGROUND GRID ── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(26,86,219,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(26,86,219,.04) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+}
+
+/* ── GLOWS ── */
+.glow-tl{
+  position:fixed;top:-120px;left:-120px;
+  width:420px;height:420px;
+  background:radial-gradient(circle,rgba(26,86,219,.18) 0%,transparent 70%);
+  pointer-events:none;
+}
+.glow-br{
+  position:fixed;bottom:-100px;right:-100px;
+  width:360px;height:360px;
+  background:radial-gradient(circle,rgba(251,191,36,.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+/* ── CARD ── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  box-shadow:var(--sh2);
+  width:100%;max-width:420px;
+  position:relative;
+  overflow:hidden;
+  animation:cardIn .45s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(24px) scale(.97)}
+  to{opacity:1;transform:none}
+}
+
+/* top accent bar */
+.card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;
+  height:3px;
+  background:linear-gradient(90deg,var(--accent),#3b82f6,var(--gold));
+}
+
+/* ── CARD HEADER ── */
+.card-head{
+  padding:28px 28px 0;
+  text-align:center;
+}
+.brand{
+  display:inline-flex;align-items:center;gap:9px;
+  margin-bottom:20px;
+}
+.brand-icon{
+  width:36px;height:36px;
+  background:linear-gradient(135deg,var(--accent),#3b82f6);
+  border-radius:9px;
+  display:grid;place-items:center;
+  font-size:18px;
+  box-shadow:0 4px 16px rgba(26,86,219,.4);
+}
+.brand-name{
+  font-family:'Familjen Grotesk',sans-serif;
+  font-size:15px;font-weight:800;letter-spacing:-.3px;
+  color:var(--text);
+}
+.brand-sub{font-size:10px;color:var(--text3);font-weight:500}
+
+/* ── TABS ── */
+.tabs{
+  display:flex;
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  background:var(--bg);
+  padding:3px;
+  margin:0 28px 24px;
+}
+.tab{
+  flex:1;padding:7px;border-radius:6px;
+  font-family:inherit;font-size:12.5px;font-weight:700;
+  cursor:pointer;border:none;
+  transition:all .18s;color:var(--text3);background:transparent;
+}
+.tab.active{
+  background:var(--surf2);
+  color:var(--text);
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+
+/* ── PANELS ── */
+.panel{display:none;padding:0 28px 28px;animation:fadeUp .2s ease both}
+.panel.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── FORM ELEMENTS ── */
+.field{margin-bottom:14px}
+.field label{
+  display:block;font-size:11px;font-weight:700;
+  color:var(--text2);letter-spacing:.4px;text-transform:uppercase;
+  margin-bottom:5px;
+}
+.field label span{color:var(--text3);font-weight:500;text-transform:none;letter-spacing:0}
+
+.inp-wrap{position:relative}
+.inp-icon{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  font-size:14px;pointer-events:none;
+  opacity:.5;
+}
+.inp{
+  width:100%;height:40px;
+  padding:0 12px 0 34px;
+  background:var(--bg);
+  border:1.5px solid var(--border2);
+  border-radius:var(--r2);
+  color:var(--text);
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:13px;font-weight:500;
+  outline:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+.inp:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(26,86,219,.15);
+}
+.inp::placeholder{color:var(--text3)}
+.inp:disabled{opacity:.5;cursor:not-allowed}
+
+select.inp{cursor:pointer;appearance:none;padding-right:30px}
+.sel-arrow{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  pointer-events:none;font-size:10px;color:var(--text3);
+}
+
+/* eye toggle */
+.eye{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;
+  font-size:14px;color:var(--text3);padding:2px;
+  transition:color .12s;
+}
+.eye:hover{color:var(--text2)}
+.inp.has-eye{padding-right:34px}
+
+/* row layout */
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ── SUBMIT BTN ── */
+.submit-btn{
+  width:100%;height:42px;
+  background:linear-gradient(135deg,var(--accent),#2563eb);
+  color:#fff;border:none;border-radius:var(--r2);
+  font-family:'Familjen Grotesk',sans-serif;
+  font-size:15px;font-weight:800;letter-spacing:.2px;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  transition:all .16s;
+  box-shadow:0 4px 16px rgba(26,86,219,.35);
+  margin-top:6px;
+}
+.submit-btn:hover:not(:disabled){
+  background:linear-gradient(135deg,var(--ah),#1d4ed8);
+  box-shadow:0 6px 20px rgba(26,86,219,.5);
+  transform:translateY(-1px);
+}
+.submit-btn:active:not(:disabled){transform:translateY(0)}
+.submit-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+/* ── ALERT ── */
+.alert{
+  display:none;align-items:flex-start;gap:9px;
+  padding:10px 12px;border-radius:var(--r2);
+  font-size:12px;font-weight:500;line-height:1.5;
+  margin-bottom:14px;
+}
+.alert.show{display:flex}
+.alert.err{background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.3);color:#fca5a5}
+.alert.ok {background:rgba(5,150,105,.12);border:1px solid rgba(5,150,105,.3);color:#6ee7b7}
+.alert-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+
+/* ── DIVIDER ── */
+.divider{
+  display:flex;align-items:center;gap:10px;
+  margin:16px 0;font-size:10.5px;color:var(--text3);
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── FOOTER NOTE ── */
+.foot-note{
+  text-align:center;font-size:10.5px;color:var(--text3);
+  padding:14px 28px;
+  border-top:1px solid var(--border);
+  background:var(--bg);
+}
+.foot-note strong{color:var(--text2)}
+
+/* ── SPINNER ── */
+.spin{
+  width:16px;height:16px;
+  border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:sp .6s linear infinite;
+  flex-shrink:0;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── TOAST ── */
+#tc{position:fixed;top:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
+.t{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 14px;border-radius:var(--r2);
+  font-size:12.5px;font-weight:500;
+  box-shadow:var(--sh2);min-width:220px;
+  animation:tin .25s ease;
+}
+.t.ok {background:#064e3b;color:#ecfdf5;border-left:3px solid #10b981}
+.t.err{background:#7f1d1d;color:#fef2f2;border-left:3px solid #ef4444}
+@keyframes tin {from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tout{to{transform:translateX(110%);opacity:0}}
+
+/* ── STEP INDICATOR (signup) ── */
+.steps{
+  display:flex;align-items:center;justify-content:center;
+  gap:6px;margin-bottom:20px;
+}
+.step{
+  width:22px;height:6px;border-radius:3px;
+  background:var(--border2);transition:all .25s;
+}
+.step.active{background:var(--accent);width:32px}
+.step.done{background:var(--success)}
+
+/* field hint */
+.hint{font-size:10.5px;color:var(--text3);margin-top:4px}
+
+/* pending badge */
+.pending-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 9px;border-radius:20px;
+  background:rgba(251,191,36,.12);
+  border:1px solid rgba(251,191,36,.3);
+  color:var(--gold);font-size:11px;font-weight:700;
+  margin-top:12px;
+}
+
+/* ── FORGOT LINK ── */
+.forgot-link{
+  font-size:11px;font-weight:700;color:var(--text3);
+  text-decoration:none;transition:color .14s;
+}
+.forgot-link:hover{color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="glow-tl"></div>
+<div class="glow-br"></div>
+<div id="tc"></div>
+
+<div class="card">
+  <!-- top bar is ::before pseudo -->
+
+  <!-- HEADER -->
+  <div class="card-head">
+    <div class="brand">
+      <div class="brand-icon">📊</div>
+      <div>
+        <div class="brand-name">CBE Mark Sheet</div>
+        <div class="brand-sub">Junior School · Kenya CBC</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs" style="margin-top:4px">
+    <button class="tab active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
+    <button class="tab" id="tabSignup" onclick="switchTab('signup')">Register</button>
+  </div>
+
+  <!-- ══════════ LOGIN PANEL ══════════ -->
+  <div class="panel active" id="panelLogin">
+    <div class="alert err" id="loginErr">
+      <span class="alert-icon">⚠️</span>
+      <span id="loginErrMsg"></span>
+    </div>
+    <div class="alert ok" id="loginOk">
+      <span class="alert-icon">✅</span>
+      <span id="loginOkMsg"></span>
+    </div>
+
+    <div class="field">
+      <label>Email</label>
+      <div class="inp-wrap">
+        <span class="inp-icon">✉️</span>
+        <input class="inp" type="email" id="liEmail" placeholder="you@school.ac.ke" autocomplete="email">
+      </div>
+    </div>
+
+    <div class="field">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+        <label style="margin-bottom:0">Password</label>
+        <a href="#" class="forgot-link" onclick="showReset();return false">Forgot password?</a>
+      </div>
+      <div class="inp-wrap">
+        <span class="inp-icon">🔑</span>
+        <input class="inp has-eye" type="password" id="liPass" placeholder="••••••••" autocomplete="current-password">
+        <button class="eye" onclick="toggleEye('liPass',this)" tabindex="-1">👁️</button>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="loginBtn" onclick="doLogin()">
+      <span id="loginBtnTxt">Sign In</span>
+    </button>
+
+    <div class="divider">or</div>
+    <p style="text-align:center;font-size:11px;color:var(--text3);">
+      Don't have an account? 
+      <a href="#" style="color:var(--accent);font-weight:700;text-decoration:none" onclick="switchTab('signup');return false">Register here</a>
+    </p>
+  </div>
+
+  <!-- ══════════ RESET PANEL ══════════ -->
+  <div class="panel" id="panelReset">
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:32px;margin-bottom:8px">🔐</div>
+      <div style="font-family:'Familjen Grotesk',sans-serif;font-size:16px;font-weight:800;color:var(--text)">Reset Password</div>
+      <div style="font-size:11.5px;color:var(--text3);margin-top:4px;line-height:1.5">Enter your email and we'll send<br>a reset link to your inbox.</div>
+    </div>
+
+    <div class="alert err" id="resetErr">
+      <span class="alert-icon">⚠️</span>
+      <span id="resetErrMsg"></span>
+    </div>
+    <div class="alert ok" id="resetOk">
+      <span class="alert-icon">✅</span>
+      <span id="resetOkMsg"></span>
+    </div>
+
+    <div class="field">
+      <label>Email Address</label>
+      <div class="inp-wrap">
+        <span class="inp-icon">✉️</span>
+        <input class="inp" type="email" id="resetEmail" placeholder="you@school.ac.ke" autocomplete="email">
+      </div>
+    </div>
+
+    <button class="submit-btn" id="resetBtn" onclick="doReset()">
+      <span id="resetBtnTxt">Send Reset Link</span>
+    </button>
+
+    <div class="divider">or</div>
+    <p style="text-align:center;font-size:11px;color:var(--text3);">
+      Remember it?
+      <a href="#" style="color:var(--accent);font-weight:700;text-decoration:none" onclick="hideReset();return false">Back to Sign In</a>
+    </p>
+  </div>
+
+  <!-- ══════════ SIGNUP PANEL ══════════ -->
+  <div class="panel" id="panelSignup">
+
+    <!-- step dots -->
+    <div class="steps">
+      <div class="step active" id="dot0"></div>
+      <div class="step" id="dot1"></div>
+      <div class="step" id="dot2"></div>
+    </div>
+
+    <div class="alert err" id="signupErr">
+      <span class="alert-icon">⚠️</span>
+      <span id="signupErrMsg"></span>
+    </div>
+
+    <!-- STEP 0: Personal info -->
+    <div id="step0">
+      <div class="row2">
+        <div class="field">
+          <label>First Name</label>
+          <div class="inp-wrap">
+            <span class="inp-icon">👤</span>
+            <input class="inp" type="text" id="suFirst" placeholder="Mary">
+          </div>
+        </div>
+        <div class="field">
+          <label>Last Name</label>
+          <div class="inp-wrap">
+            <span class="inp-icon">👤</span>
+            <input class="inp" type="text" id="suLast" placeholder="Wanjiku">
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>TSC Number <span>(optional)</span></label>
+        <div class="inp-wrap">
+          <span class="inp-icon">🪪</span>
+          <input class="inp" type="text" id="suTSC" placeholder="e.g. TSC/2024/001">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Email Address</label>
+        <div class="inp-wrap">
+          <span class="inp-icon">✉️</span>
+          <input class="inp" type="email" id="suEmail" placeholder="you@school.ac.ke" autocomplete="email">
+        </div>
+      </div>
+
+      <button class="submit-btn" onclick="nextStep(1)" style="background:linear-gradient(135deg,#1e3a5f,#2d4f80)">
+        Continue <span style="font-size:16px">→</span>
+      </button>
+    </div>
+
+    <!-- STEP 1: Class assignment -->
+    <div id="step1" style="display:none">
+      <div class="field">
+        <label>Grade <span>(your class)</span></label>
+        <div class="inp-wrap">
+          <span class="inp-icon">🏫</span>
+          <select class="inp" id="suGrade" onchange="onSignupGradeChange()">
+            <option value="">-- Select Grade --</option>
+            <option>Grade 7</option>
+            <option>Grade 8</option>
+            <option>Grade 9</option>
+          </select>
+          <span class="sel-arrow">▾</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Stream <span>(your class)</span></label>
+        <div class="inp-wrap">
+          <span class="inp-icon">📋</span>
+          <select class="inp" id="suStream">
+            <option value="">-- Select Grade first --</option>
+          </select>
+          <span class="sel-arrow">▾</span>
+        </div>
+        <span style="font-size:10.5px;color:var(--text3);margin-top:4px;display:block" id="streamHint"></span>
+      </div>
+
+      <p class="hint">⚠️ You will only be able to view and enter marks for this class. Contact admin to change your assignment.</p>
+
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button class="submit-btn" onclick="nextStep(0)" style="background:var(--surf2);color:var(--text2);box-shadow:none;flex:0 0 80px;font-size:12px">
+          ← Back
+        </button>
+        <button class="submit-btn" onclick="nextStep(2)">
+          Continue <span style="font-size:16px">→</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Password -->
+    <div id="step2" style="display:none">
+      <div class="field">
+        <label>Password</label>
+        <div class="inp-wrap">
+          <span class="inp-icon">🔑</span>
+          <input class="inp has-eye" type="password" id="suPass" placeholder="Min. 8 characters" autocomplete="new-password">
+          <button class="eye" onclick="toggleEye('suPass',this)" tabindex="-1">👁️</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Confirm Password</label>
+        <div class="inp-wrap">
+          <span class="inp-icon">🔑</span>
+          <input class="inp has-eye" type="password" id="suPass2" placeholder="Repeat password" autocomplete="new-password">
+          <button class="eye" onclick="toggleEye('suPass2',this)" tabindex="-1">👁️</button>
+        </div>
+      </div>
+
+      <!-- summary -->
+      <div id="regSummary" style="
+        background:var(--alight);border:1px solid var(--border2);
+        border-radius:var(--r2);padding:10px 12px;margin-bottom:14px;
+        font-size:11.5px;line-height:1.8;color:var(--text2);display:none">
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button class="submit-btn" onclick="nextStep(1)" style="background:var(--surf2);color:var(--text2);box-shadow:none;flex:0 0 80px;font-size:12px">
+          ← Back
+        </button>
+        <button class="submit-btn" id="signupBtn" onclick="doSignup()">
+          <span id="signupBtnTxt">Create Account</span>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /panelSignup -->
+
+  <!-- FOOTER -->
+  <div class="foot-note">
+    <strong>Teacher access only.</strong> Admin &amp; secretary accounts are created by the school administrator.
+  </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
+  authDomain:"bett-294a2.firebaseapp.com",
+  projectId:"bett-294a2",
+  storageBucket:"bett-294a2.appspot.com",
+  messagingSenderId:"1055511650032",
+  appId:"1:1055511650032:web:7e0f9c28e58515f549ac35"
+
+    
+});
+const db   = firebase.firestore();
+const auth = firebase.auth();
+
+// ── Redirect guard — prevents onAuthStateChanged from firing mid-signup ──
+let manualRedirect = false;
+
+// Only redirect on page load if already authenticated (returning user)
+auth.onAuthStateChanged(u=>{
+  if(manualRedirect) return;
+  if(u) window.location.href='marksheet.html';
+});
+
+// ── Show message if redirected back from marksheet with a reason ──
+(function(){
+  const p = new URLSearchParams(window.location.search);
+  const reason = p.get('reason');
+  if(reason === 'suspended'){
+    document.getElementById('loginErrMsg').textContent =
+      'Your account has been suspended. Contact the school administrator.';
+    document.getElementById('loginErr').classList.add('show');
+  } else if(reason === 'pending'){
+    document.getElementById('loginErrMsg').textContent =
+      'Your account is pending admin approval. Please wait for activation.';
+    document.getElementById('loginErr').classList.add('show');
+  }
+})();
+
+// ── Tab switch ──
+function switchTab(t){
+  document.getElementById('panelLogin').classList.toggle('active', t==='login');
+  document.getElementById('panelSignup').classList.toggle('active', t==='signup');
+  document.getElementById('tabLogin').classList.toggle('active', t==='login');
+  document.getElementById('tabSignup').classList.toggle('active', t==='signup');
+  clearAlerts();
+}
+
+// ── Eye toggle ──
+function toggleEye(id, btn){
+  const inp = document.getElementById(id);
+  inp.type = inp.type==='password' ? 'text' : 'password';
+  btn.textContent = inp.type==='password' ? '👁️' : '🙈';
+}
+
+// ── Toast ──
+function toast(msg, type='ok'){
+  const t=document.createElement('div');
+  t.className=`t ${type}`;
+  t.innerHTML=`<span>${type==='ok'?'✅':'❌'}</span>${msg}`;
+  document.getElementById('tc').appendChild(t);
+  setTimeout(()=>{t.style.animation='tout .25s ease forwards';setTimeout(()=>t.remove(),280);},2800);
+}
+
+function clearAlerts(){
+  ['loginErr','loginOk','signupErr'].forEach(id=>{
+    document.getElementById(id).classList.remove('show');
+  });
+}
+
+function showErr(panelId, msg){
+  const el = document.getElementById(panelId);
+  document.getElementById(panelId+'Msg').textContent = msg;
+  el.classList.add('show');
+}
+function showOk(panelId, msg){
+  const el = document.getElementById(panelId);
+  document.getElementById(panelId+'Msg').textContent = msg;
+  el.classList.add('show');
+}
+
+function setLoading(btnId, txtId, loading, label='Sign In'){
+  const btn = document.getElementById(btnId);
+  const txt = document.getElementById(txtId);
+  btn.disabled = loading;
+  txt.innerHTML = loading
+    ? `<div class="spin"></div> Please wait…`
+    : label;
+}
+
+// ── LOGIN ──
+async function doLogin(){
+  clearAlerts();
+  const email = document.getElementById('liEmail').value.trim();
+  const pass  = document.getElementById('liPass').value;
+  if(!email||!pass){showErr('loginErr','Please fill in all fields.');return;}
+
+  setLoading('loginBtn','loginBtnTxt',true,'Sign In');
+  try{
+    manualRedirect = true;
+    const cred = await auth.signInWithEmailAndPassword(email, pass);
+    // Check status in Firestore before allowing entry
+    const snap = await db.collection('users').doc(cred.user.uid).get();
+    if(snap.exists){
+      const profile = snap.data();
+      if(profile.status === 'pending'){
+        await auth.signOut();
+        manualRedirect = false;
+        setLoading('loginBtn','loginBtnTxt',false,'Sign In');
+        showErr('loginErr','Your account is pending admin approval. Please wait for activation.');
+        return;
+      }
+      if(profile.status === 'suspended'){
+        await auth.signOut();
+        manualRedirect = false;
+        setLoading('loginBtn','loginBtnTxt',false,'Sign In');
+        showErr('loginErr','Your account has been suspended. Contact the school administrator.');
+        return;
+      }
+    }
+    window.location.href = 'marksheet.html';
+  }catch(e){
+    manualRedirect = false;
+    setLoading('loginBtn','loginBtnTxt',false,'Sign In');
+    const msg = e.code==='auth/user-not-found'||e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'
+      ? 'Incorrect email or password.'
+      : e.code==='auth/too-many-requests'
+      ? 'Too many attempts. Try again later.'
+      : e.message;
+    showErr('loginErr', msg);
+  }
+}
+
+document.getElementById('liPass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+
+// ── SIGNUP STEPS ──
+let currentStep = 0;
+
+function goStep(n){
+  document.getElementById(`step${currentStep}`).style.display='none';
+  document.getElementById(`step${n}`).style.display='block';
+  // update dots
+  for(let i=0;i<3;i++){
+    const d=document.getElementById(`dot${i}`);
+    d.className='step'+(i===n?' active':i<n?' done':'');
+  }
+  // when step1 appears, load streams if grade already selected
+  if(n===1){
+    const grade = document.getElementById('suGrade').value;
+    if(grade) onSignupGradeChange();
+  }
+  // show summary on step 2
+  if(n===2) buildSummary();
+  currentStep=n;
+  clearAlerts();
+}
+
+function nextStep(n){
+  if(n > currentStep){
+    // validate current before advancing
+    if(currentStep===0 && !validateStep0()) return;
+    if(currentStep===1 && !validateStep1()) return;
+  }
+  goStep(n);
+}
+
+function validateStep0(){
+  const first = document.getElementById('suFirst').value.trim();
+  const last  = document.getElementById('suLast').value.trim();
+  const email = document.getElementById('suEmail').value.trim();
+  if(!first||!last){showErr('signupErr','Please enter your first and last name.');return false;}
+  if(!email||!email.includes('@')){showErr('signupErr','Please enter a valid email address.');return false;}
+  return true;
+}
+// ── Load streams for signup based on grade ──
+async function onSignupGradeChange(){
+  const grade   = document.getElementById('suGrade').value;
+  const ss      = document.getElementById('suStream');
+  const hint    = document.getElementById('streamHint');
+  ss.innerHTML  = '<option value="">Loading streams…</option>';
+  if(!grade){ ss.innerHTML='<option value="">-- Select Grade first --</option>'; hint.textContent=''; return; }
+
+  let streams = [];
+
+  // 1. Try localStorage cache written by admission page
+  try{
+    const raw = localStorage.getItem('cbe_streams');
+    if(raw){
+      const map = JSON.parse(raw);
+      if(map[grade] && map[grade].length) streams = map[grade];
+    }
+  }catch(_){}
+
+  // 2. Always fetch live from Firestore to catch latest
+  try{
+    const snap = await db.collection('students').where('grade','==',grade).get();
+    const set  = new Set(streams);
+    snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
+    streams = [...set].sort();
+
+    // Update cache
+    try{
+      const raw  = localStorage.getItem('cbe_streams');
+      const map  = raw ? JSON.parse(raw) : {};
+      map[grade] = streams;
+      localStorage.setItem('cbe_streams', JSON.stringify(map));
+      localStorage.setItem('cbe_streams_ts', Date.now().toString());
+    }catch(_){}
+  }catch(e){
+    // Firestore failed — use whatever we got from cache
+  }
+
+  if(!streams.length){
+    ss.innerHTML = '<option value="">No streams found for this grade</option>';
+    hint.textContent = 'No streams found. Make sure students are registered in the admission page first.';
+    hint.style.color = 'var(--err)';
+  } else {
+    ss.innerHTML = '<option value="">-- Select Stream --</option>' +
+      streams.map(s=>`<option value="${s}">${s}</option>`).join('');
+    hint.textContent = `${streams.length} stream${streams.length>1?'s':''} found for ${grade}`;
+    hint.style.color = 'var(--success)';
+  }
+}
+
+function validateStep1(){
+  const grade  = document.getElementById('suGrade').value;
+  const stream = document.getElementById('suStream').value;
+  if(!grade||!stream){showErr('signupErr','Please select your Grade and Stream.');return false;}
+  return true;
+}
+
+function buildSummary(){
+  const first  = document.getElementById('suFirst').value.trim();
+  const last   = document.getElementById('suLast').value.trim();
+  const email  = document.getElementById('suEmail').value.trim();
+  const grade  = document.getElementById('suGrade').value;
+  const stream = document.getElementById('suStream').value;
+  const tsc    = document.getElementById('suTSC').value.trim();
+  const div    = document.getElementById('regSummary');
+  div.style.display='block';
+  div.innerHTML=`
+    <div style="font-weight:700;color:var(--text);margin-bottom:6px;font-size:12px">📋 Registration Summary</div>
+    <div>👤 <strong>${first} ${last}</strong></div>
+    ${tsc?`<div>🪪 TSC: <strong>${tsc}</strong></div>`:''}
+    <div>✉️ ${email}</div>
+    <div>🏫 Class: <strong>${grade} — ${stream}</strong></div>
+    <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:10.5px;color:var(--text3);">
+      ⚠️ You will only access <strong>${grade} ${stream}</strong> data. Verify before submitting.
+    </div>`;
+}
+
+// ── SIGNUP SUBMIT ──
+async function doSignup(){
+  clearAlerts();
+  const first  = document.getElementById('suFirst').value.trim();
+  const last   = document.getElementById('suLast').value.trim();
+  const email  = document.getElementById('suEmail').value.trim();
+  const grade  = document.getElementById('suGrade').value;
+  const stream = document.getElementById('suStream').value;
+  const tsc    = document.getElementById('suTSC').value.trim();
+  const pass   = document.getElementById('suPass').value;
+  const pass2  = document.getElementById('suPass2').value;
+
+  if(pass.length<8){showErr('signupErr','Password must be at least 8 characters.');return;}
+  if(pass!==pass2){showErr('signupErr','Passwords do not match.');return;}
+
+  setLoading('signupBtn','signupBtnTxt',true,'Create Account');
+  try{
+    manualRedirect = true;
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    // Update display name
+    await cred.user.updateProfile({displayName:`${first} ${last}`});
+    // Save teacher profile to Firestore FIRST, then redirect
+    await db.collection('users').doc(cred.user.uid).set({
+      firstName: first,
+      lastName:  last,
+      fullName:  `${first} ${last}`,
+      email:     email,
+      tscNumber: tsc||null,
+      grade:     grade,
+      stream:    stream,
+      role:      'teacher',
+      status:    'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    // Profile saved — wait for admin approval, do NOT redirect
+    await auth.signOut();
+    manualRedirect = false;
+    setLoading('signupBtn','signupBtnTxt',false,'Create Account');
+    // Show pending approval notice
+    document.getElementById('panelSignup').classList.remove('active');
+    document.getElementById('panelLogin').classList.add('active');
+    document.getElementById('tabLogin').classList.add('active');
+    document.getElementById('tabSignup').classList.remove('active');
+    document.getElementById('loginOkMsg').textContent =
+      '✅ Account created! Your request is pending admin approval. You will be notified once activated.';
+    document.getElementById('loginOk').classList.add('show');
+  }catch(e){
+    manualRedirect = false;
+    setLoading('signupBtn','signupBtnTxt',false,'Create Account');
+    const msg = e.code==='auth/email-already-in-use'
+      ? 'This email is already registered. Please sign in.'
+      : e.code==='auth/weak-password'
+      ? 'Password is too weak. Use at least 8 characters.'
+      : e.message;
+    showErr('signupErr', msg);
+  }
+}
+
+// ── FORGOT PASSWORD ──
+function showReset(){
+  document.getElementById('panelLogin').classList.remove('active');
+  document.getElementById('panelReset').classList.add('active');
+  document.getElementById('tabLogin').classList.remove('active');
+  document.getElementById('tabSignup').classList.remove('active');
+  document.getElementById('resetEmail').value = document.getElementById('liEmail').value.trim();
+  document.getElementById('resetErr').classList.remove('show');
+  document.getElementById('resetOk').classList.remove('show');
+  clearAlerts();
+}
+
+function hideReset(){
+  document.getElementById('panelReset').classList.remove('active');
+  document.getElementById('panelLogin').classList.add('active');
+  document.getElementById('tabLogin').classList.add('active');
+  document.getElementById('resetErr').classList.remove('show');
+  document.getElementById('resetOk').classList.remove('show');
+  clearAlerts();
+}
+
+async function doReset(){
+  document.getElementById('resetErr').classList.remove('show');
+  document.getElementById('resetOk').classList.remove('show');
+  const email = document.getElementById('resetEmail').value.trim();
+  if(!email){
+    document.getElementById('resetErrMsg').textContent='Please enter your email address.';
+    document.getElementById('resetErr').classList.add('show');
+    return;
+  }
+  const btn=document.getElementById('resetBtn');
+  const txt=document.getElementById('resetBtnTxt');
+  btn.disabled=true;
+  txt.innerHTML='<div class="spin"></div> Sending…';
+  try{
+    await auth.sendPasswordResetEmail(email);
+    btn.disabled=false;
+    txt.innerHTML='Send Reset Link';
+    document.getElementById('resetOkMsg').textContent='Reset link sent! Check your inbox (and spam folder).';
+    document.getElementById('resetOk').classList.add('show');
+    document.getElementById('resetEmail').value='';
+  }catch(e){
+    btn.disabled=false;
+    txt.innerHTML='Send Reset Link';
+    const msg=e.code==='auth/user-not-found'?'No account found with this email.'
+      :e.code==='auth/invalid-email'?'Please enter a valid email address.'
+      :e.code==='auth/too-many-requests'?'Too many attempts. Try again later.'
+      :e.message;
+    document.getElementById('resetErrMsg').textContent=msg;
+    document.getElementById('resetErr').classList.add('show');
+  }
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('resetEmail').addEventListener('keydown',function(e){
+    if(e.key==='Enter') doReset();
+  });
+});
+
+</script>
+</body>
+</html>

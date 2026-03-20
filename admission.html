@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Admission | Junior School CBE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Familjen+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#eef1f7;--surface:#fff;--surf2:#f5f7fb;--border:#e1e6ef;
+  --text:#141b2d;--text2:#526079;--text3:#9eabbe;
+  --accent:#1a56db;--ah:#1447c0;--alight:#eff4ff;
+  --green:#059669;--glight:#d1fae5;
+  --red:#dc2626;--rlight:#fee2e2;
+  --amber:#d97706;--amlight:#fef3c7;
+  --sh:0 1px 3px rgba(0,0,0,.05);--sh2:0 4px 20px rgba(0,0,0,.08);
+  --r:10px;--r2:6px
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13.5px;min-height:100vh}
+
+/* ── HEADER ── */
+header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;box-shadow:var(--sh)
+}
+.logo{display:flex;align-items:center;gap:10px}
+.lm{width:32px;height:32px;background:var(--accent);border-radius:8px;display:grid;place-items:center;color:#fff;font-size:16px}
+.lt{font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;letter-spacing:-.3px}
+.ls{font-size:10px;color:var(--text3)}
+.hdr-r{display:flex;align-items:center;gap:8px}
+
+/* ── WRAP ── */
+.wrap{max-width:1100px;margin:0 auto;padding:22px 24px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--ah);box-shadow:0 4px 10px rgba(26,86,219,.25)}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--text2)}
+.btn-outline:hover{background:var(--bg);color:var(--text)}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:hover{background:#047857}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#b91c1c}
+.btn-sm{padding:5px 11px;font-size:12px}
+
+/* ── CARD ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:20px}
+.card-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surf2)}
+.card-head h3{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.card-body{padding:20px}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label.fl{font-size:12px;font-weight:600;color:var(--text2)}
+label.fl .req{color:var(--red);margin-left:2px}
+input.fi,select.fi{
+  padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--r2);
+  font-family:inherit;font-size:13px;color:var(--text);background:var(--surface);
+  outline:none;transition:border-color .15s,box-shadow .15s
+}
+input.fi:focus,select.fi:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,86,219,.08)}
+input.fi.err,select.fi.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(220,38,38,.08)}
+input.fi.ok{border-color:var(--green)}
+.field-hint{font-size:11px;color:var(--text3);margin-top:2px}
+.field-err{font-size:11px;color:var(--red);margin-top:2px;display:none}
+.field-err.show{display:block}
+
+/* STREAM SUGGESTIONS */
+.stream-wrap{position:relative}
+.stream-suggestions{
+  position:absolute;top:calc(100% + 2px);left:0;right:0;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);
+  box-shadow:var(--sh2);z-index:50;overflow:hidden;display:none
+}
+.stream-suggestions.open{display:block}
+.ss-item{padding:8px 12px;cursor:pointer;font-size:13px;font-weight:500;transition:background .1s}
+.ss-item:hover{background:var(--alight);color:var(--accent)}
+.ss-item .ss-sub{font-size:10.5px;color:var(--text3)}
+
+/* FORM ACTIONS */
+.form-actions{display:flex;gap:10px;margin-top:6px;padding-top:14px;border-top:1px solid var(--border)}
+
+/* ── STATS PILLS ── */
+.stats-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.stat-pill{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:5px}
+.stat-pill .sv{font-weight:700;color:var(--text);font-size:13px}
+
+/* ── SEARCH / FILTERS ── */
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surf2)}
+.search{display:flex;align-items:center;gap:7px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r2);padding:6px 11px;min-width:230px;transition:border-color .15s}
+.search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,86,219,.08)}
+.search input{border:none;background:none;outline:none;font-family:inherit;font-size:13px;color:var(--text);width:100%}
+.search input::placeholder{color:var(--text3)}
+.si-ico{color:var(--text3);font-size:14px;flex-shrink:0}
+.fsel{padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r2);font-family:inherit;font-size:12.5px;color:var(--text);background:var(--surface);cursor:pointer;outline:none;height:34px}
+.fsel:focus{border-color:var(--accent)}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:1.5px solid var(--border);background:var(--surf2);white-space:nowrap}
+thead th.tc{text-align:center}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:13px}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#f8faff}
+tbody tr.highlight td{background:var(--alight)}
+
+.av{width:28px;height:28px;border-radius:7px;background:var(--alight);color:var(--accent);font-size:10px;font-weight:800;display:grid;place-items:center;flex-shrink:0}
+.av.f{background:#fce7f3;color:#be185d}
+.sc{display:flex;align-items:center;gap:8px}
+.sn{font-weight:600}
+.sa{font-size:10.5px;color:var(--text3)}
+.tag{display:inline-block;padding:2px 7px;border-radius:8px;font-size:10.5px;font-weight:700}
+.tag-grade{background:var(--alight);color:var(--accent)}
+.tag-stream{background:#e0f2fe;color:#0369a1}
+.tag-m{background:#ede9fe;color:#7c3aed}
+.tag-f{background:#fce7f3;color:#be185d}
+
+/* inline edit */
+.inline-input{
+  padding:4px 8px;border:1.5px solid var(--accent);border-radius:5px;
+  font-family:inherit;font-size:12.5px;color:var(--text);background:#fff;
+  outline:none;width:100%;min-width:90px
+}
+
+/* EMPTY */
+.empty{text-align:center;padding:50px 20px;color:var(--text3)}
+.empty .ei{font-size:34px;margin-bottom:8px}
+
+/* TOAST */
+#tc{position:fixed;top:68px;right:18px;z-index:999;display:flex;flex-direction:column;gap:7px}
+.t{display:flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--r2);font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.15);animation:tin .28s ease;min-width:230px}
+.t.ok {background:#064e3b;color:#ecfdf5;border-left:3px solid var(--green)}
+.t.err{background:#7f1d1d;color:#fef2f2;border-left:3px solid var(--red)}
+.t.info{background:#1e3a5f;color:#dbeafe;border-left:3px solid var(--accent)}
+@keyframes tin {from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tout{to{transform:translateX(110%);opacity:0}}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;display:none;place-items:center;backdrop-filter:blur(2px)}
+.modal-bg.open{display:grid;animation:fadeIn .2s}
+.modal{background:var(--surface);border-radius:14px;box-shadow:0 16px 48px rgba(0,0,0,.18);width:460px;max-width:95vw;overflow:hidden;animation:popIn .22s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-size:15px;font-weight:700}
+.modal-body{padding:20px}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:9px}
+.close-btn{padding:5px;border-radius:6px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;transition:all .15s}
+.close-btn:hover{background:var(--bg);color:var(--text)}
+
+/* DARK */
+body.dark{
+  --bg:#0d1017;--surface:#161a24;--surf2:#1c2030;--border:#272d3e;
+  --text:#e2e8f5;--text2:#7a8aa8;--text3:#434f65;--alight:#172050;--glight:#052e1c
+}
+
+/* SPINNER */
+.spin{width:16px;height:16px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .65s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* CACHE INDICATOR */
+.cache-badge{
+  display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:12px;
+  background:var(--surf2);color:var(--text2);font-size:11px;font-weight:500;
+  border:1px solid var(--border);margin-left:8px;
+}
+.cache-badge.refresh{cursor:pointer;transition:all .15s}
+.cache-badge.refresh:hover{background:var(--alight);color:var(--accent);border-color:var(--accent)}
+
+@media(max-width:640px){.wrap{padding:12px}.form-grid{grid-template-columns:1fr}.stats-row{gap:6px}}
+</style>
+</head>
+<body>
+<div id="tc"></div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-bg" id="delModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>⚠️ Delete Student</h3>
+      <button class="close-btn" onclick="closeDelModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text2);line-height:1.7">Are you sure you want to delete <strong id="delName"></strong>?<br>
+      This will <strong>not</strong> delete their existing results. This action cannot be undone.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeDelModal()">Cancel</button>
+      <button class="btn btn-danger" id="confirmDelBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>✏️ Edit Student</h3>
+      <button class="close-btn" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="gap:12px;">
+        <div class="form-group">
+          <label class="fl">Full Name <span class="req">*</span></label>
+          <input class="fi" id="editName" type="text">
+        </div>
+        <div class="form-group">
+          <label class="fl">Admission Number <span class="req">*</span></label>
+          <input class="fi" id="editAdm" type="text">
+        </div>
+        <div class="form-group">
+          <label class="fl">Gender</label>
+          <select class="fi" id="editGender">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="fl">Grade <span class="req">*</span></label>
+          <select class="fi" id="editGrade">
+            <option value="Grade 7">Grade 7</option>
+            <option value="Grade 8">Grade 8</option>
+            <option value="Grade 9">Grade 9</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="fl">Stream <span class="req">*</span></label>
+          <input class="fi" id="editStream" type="text">
+        </div>
+        <div class="form-group">
+          <label class="fl">Academic Year <span class="req">*</span></label>
+          <input class="fi" id="editYear" type="number" min="2020" max="2040">
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="lm">🎓</div>
+    <div><div class="lt">Student Admission</div><div class="ls">Junior School · Kenya CBC</div></div>
+  </div>
+  <div class="hdr-r">
+    <span class="cache-badge" id="cacheIndicator" onclick="refreshData()">
+      <span id="cacheIcon">📦</span>
+      <span id="cacheTime">Cached</span>
+    </span>
+    <button class="btn btn-outline btn-sm" id="themeBtn">🌙</button>
+    <button class="btn btn-outline btn-sm" onclick="exportCSV()">📥 Export CSV</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- REGISTRATION FORM -->
+  <div class="card">
+    <div class="card-head">
+      <h3>➕ Register New Student</h3>
+      <span style="font-size:11.5px;color:var(--text3);">All fields marked <span style="color:var(--red)">*</span> are required</span>
+    </div>
+    <div class="card-body">
+      <form id="admForm" novalidate autocomplete="off">
+        <div class="form-grid">
+
+          <!-- Full Name -->
+          <div class="form-group">
+            <label class="fl" for="fName">Full Name <span class="req">*</span></label>
+            <input class="fi" id="fName" type="text" placeholder="e.g. Jane Akinyi Mwangi" autocomplete="off">
+            <span class="field-err" id="err-name">Please enter the student's full name</span>
+          </div>
+
+          <!-- Admission Number -->
+          <div class="form-group">
+            <label class="fl" for="fAdm">Admission Number <span class="req">*</span></label>
+            <input class="fi" id="fAdm" type="text" placeholder="e.g. JR-2026-001" autocomplete="off">
+            <span class="field-hint">Must be unique. Used to link student to results.</span>
+            <span class="field-err" id="err-adm">Admission number required or already exists</span>
+          </div>
+
+          <!-- Gender -->
+          <div class="form-group">
+            <label class="fl" for="fGender">Gender <span class="req">*</span></label>
+            <select class="fi" id="fGender">
+              <option value="">-- Select --</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+            <span class="field-err" id="err-gender">Please select gender</span>
+          </div>
+
+          <!-- Grade -->
+          <div class="form-group">
+            <label class="fl" for="fGrade">Grade <span class="req">*</span></label>
+            <select class="fi" id="fGrade" onchange="onFormGradeChange()">
+              <option value="">-- Select Grade --</option>
+              <option value="Grade 7">Grade 7</option>
+              <option value="Grade 8">Grade 8</option>
+              <option value="Grade 9">Grade 9</option>
+            </select>
+            <span class="field-err" id="err-grade">Please select a grade</span>
+          </div>
+
+          <!-- Stream -->
+          <div class="form-group">
+            <label class="fl" for="fStream">Stream <span class="req">*</span></label>
+            <div class="stream-wrap">
+              <input class="fi" id="fStream" type="text" placeholder="e.g. East, West, North…"
+                autocomplete="off"
+                oninput="onStreamInput()"
+                onfocus="onStreamFocus()"
+                onblur="closeStreamSuggestions()">
+              <div class="stream-suggestions" id="streamSuggestions"></div>
+            </div>
+            <span class="field-hint">Must match exactly the stream used in the Mark Sheet</span>
+            <span class="field-err" id="err-stream">Please enter a stream name</span>
+          </div>
+
+          <!-- Year -->
+          <div class="form-group">
+            <label class="fl" for="fYear">Academic Year <span class="req">*</span></label>
+            <input class="fi" id="fYear" type="number" placeholder="2026" min="2020" max="2040" value="2026">
+            <span class="field-err" id="err-year">Please enter the academic year</span>
+          </div>
+
+          <!-- Optional: Parent Contact -->
+          <div class="form-group">
+            <label class="fl" for="fParent">Parent/Guardian Name</label>
+            <input class="fi" id="fParent" type="text" placeholder="Optional">
+          </div>
+
+          <!-- Optional: Parent phone -->
+          <div class="form-group">
+            <label class="fl" for="fPhone">Parent/Guardian Phone</label>
+            <input class="fi" id="fPhone" type="tel" placeholder="e.g. 0712345678">
+          </div>
+
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            ✅ Register Student
+          </button>
+          <button type="button" class="btn btn-outline" onclick="resetForm()">
+            🔄 Clear Form
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- STUDENT LIST -->
+  <div class="card">
+    <div class="toolbar">
+      <div class="search">
+        <span class="si-ico">🔍</span>
+        <input type="text" id="searchQ" placeholder="Search name or admission number…" oninput="filterTable()">
+      </div>
+      <select class="fsel" id="filterGrade" onchange="filterTable()">
+        <option value="">All Grades</option>
+        <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+      </select>
+      <select class="fsel" id="filterStream" onchange="filterTable()">
+        <option value="">All Streams</option>
+      </select>
+      <select class="fsel" id="filterGender" onchange="filterTable()">
+        <option value="">All Genders</option>
+        <option>Male</option><option>Female</option>
+      </select>
+      <span style="margin-left:auto;font-size:11.5px;color:var(--text3);" id="countLabel"></span>
+    </div>
+
+    <!-- Stats -->
+    <div style="padding:10px 16px;border-bottom:1px solid var(--border);">
+      <div class="stats-row" id="statsRow">
+        <div class="stat-pill">👥 Total <span class="sv" id="stTotal">0</span></div>
+        <div class="stat-pill">♂️ Boys <span class="sv" id="stMale">0</span></div>
+        <div class="stat-pill">♀️ Girls <span class="sv" id="stFemale">0</span></div>
+        <div class="stat-pill">📚 Grade 7 <span class="sv" id="stG7">0</span></div>
+        <div class="stat-pill">📚 Grade 8 <span class="sv" id="stG8">0</span></div>
+        <div class="stat-pill">📚 Grade 9 <span class="sv" id="stG9">0</span></div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:36px;">#</th>
+            <th>Student</th>
+            <th>Adm No.</th>
+            <th>Gender</th>
+            <th>Grade</th>
+            <th>Stream</th>
+            <th>Year</th>
+            <th>Parent/Guardian</th>
+            <th class="tc">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentTable">
+          <tr><td colspan="9"><div class="empty"><div class="ei">⏳</div><p>Loading…</p></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
+  authDomain:"bett-294a2.firebaseapp.com",
+  projectId:"bett-294a2",
+  storageBucket:"bett-294a2.appspot.com",
+  messagingSenderId:"1055511650032",
+  appId:"1:1055511650032:web:7e0f9c28e58515f549ac35"
+});
+const db = firebase.firestore();
+
+// ── State ──
+let allStudents  = [];   // full list from Firestore
+let visStudents  = [];   // filtered view
+let allStreams    = [];   // distinct streams for suggestions
+let pendingDelId = null;
+let editId       = null;
+
+// ── Cache Configuration ──
+const CACHE_KEY = 'cbe_students_cache';
+const CACHE_TIMESTAMP_KEY = 'cbe_students_timestamp';
+const CACHE_DURATION = 0; // Always fetch fresh — ensures new students/streams appear immediately
+
+// ── Utils ──
+const el  = id => document.getElementById(id);
+const val = id => (el(id)?.value||'').trim();
+
+function toast(msg, type='ok'){
+  const t=document.createElement('div');
+  t.className=`t ${type}`;
+  t.innerHTML=`<span>${type==='ok'?'✅':type==='err'?'❌':'ℹ️'}</span>${msg}`;
+  el('tc').appendChild(t);
+  setTimeout(()=>{t.style.animation='tout .28s ease forwards';setTimeout(()=>t.remove(),300);},2800);
+}
+
+function initials(n){return(n||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()}
+
+// ── Cache Management ──
+function saveToCache(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+    updateCacheIndicator();
+  } catch (e) {
+    console.warn('Failed to save to cache:', e);
+  }
+}
+
+function loadFromCache() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+    
+    if (cached && timestamp) {
+      const age = Date.now() - parseInt(timestamp);
+      if (age < CACHE_DURATION) {
+        return JSON.parse(cached);
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load from cache:', e);
+  }
+  return null;
+}
+
+function isCacheValid() {
+  const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+  if (!timestamp) return false;
+  return (Date.now() - parseInt(timestamp)) < CACHE_DURATION;
+}
+
+function updateCacheIndicator() {
+  const indicator = el('cacheIndicator');
+  const icon = el('cacheIcon');
+  const timeEl = el('cacheTime');
+  
+  if (isCacheValid()) {
+    const timestamp = parseInt(localStorage.getItem(CACHE_TIMESTAMP_KEY));
+    const minutesAgo = Math.floor((Date.now() - timestamp) / 60000);
+    icon.textContent = '📦';
+    timeEl.textContent = minutesAgo === 0 ? 'Just now' : `${minutesAgo}m ago`;
+    indicator.classList.add('refresh');
+    indicator.title = 'Click to refresh data';
+  } else {
+    icon.textContent = '🔄';
+    timeEl.textContent = 'Refresh';
+    indicator.classList.add('refresh');
+    indicator.title = 'Click to load fresh data';
+  }
+}
+
+// ── Stream suggestions from existing data ──
+function buildStreamList(){
+  const set=new Set(allStudents.map(s=>s.stream).filter(Boolean));
+  allStreams=[...set].sort();
+  // populate filter dropdown
+  const sf=el('filterStream');
+  const cur=sf.value;
+  sf.innerHTML='<option value="">All Streams</option>'+allStreams.map(s=>`<option>${s}</option>`).join('');
+  if(cur) sf.value=cur;
+
+  // ── Share streams + grade-stream map with marksheet via localStorage ──
+  const gradeStreamMap = {};
+  allStudents.forEach(s=>{
+    if(!s.grade||!s.stream) return;
+    if(!gradeStreamMap[s.grade]) gradeStreamMap[s.grade]=new Set();
+    gradeStreamMap[s.grade].add(s.stream);
+  });
+  // Convert Sets to sorted arrays
+  const serializable = {};
+  Object.keys(gradeStreamMap).forEach(g=>{ serializable[g]=[...gradeStreamMap[g]].sort(); });
+  localStorage.setItem('cbe_streams', JSON.stringify(serializable));
+  localStorage.setItem('cbe_streams_ts', Date.now().toString());
+}
+
+// Stream autocomplete on form
+window.onStreamInput=function(){
+  const q=val('fStream').toLowerCase();
+  const matches=allStreams.filter(s=>s.toLowerCase().includes(q));
+  showStreamSuggestions(matches);
+};
+window.onStreamFocus=function(){
+  if(allStreams.length) showStreamSuggestions(allStreams);
+};
+function showStreamSuggestions(list){
+  const box=el('streamSuggestions');
+  if(!list.length){box.classList.remove('open');return;}
+  box.innerHTML=list.map(s=>`
+    <div class="ss-item" onmousedown="pickStream('${s}')">
+      ${s} <span class="ss-sub">${allStudents.filter(x=>x.stream===s).length} students</span>
+    </div>`).join('');
+  box.classList.add('open');
+}
+function closeStreamSuggestions(){setTimeout(()=>el('streamSuggestions').classList.remove('open'),150);}
+window.pickStream=function(s){el('fStream').value=s;el('streamSuggestions').classList.remove('open');};
+
+// Grade change in form → suggest matching streams
+window.onFormGradeChange=function(){
+  const grade=val('fGrade');
+  const matches=grade?[...new Set(allStudents.filter(s=>s.grade===grade).map(s=>s.stream).filter(Boolean))].sort():allStreams;
+  if(matches.length) showStreamSuggestions(matches);
+};
+
+// ── Validate form ──
+function validate(){
+  let ok=true;
+  const rules=[
+    {id:'fName',   errId:'err-name',   check:()=>val('fName').length>1},
+    {id:'fAdm',    errId:'err-adm',    check:()=>val('fAdm').length>0},
+    {id:'fGender', errId:'err-gender', check:()=>val('fGender')!==''},
+    {id:'fGrade',  errId:'err-grade',  check:()=>val('fGrade')!==''},
+    {id:'fStream', errId:'err-stream', check:()=>val('fStream').length>0},
+    {id:'fYear',   errId:'err-year',   check:()=>Number(val('fYear'))>=2020},
+  ];
+  rules.forEach(r=>{
+    const pass=r.check();
+    el(r.id).classList.toggle('err',!pass);
+    el(r.errId)?.classList.toggle('show',!pass);
+    if(!pass) ok=false;
+  });
+  return ok;
+}
+
+// ── Submit ──
+el('admForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  if(!validate()) return;
+
+  const admNo = val('fAdm').toUpperCase();  // normalise ADM to uppercase
+
+  // Duplicate check
+  const dup = allStudents.find(s=>s.admissionNumber.toUpperCase()===admNo);
+  if(dup){
+    el('fAdm').classList.add('err');
+    el('err-adm').textContent=`Adm no. ${admNo} already assigned to ${dup.name}`;
+    el('err-adm').classList.add('show');
+    toast(`Duplicate admission number: ${admNo}`,'err');
+    return;
+  }
+
+  const btn=el('submitBtn');
+  btn.innerHTML='<div class="spin"></div> Saving…';
+  btn.disabled=true;
+
+  // Normalise stream: trim + title-case first letter
+  const streamNorm = val('fStream').trim().replace(/^\w/,c=>c.toUpperCase());
+
+  const data = {
+    name:        val('fName').trim().replace(/\s+/g,' '),   // collapse extra spaces
+    admissionNumber: admNo,
+    gender:      val('fGender'),
+    grade:       val('fGrade'),        // stored as "Grade 7" to match marks page query
+    stream:      streamNorm,           // stored as "East" etc. to match marks page query
+    year:        val('fYear'),
+    parentName:  val('fParent'),
+    parentPhone: val('fPhone'),
+    createdAt:   firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt:   firebase.firestore.FieldValue.serverTimestamp(),
+  };
+
+  try{
+    await db.collection('students').add(data);
+    toast(`${data.name} registered successfully`);
+    resetForm();
+    await loadStudents(true); // Force refresh after adding
+  }catch(err){
+    toast('Error saving: '+err.message,'err');
+  }
+  btn.innerHTML='✅ Register Student';
+  btn.disabled=false;
+});
+
+// ── Reset form ──
+window.resetForm=function(){
+  el('admForm').reset();
+  el('fYear').value='2026';
+  document.querySelectorAll('.fi.err').forEach(x=>x.classList.remove('err','ok'));
+  document.querySelectorAll('.field-err.show').forEach(x=>x.classList.remove('show'));
+};
+
+// ── Load students with caching ──
+async function loadStudents(forceRefresh = false) {
+  // Check cache first (unless force refresh)
+  if (!forceRefresh) {
+    const cached = loadFromCache();
+    if (cached) {
+      console.log('Loading from cache');
+      allStudents = cached;
+      buildStreamList();
+      updateStats();
+      filterTable();
+      updateCacheIndicator();
+      return;
+    }
+  }
+
+  // If cache miss or force refresh, load from Firestore
+  console.log('Loading from Firestore');
+  el('studentTable').innerHTML=`<tr><td colspan="9"><div class="empty"><div class="ei">⏳</div><p>Loading…</p></div></td></tr>`;
+  
+  try{
+    const snap=await db.collection('students').orderBy('createdAt','desc').get();
+    allStudents=[];
+    snap.forEach(d=>allStudents.push({id:d.id,...d.data()}));
+    
+    // Save to cache
+    saveToCache(allStudents);
+    
+    buildStreamList();
+    updateStats();
+    filterTable();
+    updateCacheIndicator();
+  }catch(e){
+    el('studentTable').innerHTML=`<tr><td colspan="9"><div class="empty"><div class="ei">❌</div><p>${e.message}</p></div></td></tr>`;
+    toast('Failed to load students: ' + e.message, 'err');
+  }
+}
+
+// ── Manual refresh ──
+window.refreshData = function() {
+  loadStudents(true);
+  toast('Refreshing data...', 'info');
+};
+
+// ── Stats ──
+function updateStats(){
+  el('stTotal').textContent  = allStudents.length;
+  el('stMale').textContent   = allStudents.filter(s=>s.gender==='Male').length;
+  el('stFemale').textContent = allStudents.filter(s=>s.gender==='Female').length;
+  el('stG7').textContent     = allStudents.filter(s=>s.grade==='Grade 7').length;
+  el('stG8').textContent     = allStudents.filter(s=>s.grade==='Grade 8').length;
+  el('stG9').textContent     = allStudents.filter(s=>s.grade==='Grade 9').length;
+}
+
+// ── Filter ──
+window.filterTable=function(){
+  const q      = el('searchQ').value.toLowerCase();
+  const grade  = el('filterGrade').value;
+  const stream = el('filterStream').value;
+  const gender = el('filterGender').value;
+
+  visStudents=allStudents.filter(s=>
+    (!q     || s.name.toLowerCase().includes(q) || (s.admissionNumber||'').toLowerCase().includes(q)) &&
+    (!grade  || s.grade===grade) &&
+    (!stream || s.stream===stream) &&
+    (!gender || s.gender===gender)
+  );
+  el('countLabel').textContent=`${visStudents.length} of ${allStudents.length} students`;
+  renderTable();
+};
+
+// ── Render table ──
+function renderTable(){
+  const tbody=el('studentTable');
+  if(!visStudents.length){
+    tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="ei">👥</div><p>No students found</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML=visStudents.map((s,i)=>`
+    <tr id="row-${s.id}">
+      <td style="color:var(--text3);font-size:11px;font-weight:700;">${i+1}</td>
+      <td>
+        <div class="sc">
+          <div class="av${s.gender==='Female'?' f':''}">${initials(s.name)}</div>
+          <div><div class="sn">${s.name}</div></div>
+        </div>
+      </td>
+      <td><code style="background:var(--surf2);padding:2px 7px;border-radius:4px;font-size:11px;">${s.admissionNumber}</code></td>
+      <td><span class="tag ${s.gender==='Female'?'tag-f':'tag-m'}">${s.gender}</span></td>
+      <td><span class="tag tag-grade">${s.grade}</span></td>
+      <td><span class="tag tag-stream">${s.stream||'—'}</span></td>
+      <td>${s.year||'—'}</td>
+      <td style="font-size:12px;color:var(--text2);">
+        ${s.parentName||'<span style="color:var(--text3)">—</span>'}
+        ${s.parentPhone?`<br><code style="font-size:10.5px;">${s.parentPhone}</code>`:''}
+      </td>
+      <td style="text-align:center;white-space:nowrap;">
+        <button class="btn btn-outline btn-sm" onclick="openEdit('${s.id}')" title="Edit">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="openDel('${s.id}','${s.name.replace(/'/g,"\\'")}')" title="Delete" style="margin-left:4px;">🗑️</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ── DELETE ──
+window.openDel=function(id,name){
+  pendingDelId=id;
+  el('delName').textContent=name;
+  el('delModal').classList.add('open');
+};
+window.closeDelModal=function(){el('delModal').classList.remove('open');pendingDelId=null;};
+el('confirmDelBtn').addEventListener('click',async()=>{
+  if(!pendingDelId) return;
+  try{
+    await db.collection('students').doc(pendingDelId).delete();
+    allStudents=allStudents.filter(s=>s.id!==pendingDelId);
+    // Update cache after deletion
+    saveToCache(allStudents);
+    buildStreamList();
+    updateStats();
+    filterTable();
+    updateCacheIndicator();
+    toast('Student deleted');
+  }catch(e){toast('Error: '+e.message,'err');}
+  closeDelModal();
+});
+
+// ── EDIT ──
+window.openEdit=function(id){
+  const s=allStudents.find(x=>x.id===id);
+  if(!s) return;
+  editId=id;
+  el('editName').value   = s.name;
+  el('editAdm').value    = s.admissionNumber;
+  el('editGender').value = s.gender;
+  el('editGrade').value  = s.grade;
+  el('editStream').value = s.stream||'';
+  el('editYear').value   = s.year||'2026';
+  el('editModal').classList.add('open');
+};
+window.closeEditModal=function(){el('editModal').classList.remove('open');editId=null;};
+window.saveEdit=async function(){
+  if(!editId) return;
+  const name    = el('editName').value.trim();
+  const admNo   = el('editAdm').value.trim().toUpperCase();
+  const gender  = el('editGender').value;
+  const grade   = el('editGrade').value;
+  const stream  = el('editStream').value.trim().replace(/^\w/,c=>c.toUpperCase());
+  const year    = el('editYear').value;
+
+  if(!name||!admNo||!grade||!stream){toast('Fill all required fields','err');return;}
+
+  // duplicate adm check (exclude self)
+  const dup=allStudents.find(s=>s.id!==editId && s.admissionNumber.toUpperCase()===admNo);
+  if(dup){toast(`Adm no. ${admNo} belongs to ${dup.name}`,'err');return;}
+
+  try{
+    await db.collection('students').doc(editId).update({
+      name, admissionNumber:admNo, gender, grade, stream, year,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    // update local state
+    const idx=allStudents.findIndex(s=>s.id===editId);
+    if(idx>-1) allStudents[idx]={...allStudents[idx],name,admissionNumber:admNo,gender,grade,stream,year};
+    // Update cache after edit
+    saveToCache(allStudents);
+    buildStreamList();
+    updateStats();
+    filterTable();
+    updateCacheIndicator();
+    toast(`${name} updated`);
+    closeEditModal();
+  }catch(e){toast('Error: '+e.message,'err');}
+};
+
+// ── Export CSV ──
+window.exportCSV=function(){
+  if(!allStudents.length){toast('No students to export','err');return;}
+  const rows=[['#','Name','Admission No','Gender','Grade','Stream','Year','Parent Name','Parent Phone']];
+  allStudents.forEach((s,i)=>rows.push([i+1,s.name,s.admissionNumber,s.gender,s.grade,s.stream||'',s.year||'',s.parentName||'',s.parentPhone||'']));
+  const csv=rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`Students_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('CSV exported');
+};
+
+// ── Dark mode ──
+document.getElementById('themeBtn').addEventListener('click',function(){
+  document.body.classList.toggle('dark');
+  this.textContent=document.body.classList.contains('dark')?'☀️':'🌙';
+  localStorage.setItem('cbe_theme',document.body.classList.contains('dark')?'dark':'light');
+});
+if(localStorage.getItem('cbe_theme')==='dark'){
+  document.body.classList.add('dark');
+  el('themeBtn').textContent='☀️';
+}
+
+// ── Init ──
+loadStudents(); // This will use cache if valid
+</script>
+</body>
+</html>

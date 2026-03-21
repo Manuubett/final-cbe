@@ -188,6 +188,65 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
    Full-screen blur lock — professional
 ══════════════════════════════════════ */
 /* ══════════════════════════════
+   PENDING TEACHERS BANNER
+══════════════════════════════ */
+.pending-banner{
+  background:var(--surface);border:1.5px solid #fcd34d;
+  border-left:4px solid var(--amber);border-radius:var(--r);
+  box-shadow:var(--sh);margin-bottom:20px;overflow:hidden;
+  animation:fadeUp .3s ease;
+}
+.pb-head{
+  padding:11px 18px;background:var(--amber-bg);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.pb-title{
+  font-family:'Familjen Grotesk',sans-serif;font-size:13.5px;font-weight:800;
+  color:var(--amber-tx);display:flex;align-items:center;gap:7px;
+}
+.pb-count{
+  background:var(--amber);color:#fff;
+  font-size:11px;font-weight:800;padding:1px 8px;border-radius:20px;
+}
+.pb-body{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.pb-card{
+  background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:11px 14px;display:flex;align-items:center;gap:12px;
+  transition:border-color .14s;
+}
+.pb-card:hover{border-color:var(--accent)}
+.pb-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--alight),#c7d9ff);
+  display:grid;place-items:center;font-size:17px;flex-shrink:0;
+  border:1px solid #c7d9ff;
+}
+.pb-info{flex:1;min-width:0}
+.pb-name{font-weight:700;font-size:13px;color:var(--text);margin-bottom:2px}
+.pb-meta{font-size:11.5px;color:var(--text2)}
+.pb-time{font-size:11px;color:var(--text3);white-space:nowrap}
+.pb-actions{display:flex;gap:6px;flex-shrink:0}
+.pb-approve{
+  padding:5px 13px;border-radius:5px;
+  font-family:inherit;font-size:11.5px;font-weight:700;
+  cursor:pointer;border:none;
+  background:var(--green-bg);color:var(--green-tx);
+  transition:all .12s;
+}
+.pb-approve:hover{background:#a7f3d0}
+.pb-reject{
+  padding:5px 10px;border-radius:5px;
+  font-family:inherit;font-size:11.5px;font-weight:700;
+  cursor:pointer;background:var(--red-bg);color:var(--red-tx);
+  border:none;transition:all .12s;
+}
+.pb-reject:hover{background:#fecaca}
+
+/* ── REASSIGN CLASS MODAL ── */
+.reassign-field{margin-bottom:12px}
+.reassign-field label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+
+/* ══════════════════════════════
    PAYMENT GATE — compact modal
 ══════════════════════════════ */
 #paymentOverlay{
@@ -480,14 +539,71 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
       <span class="admin-badge">ADMIN</span>
       <span id="adminName" style="font-size:11.5px;color:var(--text2);font-weight:600"></span>
       <a href="settings.html" class="btn btn-outline btn-sm">⚙️ Settings</a>
-      <a href="/admission.html" class="btn btn-outline btn-sm">🎓 Admission</a>
+      <a href="admission.html" class="btn btn-outline btn-sm">🎓 Admission</a>
       <a href="marksheet.html" class="btn btn-outline btn-sm">📊 Mark Sheet</a>
       <a href="analysis.html" class="btn btn-outline btn-sm">📈 Analysis</a>
       <button class="btn btn-outline btn-sm" style="color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="doLogout()">🚪 Sign Out</button>
     </div>
   </header>
 
-  <div class="outer">
+  <!-- PENDING TEACHER APPROVALS BANNER -->
+  <div class="pending-banner" id="pendingBanner" style="display:none">
+    <div class="pb-head">
+      <div class="pb-title">
+        🔔 Pending Teacher Approvals
+        <span class="pb-count" id="pendingCount">0</span>
+      </div>
+      <span style="font-size:11.5px;color:var(--amber-tx);font-weight:600">Review and approve before teachers can login</span>
+    </div>
+    <div class="pb-body" id="pendingCards"></div>
+  </div>
+
+  <!-- REASSIGN CLASS MODAL -->
+  <div class="overlay" id="reassignOverlay">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-head">
+        <div class="modal-title">🏫 Change Class Assignment</div>
+        <button class="modal-close" onclick="closeReassign()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px;margin-bottom:14px">
+          <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Teacher</div>
+          <div style="font-weight:800;font-size:14px;color:var(--text);margin-top:2px" id="reassignTeacherName">—</div>
+          <div style="font-size:12px;color:var(--text2)" id="reassignCurrentClass">—</div>
+        </div>
+        <div class="reassign-field">
+          <label>New Grade</label>
+          <select class="minp" id="reassignGrade" onchange="onReassignGradeChange()">
+            <option value="">-- Select Grade --</option>
+            <option>Grade 7</option>
+            <option>Grade 8</option>
+            <option>Grade 9</option>
+          </select>
+        </div>
+        <div class="reassign-field">
+          <label>New Stream</label>
+          <select class="minp" id="reassignStream">
+            <option value="">-- Select Grade first --</option>
+          </select>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px" id="reassignStreamHint"></div>
+        </div>
+        <div class="reassign-field">
+          <label>Status</label>
+          <select class="minp" id="reassignStatus">
+            <option value="active">Active — can login</option>
+            <option value="pending">Pending — awaiting approval</option>
+            <option value="suspended">Suspended — blocked</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeReassign()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveReassign()">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS SECTION -->
 
     <!-- STATS -->
     <div class="stats">
@@ -607,12 +723,13 @@ apiKey: "AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
 });
 const db   = firebase.firestore();
 const auth = firebase.auth();
-auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(()=>{});
+// Persistence is set at login time in registration.html — not here
 
 let allTeachers = [], editingUid = null, deletingUid = null;
 const el = id => document.getElementById(id);
 
 // ── SCREEN SWITCHER ──
+let _redirecting = false; // guard against redirect loops
 function show(screen){
   ['screenLoad','screenDash'].forEach(s=>{
     const node = el(s); if(!node) return;
@@ -620,11 +737,13 @@ function show(screen){
     node.classList.remove('show');
   });
   if(screen === 'Login'){
-    // No login screen — redirect to registration.html
+    if(_redirecting) return; // already redirecting — don't loop
+    _redirecting = true;
     window.location.href = 'registration.html';
     return;
   }
   const target = el('screen'+screen);
+  if(!target) return;
   if(screen === 'Load') target.style.display = 'flex';
   else { target.style.display = 'block'; target.classList.add('show'); }
 }
@@ -655,56 +774,79 @@ function log(level, msg, data){
 window._getLogs = ()=>_logs.map(l=>`[${l.ts}] ${l.level.toUpperCase()}: ${l.msg}${l.data?' | '+JSON.stringify(l.data):''}`).join('\n');
 
 auth.onAuthStateChanged(async u => {
-  if(!u){ log('info','No user — redirecting to register'); show('Login'); return; }
-  log('info','Auth state — user detected', u.email);
-  try{
-    // 1. Load profile — must be admin role
-    const snap = await db.collection('users').doc(u.uid).get();
-    if(!snap.exists || snap.data().role === 'teacher'){
-      log('warn','Non-admin attempted access', u.email);
-      await auth.signOut(); show('Login'); return;
-    }
-    const profile = snap.data();
-    _schoolId = u.uid;           // schoolId = Firebase Auth uid — stable, authoritative
-    window._schoolId = u.uid;    // expose for school-settings.js
+  // Guard: if already redirecting, do nothing
+  if(_redirecting) return;
 
+  if(!u){
+    log('info','No authenticated user — going to register');
+    show('Login');
+    return;
+  }
+
+  log('info','User authenticated', u.email);
+
+  try{
+    // 1. Load user profile from Firestore
+    const snap = await db.collection('users').doc(u.uid).get();
+
+    if(!snap.exists){
+      // New user — no profile yet, must complete registration
+      log('warn','No user profile found', u.uid);
+      show('Login'); return;
+    }
+
+    const profile = snap.data();
+
+    // 2. Teachers cannot access admin
+    if(profile.role === 'teacher'){
+      log('warn','Teacher attempted admin access', u.email);
+      await auth.signOut();
+      show('Login'); return;
+    }
+
+    // 3. Set school ID
+    _schoolId = u.uid;
+    window._schoolId = u.uid;
     el('adminName').textContent = '👤 ' + (profile.fullName || profile.email || '');
 
-    // 2. Verify school settings exist — redirect to settings if not
-    const settingsSnap = await db.collection('settings').doc(_schoolId).get();
-    if(!settingsSnap.exists || !settingsSnap.data().name){
-      log('warn','No school settings — redirecting to settings.html');
-      window.location.href = 'settings.html'; return;
-    }
-
-    // 3. Show dashboard
+    // 4. Show dashboard IMMEDIATELY — don't wait for settings
     show('Dash');
+
+    // 5. Load data in parallel — non-blocking
     loadTeachers();
     loadResultsCount();
     applySchoolSettings(db).catch(()=>{});
 
-    // 4. Payment overlay listener — real-time, keyed by schoolId
+    // 6. One-time patch — fix any teachers who registered before schoolId was required
+    _patchTeachersSchoolId(_schoolId).catch(()=>{});
+
+    // 6. Start payment gate listener
     _listenPayment(_schoolId);
 
-    // 5. Session tracking
-    _trackSession(u, profile).catch(e=>log('warn','Session tracking failed', e.message));
+    // 7. Session tracking — fully non-blocking
+    _trackSession(u, profile).catch(()=>{});
+
+    log('info','Dashboard loaded', {uid:u.uid, role:profile.role});
 
   }catch(e){
-    log('error','Auth error', e.message);
-    show('Login');
+    log('error','Auth error — staying on load screen', e.message);
+    // On Firestore error, don't redirect — just show error toast
+    // User can retry by refreshing
+    show('Load');
+    toast('Connection error. Please refresh the page.', 'err');
   }
 });
 
-// Login handled by register.html — no login screen in admin.html
+// Login handled by registration.html — no login screen in admin.html
 
 // ── LOGOUT ──
 async function doLogout(){
   if(_ownerMsgUnsub){ _ownerMsgUnsub(); _ownerMsgUnsub=null; }
   await _endSession().catch(()=>{});
-  clearSessionCache();
   _schoolId=null; window._schoolId=null;
+  _redirecting = false; // reset flag so redirect works
   await auth.signOut();
-  window.location.href = 'register.html';
+  // onAuthStateChanged will fire with null user → redirects to registration.html
 }
 
 // ══════════════════════════════════════════════
@@ -844,25 +986,197 @@ function openAnalysisFor(grade, stream){
   window.open(`analysis.html?${params}`, '_blank');
 }
 
-// ── LOAD TEACHERS — filtered by schoolId for data isolation ──
-async function loadTeachers(){
-  if(!_schoolId){ log('warn','loadTeachers called without schoolId'); return; }
-  el('teacherTbody').innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-icon">⏳</div><div>Loading…</div></td></tr>`;
+// ── Pending Teacher Approvals Banner ──
+function renderPendingBanner(){
+  const pending = allTeachers.filter(t => t.status === 'pending');
+  const banner = el('pendingBanner');
+  if(!banner) return;
+  if(!pending.length){ banner.style.display='none'; return; }
+
+  el('pendingCount').textContent = pending.length;
+  banner.style.display = 'block';
+
+  el('pendingCards').innerHTML = pending.map(t => {
+    const when = t.createdAt?.toDate
+      ? t.createdAt.toDate().toLocaleString('en-KE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})
+      : '—';
+    return `<div class="pb-card">
+      <div class="pb-avatar">👤</div>
+      <div class="pb-info">
+        <div class="pb-name">${t.fullName||'—'}</div>
+        <div class="pb-meta">
+          ${t.email||''}
+          ${t.grade&&t.stream ? ` · <strong>${t.grade} ${t.stream}</strong>` : ''}
+          ${t.tscNumber ? ` · TSC: ${t.tscNumber}` : ''}
+        </div>
+      </div>
+      <div class="pb-time">${when}</div>
+      <div class="pb-actions">
+        <button class="pb-approve" onclick="quickApprove('${t.uid}')">✅ Approve</button>
+        <button class="pb-reject"  onclick="quickReject('${t.uid}')">✗ Reject</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function quickApprove(uid){
+  const t = allTeachers.find(x=>x.uid===uid); if(!t) return;
   try{
-    log('info','Loading teachers', {schoolId:_schoolId});
-    const snap = await db.collection('users')
-      .where('role','==','teacher')
-      .where('schoolId','==',_schoolId)
-      .orderBy('createdAt','desc')
-      .get();
-    allTeachers = [];
-    snap.forEach(d => allTeachers.push({uid:d.id,...d.data()}));
-    log('info','Teachers loaded', allTeachers.length);
-    updateStats(); renderTable();
-  }catch(e){
-    log('error','loadTeachers failed', e.message);
-    el('teacherTbody').innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-icon">❌</div><div>${e.message}</div></td></tr>`;
+    await db.collection('users').doc(uid).update({status:'active'});
+    t.status='active';
+    updateStats(); renderTable(); renderPendingBanner();
+    toast(`✅ ${t.fullName} approved — they can now login`);
+  }catch(e){ toast('Failed: '+e.message,'err'); }
+}
+
+async function quickReject(uid){
+  const t = allTeachers.find(x=>x.uid===uid); if(!t) return;
+  if(!confirm('Reject and suspend '+t.fullName+'?')) return;
+  try{
+    await db.collection('users').doc(uid).update({status:'suspended'});
+    t.status='suspended';
+    updateStats(); renderTable(); renderPendingBanner();
+    toast(`${t.fullName} rejected`,'info');
+  }catch(e){ toast('Failed: '+e.message,'err'); }
+}
+
+// ── Reassign class modal ──
+let _reassignUid = null;
+
+function openReassign(uid){
+  const t = allTeachers.find(x=>x.uid===uid); if(!t) return;
+  _reassignUid = uid;
+  el('reassignTeacherName').textContent = t.fullName||t.email||'—';
+  el('reassignCurrentClass').textContent = 'Currently: '+(t.grade&&t.stream ? t.grade+' '+t.stream : 'No class assigned');
+  el('reassignGrade').value = t.grade||'';
+  el('reassignStatus').value = t.status||'active';
+  el('reassignStream').innerHTML = '<option value="">-- Select Grade first --</option>';
+  if(t.grade){
+    el('reassignGrade').dispatchEvent(new Event('change'));
+    setTimeout(()=>{ el('reassignStream').value = t.stream||''; }, 200);
   }
+  el('reassignOverlay').classList.add('open');
+}
+
+function closeReassign(){
+  el('reassignOverlay').classList.remove('open');
+  _reassignUid = null;
+}
+
+async function onReassignGradeChange(){
+  const grade = el('reassignGrade').value;
+  const ss = el('reassignStream');
+  const hint = el('reassignStreamHint');
+  ss.innerHTML = '<option value="">Loading…</option>';
+  if(!grade){ ss.innerHTML='<option value="">-- Select Grade first --</option>'; hint.textContent=''; return; }
+  try{
+    const snap = await db.collection('students')
+      .where('grade','==',grade)
+      .where('schoolId','==',_schoolId)
+      .get();
+    const set = new Set();
+    snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
+    const streams = [...set].sort();
+    if(!streams.length){
+      ss.innerHTML='<option value="">No streams found</option>';
+      hint.textContent='No streams for this grade. Add students in Admission first.';
+      hint.style.color='var(--red)';
+    } else {
+      ss.innerHTML='<option value="">-- Select Stream --</option>'+streams.map(s=>`<option value="${s}">${s}</option>`).join('');
+      hint.textContent=streams.length+' stream'+(streams.length>1?'s':'')+' available';
+      hint.style.color='var(--green)';
+    }
+  }catch(e){ ss.innerHTML='<option value="">Error loading</option>'; }
+}
+
+async function saveReassign(){
+  if(!_reassignUid) return;
+  const grade  = el('reassignGrade').value;
+  const stream = el('reassignStream').value;
+  const status = el('reassignStatus').value;
+  const t = allTeachers.find(x=>x.uid===_reassignUid);
+  if(!t) return;
+  if(grade && !stream){ toast('Please select a stream','err'); return; }
+  const btn = el('reassignOverlay').querySelector('.btn-primary');
+  btn.disabled=true; btn.textContent='Saving…';
+  try{
+    const upd = { status };
+    if(grade)  upd.grade  = grade;
+    if(stream) upd.stream = stream;
+    if(!grade){ upd.grade=null; upd.stream=null; }
+    await db.collection('users').doc(_reassignUid).update(upd);
+    Object.assign(t, upd);
+    updateStats(); renderTable(); renderPendingBanner();
+    closeReassign();
+    const statusMsg = status==='active'?'activated ✅':status==='suspended'?'suspended 🚫':'set to pending';
+    toast(`${t.fullName} — ${grade?grade+' '+stream:'no class'} · ${statusMsg}`);
+  }catch(e){ toast('Save failed: '+e.message,'err'); }
+  btn.disabled=false; btn.textContent='💾 Save Changes';
+}
+
+// ── Patch teachers missing schoolId (one-time fix for existing data) ──
+async function _patchTeachersSchoolId(schoolId){
+  if(!schoolId) return;
+  try{
+    const snap = await db.collection('users').where('role','==','teacher').get();
+    const batch = db.batch();
+    let count = 0;
+    snap.forEach(doc=>{
+      const d = doc.data();
+      // Patch if no schoolId OR if it has a placeholder
+      if(!d.schoolId || d.schoolId === '__none__'){
+        batch.update(doc.ref, {schoolId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
+        count++;
+      }
+    });
+    if(count > 0){
+      await batch.commit();
+      log('info', `Patched ${count} teachers with schoolId`);
+      // Reload to pick up the newly patched teachers
+      if(_teachersUnsub){ _teachersUnsub(); _teachersUnsub = null; }
+      loadTeachers();
+    }
+  }catch(e){ log('warn','Patch teachers failed', e.message); }
+}
+
+// ── LOAD TEACHERS — real-time, no composite index needed ──
+let _teachersUnsub = null;
+function loadTeachers(){
+  if(!_schoolId){ log('warn','loadTeachers: no schoolId'); return; }
+  if(_teachersUnsub){ _teachersUnsub(); _teachersUnsub = null; }
+
+  el('teacherTbody').innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-icon">⏳</div><div>Loading…</div></td></tr>`;
+  log('info','Listening for teachers', _schoolId);
+
+  // Query by role only — no composite index required
+  // Then filter by schoolId client-side — also catches teachers
+  // whose schoolId was not yet set (registered before the fix)
+  _teachersUnsub = db.collection('users')
+    .where('role','==','teacher')
+    .onSnapshot(snap=>{
+      allTeachers = [];
+      snap.forEach(d=>{
+        const data = d.data();
+        // Include teacher if schoolId matches OR if no schoolId set yet
+        if(!data.schoolId || data.schoolId === _schoolId){
+          allTeachers.push({uid:d.id, ...data});
+        }
+      });
+      // Sort newest first client-side — no orderBy needed
+      allTeachers.sort((a,b)=>{
+        const ta = a.createdAt?.toDate?.()?.getTime() || 0;
+        const tb = b.createdAt?.toDate?.()?.getTime() || 0;
+        return tb - ta;
+      });
+      log('info','Teachers loaded', allTeachers.length);
+      updateStats(); renderTable();
+      // Update tab title if pending
+      const pending = allTeachers.filter(t=>t.status==='pending').length;
+      document.title = pending > 0 ? `(${pending}) Admin — CBE` : 'Admin — CBE Mark Sheet';
+    }, e=>{
+      log('error','Teachers listener error', e.message);
+      el('teacherTbody').innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-icon">❌</div><div>${e.message}</div></td></tr>`;
+    });
 }
 
 // ── STATS ──
@@ -871,6 +1185,7 @@ function updateStats(){
   el('statActive').textContent    = allTeachers.filter(t=>t.status==='active').length;
   el('statPending').textContent   = allTeachers.filter(t=>t.status==='pending').length;
   el('statSuspended').textContent = allTeachers.filter(t=>t.status==='suspended').length;
+  renderPendingBanner();
 }
 
 // ── RENDER TABLE ──
@@ -900,6 +1215,7 @@ function renderTable(){
       actions+=`<button class="act-btn act-activate" onclick="setStatus('${t.uid}','active')">✅ Reinstate</button>`;
     }
     actions+=`<button class="act-btn act-edit" onclick="openEdit('${t.uid}')">✏️ Edit</button>`;
+    actions+=`<button class="act-btn" style="background:var(--alight);color:var(--accent)" onclick="openReassign('${t.uid}')">🔄 Class</button>`;
     if(t.grade && t.stream){
       actions+=`<button class="act-btn" style="background:var(--alight);color:var(--accent)" onclick="openAnalysisFor('${t.grade}','${t.stream}')">📈</button>`;
     }
@@ -1042,7 +1358,8 @@ async function confirmDelete(){
 // ── CLOSE ON BACKDROP / ESC ──
 el('editOverlay').addEventListener('click',e=>{ if(e.target===el('editOverlay')) closeEdit(); });
 el('delOverlay').addEventListener('click', e=>{ if(e.target===el('delOverlay'))  closeDel();  });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeEdit();closeDel();} });
+el('reassignOverlay').addEventListener('click',e=>{ if(e.target===el('reassignOverlay')) closeReassign(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeEdit();closeDel();closeReassign();} });
 
 // ── Submit renewal request from inside the overlay ──
 async function submitRenewalRequest(){

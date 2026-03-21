@@ -802,7 +802,7 @@ apiKey: "AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
 });
 const db   = firebase.firestore();
 const auth = firebase.auth();
-// Persistence is set at login time in register.html — not here
+// Persistence is set at login time in registration.html — not here
 
 let allTeachers = [], editingUid = null, deletingUid = null;
 const el = id => document.getElementById(id);
@@ -818,7 +818,7 @@ function show(screen){
   if(screen === 'Login'){
     if(_redirecting) return; // already redirecting — don't loop
     _redirecting = true;
-    window.location.href = 'register.html';
+    window.location.href = 'registration.html';
     return;
   }
   const target = el('screen'+screen);
@@ -917,7 +917,7 @@ auth.onAuthStateChanged(async u => {
   }
 });
 
-// Login handled by register.html — no login screen in admin.html
+// Login handled by registration.html — no login screen in admin.html
 
 // ── LOGOUT ──
 async function doLogout(){
@@ -927,7 +927,7 @@ async function doLogout(){
   sessionStorage.removeItem('cbe_school_id');
   _redirecting = false; // reset flag so redirect works
   await auth.signOut();
-  // onAuthStateChanged will fire with null user → redirects to register.html
+  // onAuthStateChanged will fire with null user → redirects to registration.html
 }
 
 // ══════════════════════════════════════════════

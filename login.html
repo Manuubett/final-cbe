@@ -255,6 +255,14 @@ select.inp{cursor:pointer;appearance:none;padding-right:30px}
 @keyframes sp{to{transform:rotate(360deg)}}
 
 /* ── TOAST ── */
+/* Approval banner states */
+#approvalBanner.pending  { background:#fef3c7; border-color:#fcd34d; }
+#approvalBanner.approved { background:#d1fae5; border-color:#6ee7b7; }
+#approvalBanner.rejected { background:#fee2e2; border-color:#fca5a5; }
+#approvalBanner.pending  #approvalPulse { background:#d97706; animation:apulse 1.5s infinite; }
+#approvalBanner.approved #approvalPulse { background:#059669; }
+#approvalBanner.rejected #approvalPulse { background:#dc2626; }
+@keyframes apulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.6)}}
 #tc{position:fixed;top:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
 .t{
   display:flex;align-items:center;gap:8px;
@@ -338,6 +346,16 @@ select.inp{cursor:pointer;appearance:none;padding-right:30px}
       <span id="loginOkMsg"></span>
     </div>
 
+    <!-- Approval status banner — shown after signup, updates in real-time -->
+    <div id="approvalBanner" style="display:none;border-radius:8px;padding:14px 16px;margin-bottom:14px;border:1.5px solid">
+      <div style="font-weight:800;font-size:13px;margin-bottom:4px" id="approvalBannerTitle">⏳ Awaiting Approval</div>
+      <div style="font-size:12.5px;line-height:1.65;color:#4f6080" id="approvalBannerMsg">Your account is pending admin approval. This page will update automatically.</div>
+      <div style="margin-top:10px;display:flex;align-items:center;gap:7px">
+        <div style="width:7px;height:7px;border-radius:50%;flex-shrink:0" id="approvalPulse"></div>
+        <span style="font-size:11.5px" id="approvalStatus">Waiting for administrator…</span>
+      </div>
+    </div>
+
     <div class="field">
       <label>Email</label>
       <div class="inp-wrap">
@@ -408,11 +426,10 @@ select.inp{cursor:pointer;appearance:none;padding-right:30px}
   <!-- ══════════ SIGNUP PANEL ══════════ -->
   <div class="panel" id="panelSignup">
 
-    <!-- step dots -->
+    <!-- step dots — 2 steps now -->
     <div class="steps">
       <div class="step active" id="dot0"></div>
       <div class="step" id="dot1"></div>
-      <div class="step" id="dot2"></div>
     </div>
 
     <div class="alert err" id="signupErr">
@@ -420,52 +437,97 @@ select.inp{cursor:pointer;appearance:none;padding-right:30px}
       <span id="signupErrMsg"></span>
     </div>
 
-    <!-- STEP 0: Personal info -->
+    <!-- STEP 0: Basic info + request submission -->
     <div id="step0">
+
+      <!-- School banner — shows which school this link belongs to -->
+      <div id="schoolBanner" style="display:none;background:var(--alight);border:1.5px solid #93c5fd;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#1e40af;font-weight:600;text-align:center"></div>
+
+      <!-- No school in URL — show warning -->
+      <div id="noSchoolWarning" style="display:none;background:var(--amber-bg);border:1.5px solid #fcd34d;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;color:var(--amber-tx);line-height:1.6">
+        ⚠️ <strong>Invalid registration link.</strong><br>
+        Please ask your school administrator for the correct registration link.
+      </div>
+
       <div class="row2">
         <div class="field">
           <label>First Name</label>
-          <div class="inp-wrap">
-            <span class="inp-icon">👤</span>
+          <div class="inp-wrap"><span class="inp-icon">👤</span>
             <input class="inp" type="text" id="suFirst" placeholder="Mary">
           </div>
         </div>
         <div class="field">
           <label>Last Name</label>
-          <div class="inp-wrap">
-            <span class="inp-icon">👤</span>
+          <div class="inp-wrap"><span class="inp-icon">👤</span>
             <input class="inp" type="text" id="suLast" placeholder="Wanjiku">
           </div>
         </div>
       </div>
-
+      <div class="field">
+        <label>Phone Number</label>
+        <div class="inp-wrap"><span class="inp-icon">📞</span>
+          <input class="inp" type="tel" id="suPhone" placeholder="0712 345 678">
+        </div>
+      </div>
       <div class="field">
         <label>TSC Number <span>(optional)</span></label>
-        <div class="inp-wrap">
-          <span class="inp-icon">🪪</span>
+        <div class="inp-wrap"><span class="inp-icon">🪪</span>
           <input class="inp" type="text" id="suTSC" placeholder="e.g. TSC/2024/001">
         </div>
       </div>
-
       <div class="field">
         <label>Email Address</label>
-        <div class="inp-wrap">
-          <span class="inp-icon">✉️</span>
+        <div class="inp-wrap"><span class="inp-icon">✉️</span>
           <input class="inp" type="email" id="suEmail" placeholder="you@school.ac.ke" autocomplete="email">
         </div>
       </div>
-
-      <button class="submit-btn" onclick="nextStep(1)" style="background:linear-gradient(135deg,#1e3a5f,#2d4f80)">
-        Continue <span style="font-size:16px">→</span>
+      <div class="field">
+        <label>Password</label>
+        <div class="inp-wrap"><span class="inp-icon">🔑</span>
+          <input class="inp has-eye" type="password" id="suPass" placeholder="Min. 8 characters" autocomplete="new-password">
+          <button class="eye" onclick="toggleEye('suPass',this)" tabindex="-1">👁️</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirm Password</label>
+        <div class="inp-wrap"><span class="inp-icon">🔑</span>
+          <input class="inp has-eye" type="password" id="suPass2" placeholder="Repeat password" autocomplete="new-password">
+          <button class="eye" onclick="toggleEye('suPass2',this)" tabindex="-1">👁️</button>
+        </div>
+      </div>
+      <button class="submit-btn" id="signupBtn" onclick="doSignup()">
+        <span id="signupBtnTxt">📤 Submit Access Request</span>
       </button>
+
     </div>
 
-    <!-- STEP 1: Class assignment -->
+    <!-- WAITING SCREEN — shown after request submitted, live listener -->
+    <div id="stepWait" style="display:none;text-align:center;padding:8px 0">
+      <div style="font-size:40px;margin-bottom:12px">⏳</div>
+      <div style="font-family:'Familjen Grotesk',sans-serif;font-size:16px;font-weight:800;margin-bottom:8px">Awaiting Admin Approval</div>
+      <div style="font-size:12.5px;color:var(--text2);line-height:1.7;margin-bottom:16px">
+        Your request has been sent to the school administrator.<br>
+        This page will update automatically once approved.
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;font-size:12.5px;color:#92400e;margin-bottom:16px">
+        <div style="width:7px;height:7px;border-radius:50%;background:#d97706;flex-shrink:0;animation:apulse 1.5s infinite"></div>
+        Waiting for administrator…
+      </div>
+      <div id="waitOwnerMsg" style="display:none;background:#eff6ff;border:1px solid #93c5fd;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#1e40af;margin-bottom:16px;text-align:left">
+        <div style="font-weight:700;margin-bottom:4px">📩 Message from Administrator</div>
+        <div id="waitOwnerMsgText"></div>
+      </div>
+    </div>
+
+    <!-- STEP 1: Class selection — only after approval, uses real school streams -->
     <div id="step1" style="display:none">
+      <div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;color:#065f46;font-weight:600">
+        ✅ Approved! Now select your class assignment.
+      </div>
+      <div id="approvedSchoolInfo" style="background:var(--alight);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;color:var(--text2)"></div>
       <div class="field">
         <label>Grade <span>(your class)</span></label>
-        <div class="inp-wrap">
-          <span class="inp-icon">🏫</span>
+        <div class="inp-wrap"><span class="inp-icon">🏫</span>
           <select class="inp" id="suGrade" onchange="onSignupGradeChange()">
             <option value="">-- Select Grade --</option>
             <option>Grade 7</option>
@@ -475,11 +537,9 @@ select.inp{cursor:pointer;appearance:none;padding-right:30px}
           <span class="sel-arrow">▾</span>
         </div>
       </div>
-
       <div class="field">
         <label>Stream <span>(your class)</span></label>
-        <div class="inp-wrap">
-          <span class="inp-icon">📋</span>
+        <div class="inp-wrap"><span class="inp-icon">📋</span>
           <select class="inp" id="suStream">
             <option value="">-- Select Grade first --</option>
           </select>
@@ -487,54 +547,10 @@ select.inp{cursor:pointer;appearance:none;padding-right:30px}
         </div>
         <span style="font-size:10.5px;color:var(--text3);margin-top:4px;display:block" id="streamHint"></span>
       </div>
-
-      <p class="hint">⚠️ You will only be able to view and enter marks for this class. Contact admin to change your assignment.</p>
-
-      <div style="display:flex;gap:8px;margin-top:6px">
-        <button class="submit-btn" onclick="nextStep(0)" style="background:var(--surf2);color:var(--text2);box-shadow:none;flex:0 0 80px;font-size:12px">
-          ← Back
-        </button>
-        <button class="submit-btn" onclick="nextStep(2)">
-          Continue <span style="font-size:16px">→</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- STEP 2: Password -->
-    <div id="step2" style="display:none">
-      <div class="field">
-        <label>Password</label>
-        <div class="inp-wrap">
-          <span class="inp-icon">🔑</span>
-          <input class="inp has-eye" type="password" id="suPass" placeholder="Min. 8 characters" autocomplete="new-password">
-          <button class="eye" onclick="toggleEye('suPass',this)" tabindex="-1">👁️</button>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Confirm Password</label>
-        <div class="inp-wrap">
-          <span class="inp-icon">🔑</span>
-          <input class="inp has-eye" type="password" id="suPass2" placeholder="Repeat password" autocomplete="new-password">
-          <button class="eye" onclick="toggleEye('suPass2',this)" tabindex="-1">👁️</button>
-        </div>
-      </div>
-
-      <!-- summary -->
-      <div id="regSummary" style="
-        background:var(--alight);border:1px solid var(--border2);
-        border-radius:var(--r2);padding:10px 12px;margin-bottom:14px;
-        font-size:11.5px;line-height:1.8;color:var(--text2);display:none">
-      </div>
-
-      <div style="display:flex;gap:8px">
-        <button class="submit-btn" onclick="nextStep(1)" style="background:var(--surf2);color:var(--text2);box-shadow:none;flex:0 0 80px;font-size:12px">
-          ← Back
-        </button>
-        <button class="submit-btn" id="signupBtn" onclick="doSignup()">
-          <span id="signupBtnTxt">Create Account</span>
-        </button>
-      </div>
+      <p class="hint">⚠️ You will only access marks for this class. Contact admin to change.</p>
+      <button class="submit-btn" id="classBtn" onclick="saveClassAssignment()">
+        <span id="classBtnTxt">✅ Confirm My Class</span>
+      </button>
     </div>
 
   </div><!-- /panelSignup -->
@@ -565,13 +581,179 @@ const auth = firebase.auth();
 // ── Redirect guard — prevents onAuthStateChanged from firing mid-signup ──
 let manualRedirect = false;
 
+// ── School ID from URL param ?sid=SCHOOLID ──
+// Admin shares: login.html?sid=abc123uid
+// No codes, no lookups — schoolId is directly in the URL
+let _schoolId = null;
+let _schoolName = '';
+
+async function resolveSchoolId(){
+  const params = new URLSearchParams(window.location.search);
+  const sid = params.get('sid');
+
+  if(!sid){
+    // No school in URL — show warning, block signup
+    const warn = document.getElementById('noSchoolWarning');
+    if(warn) warn.style.display='block';
+    const btn = document.getElementById('signupBtn');
+    if(btn){ btn.disabled=true; btn.style.opacity='.5'; btn.title='Use the registration link from your administrator'; }
+    log('warn','No ?sid= in URL — signup blocked');
+    return;
+  }
+
+  _schoolId = sid;
+
+  // Load school name to display
+  try{
+    const snap = await db.collection('settings').doc(sid).get();
+    if(snap.exists){
+      const s = snap.data();
+      _schoolName = s.name||'';
+      // Show school banner
+      const banner = document.getElementById('schoolBanner');
+      if(banner){
+        banner.textContent = '🏫 ' + (s.name||'Your School') + (s.county?' · '+s.county:'');
+        banner.style.display='block';
+      }
+      // Update header
+      const nameEl = document.getElementById('schoolNameDisplay');
+      if(nameEl && s.name) nameEl.textContent = s.name;
+      const subEl = document.getElementById('schoolSubDisplay');
+      if(subEl) subEl.textContent = (s.name||'CBE Mark Sheet') + ' · Teacher Portal';
+    }
+  }catch(e){ log('warn','Could not load school name', e.message); }
+
+  log('info','School resolved from URL', {schoolId:_schoolId, name:_schoolName});
+}
+
+resolveSchoolId();
+
 // Only redirect on page load if already authenticated (returning user)
-auth.onAuthStateChanged(u=>{
+auth.onAuthStateChanged(async u=>{
   if(manualRedirect) return;
-  if(u) window.location.href='marksheet.html';
+  if(!u){
+    // Not logged in — check if they have a pending request saved locally
+    checkLocalPendingRequest();
+    return;
+  }
+  // Logged in — check their full profile before redirecting
+  try{
+    const snap = await db.collection('users').doc(u.uid).get();
+    if(!snap.exists){
+      // Firebase Auth user but no Firestore profile — sign out cleanly
+      await auth.signOut(); return;
+    }
+    const profile = snap.data();
+
+    if(profile.status === 'pending'){
+      // Approved but waiting — show waiting screen and listen
+      await auth.signOut();
+      _pendingUid = u.uid;
+      localStorage.setItem('cbe_pending_uid', u.uid);
+      localStorage.setItem('cbe_pending_email', u.email||'');
+      showSignupWaitFromLocal(u.uid);
+      return;
+    }
+
+    if(profile.status === 'suspended'){
+      await auth.signOut();
+      showErr('loginErr','Your account has been suspended. Contact the administrator.');
+      return;
+    }
+
+    if(profile.status === 'active' && (!profile.grade || !profile.stream)){
+      // Approved but class not set — show class selection
+      _pendingUid  = u.uid;
+      _schoolId    = profile.schoolId||null;
+      await auth.signOut();
+      showClassSelectionStep(profile);
+      return;
+    }
+
+    if(profile.status === 'active' && !profile.schoolId){
+      await auth.signOut();
+      showErr('loginErr','Your account is not linked to a school. Contact the administrator.');
+      return;
+    }
+
+    // ✅ Fully set up — go to marksheet
+    localStorage.removeItem('cbe_pending_uid');
+    localStorage.removeItem('cbe_pending_email');
+    window.location.href = 'marksheet.html';
+
+  }catch(e){
+    console.warn('Auth state check failed:', e.message);
+  }
 });
 
-// ── Show message if redirected back from marksheet with a reason ──
+// ── Check for locally saved pending request on page load ──
+function checkLocalPendingRequest(){
+  const uid   = localStorage.getItem('cbe_pending_uid');
+  const email = localStorage.getItem('cbe_pending_email');
+  if(!uid) return; // brand new visitor — stay on login tab
+
+  // They submitted before — restore waiting screen
+  _pendingUid = uid;
+  // Pre-fill email on login tab in case they want to try logging in
+  if(email){ const el = document.getElementById('liEmail'); if(el) el.value = email; }
+
+  // Switch to signup tab and show wait screen
+  document.getElementById('panelLogin').classList.remove('active');
+  document.getElementById('panelSignup').classList.add('active');
+  document.getElementById('tabSignup').classList.add('active');
+  document.getElementById('tabLogin').classList.remove('active');
+  document.getElementById('step0').style.display = 'none';
+  document.getElementById('stepWait').style.display = 'block';
+  document.getElementById('step1').style.display = 'none';
+  for(let i=0;i<2;i++){
+    const d=document.getElementById('dot'+i);
+    if(d) d.className='step'+(i===0?'done':'');
+  }
+
+  // Start listening for approval changes
+  listenForTeacherApproval(uid);
+}
+
+// ── Show waiting screen from local state (called from onAuthStateChanged) ──
+function showSignupWaitFromLocal(uid){
+  document.getElementById('panelLogin').classList.remove('active');
+  document.getElementById('panelSignup').classList.add('active');
+  document.getElementById('tabSignup').classList.add('active');
+  document.getElementById('tabLogin').classList.remove('active');
+  document.getElementById('step0').style.display = 'none';
+  document.getElementById('stepWait').style.display = 'block';
+  document.getElementById('step1').style.display = 'none';
+  listenForTeacherApproval(uid);
+}
+
+// ── Show class selection (called from onAuthStateChanged) ──
+async function showClassSelectionStep(profile){
+  document.getElementById('panelLogin').classList.remove('active');
+  document.getElementById('panelSignup').classList.add('active');
+  document.getElementById('tabSignup').classList.add('active');
+  document.getElementById('tabLogin').classList.remove('active');
+  document.getElementById('step0').style.display = 'none';
+  document.getElementById('stepWait').style.display = 'none';
+  document.getElementById('step1').style.display = 'block';
+  for(let i=0;i<2;i++){
+    const d=document.getElementById('dot'+i);
+    if(d) d.className='step'+(i===0?'done':'active');
+  }
+  if(profile.schoolId){
+    try{
+      const settSnap = await db.collection('settings').doc(profile.schoolId).get();
+      if(settSnap.exists){
+        const sch = settSnap.data();
+        _schoolName = sch.name||'';
+        const infoEl = document.getElementById('approvedSchoolInfo');
+        if(infoEl) infoEl.innerHTML=`🏫 <strong>${sch.name||''}</strong>${sch.county?' · '+sch.county:''}`;
+      }
+    }catch(_){}
+  }
+  showErr('signupErr','Please select your grade and stream to complete setup.');
+}
+
+// ── URL reason param (e.g. redirected back from marksheet) ──
 (function(){
   const p = new URLSearchParams(window.location.search);
   const reason = p.get('reason');
@@ -656,14 +838,69 @@ async function doLogin(){
         await auth.signOut();
         manualRedirect = false;
         setLoading('loginBtn','loginBtnTxt',false,'Sign In');
-        showErr('loginErr','Your account is pending admin approval. Please wait for activation.');
+        showApprovalBanner('pending', '⏳ Awaiting Approval',
+          'Your account is pending admin approval. Stay on this page — it will update automatically when approved.');
+        listenForApproval(cred.user.uid);
         return;
       }
+
       if(profile.status === 'suspended'){
         await auth.signOut();
         manualRedirect = false;
         setLoading('loginBtn','loginBtnTxt',false,'Sign In');
         showErr('loginErr','Your account has been suspended. Contact the school administrator.');
+        return;
+      }
+
+      // ── Approved but class not yet assigned ──
+      // Admin approved but teacher hasn't selected grade/stream yet
+      if(profile.status === 'active' && (!profile.grade || !profile.stream)){
+        _pendingUid = cred.user.uid;
+        _schoolId   = profile.schoolId || null;
+        await auth.signOut();
+        manualRedirect = false;
+        setLoading('loginBtn','loginBtnTxt',false,'Sign In');
+
+        // Switch to signup tab and show class selection directly
+        document.getElementById('panelLogin').classList.remove('active');
+        document.getElementById('panelSignup').classList.add('active');
+        document.getElementById('tabSignup').classList.add('active');
+        document.getElementById('tabLogin').classList.remove('active');
+
+        // Hide step0 and wait, show step1 (class selection)
+        document.getElementById('step0').style.display = 'none';
+        document.getElementById('stepWait').style.display = 'none';
+        document.getElementById('step1').style.display = 'block';
+
+        // Update dots
+        for(let i=0;i<2;i++){
+          const dot=document.getElementById(`dot${i}`);
+          if(dot) dot.className='step'+(i===0?'done':'active');
+        }
+
+        // Load school name if we have schoolId
+        if(profile.schoolId){
+          try{
+            const settSnap = await db.collection('settings').doc(profile.schoolId).get();
+            if(settSnap.exists){
+              const sch = settSnap.data();
+              _schoolName = sch.name||'';
+              const infoEl = document.getElementById('approvedSchoolInfo');
+              if(infoEl) infoEl.innerHTML = `🏫 <strong>${sch.name||''}</strong>${sch.county?' · '+sch.county:''}`;
+            }
+          }catch(_){}
+        }
+
+        showErr('signupErr','Please select your grade and stream to complete setup.');
+        return;
+      }
+
+      // ── Active with grade and stream — check schoolId too ──
+      if(profile.status === 'active' && !profile.schoolId){
+        await auth.signOut();
+        manualRedirect = false;
+        setLoading('loginBtn','loginBtnTxt',false,'Sign In');
+        showErr('loginErr','Your account is not linked to a school yet. Contact the administrator.');
         return;
       }
     }
@@ -689,9 +926,9 @@ function goStep(n){
   document.getElementById(`step${currentStep}`).style.display='none';
   document.getElementById(`step${n}`).style.display='block';
   // update dots
-  for(let i=0;i<3;i++){
+  for(let i=0;i<2;i++){
     const d=document.getElementById(`dot${i}`);
-    d.className='step'+(i===n?' active':i<n?' done':'');
+    if(d) d.className='step'+(i===n?' active':i<n?' done':'');
   }
   // when step1 appears, load streams if grade already selected
   if(n===1){
@@ -798,61 +1035,303 @@ function buildSummary(){
     </div>`;
 }
 
-// ── SIGNUP SUBMIT ──
+// ── STEP 0: Submit access request — NO schoolId needed yet ──
+let _pendingUid  = null; // uid of created account waiting for approval
+// School resolved from URL ?sid= — see resolveSchoolId()
+
 async function doSignup(){
   clearAlerts();
-  const first  = document.getElementById('suFirst').value.trim();
-  const last   = document.getElementById('suLast').value.trim();
-  const email  = document.getElementById('suEmail').value.trim();
-  const grade  = document.getElementById('suGrade').value;
-  const stream = document.getElementById('suStream').value;
-  const tsc    = document.getElementById('suTSC').value.trim();
-  const pass   = document.getElementById('suPass').value;
-  const pass2  = document.getElementById('suPass2').value;
+  const first = document.getElementById('suFirst').value.trim();
+  const last  = document.getElementById('suLast').value.trim();
+  const phone = document.getElementById('suPhone').value.trim();
+  const email = document.getElementById('suEmail').value.trim();
+  const tsc   = document.getElementById('suTSC').value.trim();
+  const pass  = document.getElementById('suPass').value;
+  const pass2 = document.getElementById('suPass2').value;
 
+  if(!_schoolId){
+    showErr('signupErr','Invalid registration link. Ask your administrator for the correct link.');
+    return;
+  }
+  if(!first||!last){showErr('signupErr','Please enter your full name.');return;}
+  if(!email){showErr('signupErr','Email address is required.');return;}
   if(pass.length<8){showErr('signupErr','Password must be at least 8 characters.');return;}
   if(pass!==pass2){showErr('signupErr','Passwords do not match.');return;}
+
+  // ── Guard: already submitted? Restore wait screen ──
+  const existingUid = localStorage.getItem('cbe_pending_uid');
+  if(existingUid){
+    _pendingUid = existingUid;
+    showWaitingScreen(existingUid);
+    listenForTeacherApproval(existingUid);
+    return;
+  }
 
   setLoading('signupBtn','signupBtnTxt',true,'Create Account');
   try{
     manualRedirect = true;
     const cred = await auth.createUserWithEmailAndPassword(email, pass);
-    // Update display name
     await cred.user.updateProfile({displayName:`${first} ${last}`});
-    // Save teacher profile to Firestore FIRST, then redirect
-    await db.collection('users').doc(cred.user.uid).set({
-      firstName: first,
-      lastName:  last,
+    _pendingUid = cred.user.uid;
+
+    // Persist to localStorage so page remembers across sessions
+    localStorage.setItem('cbe_pending_uid',   cred.user.uid);
+    localStorage.setItem('cbe_pending_email', email);
+
+    // Save teacher profile — schoolId from validated code, no grade/stream yet
+    await db.collection('users').doc(_pendingUid).set({
+      firstName: first, lastName: last,
       fullName:  `${first} ${last}`,
-      email:     email,
+      email, phone: phone||null,
       tscNumber: tsc||null,
-      grade:     grade,
-      stream:    stream,
-      role:      'teacher',
-      status:    'pending',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      role:       'teacher',
+      status:     'pending',
+      schoolId:   _schoolId,   // ← from URL ?sid= — routes to correct admin
+      schoolName: _schoolName,
+      createdAt:  firebase.firestore.FieldValue.serverTimestamp()
     });
-    // Profile saved — wait for admin approval, do NOT redirect
+
+    // Write request to the specific school's admin — keyed by schoolId
+    await db.collection('teacherRequests').doc(_pendingUid).set({
+      uid: _pendingUid,
+      fullName:   `${first} ${last}`,
+      email, phone: phone||null,
+      tscNumber:  tsc||null,
+      schoolId:   _schoolId,
+      schoolName: _schoolName,
+      status:     'pending',
+      requestedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Sign out — they wait for approval, then come back to select class
     await auth.signOut();
     manualRedirect = false;
     setLoading('signupBtn','signupBtnTxt',false,'Create Account');
-    // Show pending approval notice
+
+    // Show waiting screen inside signup panel
+    showWaitingScreen(_pendingUid);
+    listenForTeacherApproval(_pendingUid);
+  }catch(e){
+    manualRedirect = false;
+    setLoading('signupBtn','signupBtnTxt',false,'Create Account');
+    if(e.code === 'auth/email-already-in-use'){
+      // Account exists — check if they have a pending request saved
+      const savedUid = localStorage.getItem('cbe_pending_uid');
+      if(savedUid){
+        // Restore their wait screen
+        _pendingUid = savedUid;
+        showWaitingScreen(savedUid);
+        listenForTeacherApproval(savedUid);
+      } else {
+        showErr('signupErr','This email is already registered. Use the Sign In tab to login.');
+      }
+    } else {
+      const msg = e.code==='auth/weak-password'
+        ? 'Password is too weak. Use at least 8 characters.'
+        : e.message;
+      showErr('signupErr', msg);
+    }
+  }
+}
+
+// ── Real-time approval listener ──
+let _approvalUnsub = null;
+
+function listenForApproval(uid){
+  if(_approvalUnsub){ _approvalUnsub(); _approvalUnsub = null; }
+
+  _approvalUnsub = db.collection('users').doc(uid)
+    .onSnapshot(snap=>{
+      if(!snap.exists) return;
+      const d = snap.data();
+
+      if(d.status === 'active'){
+        // Approved — show success, stop listening
+        if(_approvalUnsub){ _approvalUnsub(); _approvalUnsub = null; }
+        showApprovalBanner('approved',
+          '🎉 Account Approved!',
+          'Your account has been activated by the administrator. You can now sign in.');
+        // Pre-fill email so they just need password
+        const emailEl = document.getElementById('liEmail');
+        if(emailEl && d.email) emailEl.value = d.email;
+        // Show login form fields
+        document.getElementById('loginOk').classList.remove('show');
+        return;
+      }
+
+      if(d.status === 'suspended'){
+        if(_approvalUnsub){ _approvalUnsub(); _approvalUnsub = null; }
+        showApprovalBanner('rejected',
+          '🚫 Registration Not Approved',
+          'Your account was not approved. Please contact the school administrator for assistance.');
+        return;
+      }
+
+      // Still pending
+      showApprovalBanner('pending',
+        '⏳ Awaiting Approval',
+        'Your account is pending admin approval. This page will update automatically when approved.');
+    }, e=>{ console.warn('Approval listener error:', e.message); });
+}
+
+function showApprovalBanner(type, title, msg){
+  const banner = document.getElementById('approvalBanner');
+  const titleEl = document.getElementById('approvalBannerTitle');
+  const msgEl   = document.getElementById('approvalBannerMsg');
+  const statusEl = document.getElementById('approvalStatus');
+
+  banner.className = ''; // reset
+  banner.style.display = 'block';
+  banner.classList.add(type);
+  titleEl.textContent = title;
+  msgEl.textContent   = msg;
+
+  if(type === 'approved'){
+    statusEl.textContent = 'Approved — enter your password below to sign in';
+    statusEl.style.color = '#065f46';
+    statusEl.style.fontWeight = '700';
+  } else if(type === 'rejected'){
+    statusEl.textContent = 'Contact: 0704 518 130';
+    statusEl.style.color = '#991b1b';
+  } else {
+    statusEl.textContent = 'Waiting for administrator…';
+    statusEl.style.color = '#92400e';
+  }
+}
+
+// ── Show waiting screen inside signup panel ──
+function showWaitingScreen(uid){
+  // Update dots to show step 0 done
+  for(let i=0;i<2;i++){
+    const d=document.getElementById(`dot${i}`);
+    if(d) d.className='step'+(i===0?'done':'');
+  }
+  document.getElementById('step0').style.display='none';
+  document.getElementById('step1').style.display='none';
+  document.getElementById('stepWait').style.display='block';
+}
+
+// ── Listen for admin approval of teacher ──
+// When approved, admin sets: status='active', schoolId, grade, stream
+// Teacher then selects their class from the approved school's real streams
+let _teacherApprovalUnsub = null;
+
+function listenForTeacherApproval(uid){
+  if(_teacherApprovalUnsub){ _teacherApprovalUnsub(); _teacherApprovalUnsub=null; }
+
+  _teacherApprovalUnsub = db.collection('users').doc(uid)
+    .onSnapshot(async snap=>{
+      if(!snap.exists) return;
+      const d = snap.data();
+
+      // Show any admin message
+      if(d.adminMessage){
+        document.getElementById('waitOwnerMsgText').textContent = d.adminMessage;
+        document.getElementById('waitOwnerMsg').style.display = 'block';
+      }
+
+      if(d.status === 'suspended'){
+        if(_teacherApprovalUnsub){ _teacherApprovalUnsub(); _teacherApprovalUnsub=null; }
+        showApprovalBanner('rejected','🚫 Request Not Approved',
+          d.adminMessage||'Your request was not approved. Contact the administrator.');
+        document.getElementById('stepWait').style.display='none';
+        document.getElementById('step0').style.display='block';
+        return;
+      }
+
+      if(d.status === 'active' && d.schoolId){
+        // ✅ Approved + school assigned — auto-move to class selection
+        if(_teacherApprovalUnsub){ _teacherApprovalUnsub(); _teacherApprovalUnsub=null; }
+        _pendingUid = uid;
+        _schoolId   = d.schoolId;
+
+        // If grade/stream already set (admin assigned it) — go straight to login
+        if(d.grade && d.stream){
+          localStorage.removeItem('cbe_pending_uid');
+          localStorage.removeItem('cbe_pending_email');
+          // Show login with success message
+          document.getElementById('panelSignup').classList.remove('active');
+          document.getElementById('panelLogin').classList.add('active');
+          document.getElementById('tabLogin').classList.add('active');
+          document.getElementById('tabSignup').classList.remove('active');
+          document.getElementById('loginOkMsg').textContent =
+            `✅ Your account is ready! Sign in with your email and password.`;
+          document.getElementById('loginOk').classList.add('show');
+          const emailEl=document.getElementById('liEmail');
+          if(emailEl) emailEl.value = localStorage.getItem('cbe_pending_email')||'';
+          return;
+        }
+
+        // Load school name for display
+        try{
+          const settSnap = await db.collection('settings').doc(d.schoolId).get();
+          if(settSnap.exists){
+            const sch = settSnap.data();
+            _schoolName = sch.name||'';
+            const infoEl = document.getElementById('approvedSchoolInfo');
+            if(infoEl) infoEl.innerHTML=`🏫 <strong>${sch.name||''}</strong>${sch.county?' · '+sch.county:''}`;
+          }
+        }catch(_){}
+
+        // Show class selection step
+        document.getElementById('stepWait').style.display='none';
+        document.getElementById('step1').style.display='block';
+        for(let i=0;i<2;i++){
+          const dot=document.getElementById(`dot${i}`);
+          if(dot) dot.className='step'+(i===0?'done':'active');
+        }
+        return;
+      }
+
+      // Approved but school not yet assigned — show message
+      if(d.status === 'active' && !d.schoolId){
+        const waitTxt = document.getElementById('waitOwnerMsgText');
+        const waitMsg = document.getElementById('waitOwnerMsg');
+        if(waitTxt) waitTxt.textContent='Account approved! Administrator is assigning your school — please wait.';
+        if(waitMsg) waitMsg.style.display='block';
+      }
+
+    }, e=>{ console.warn('Teacher approval listener:', e.message); });
+}
+
+// ── Save class assignment after approval ──
+async function saveClassAssignment(){
+  const grade  = document.getElementById('suGrade').value;
+  const stream = document.getElementById('suStream').value;
+  if(!grade||!stream){showErr('signupErr','Please select your grade and stream.');return;}
+  if(!_pendingUid){showErr('signupErr','Session expired. Please refresh.');return;}
+
+  setLoading('classBtn','classBtnTxt',true,'Confirm');
+  try{
+    // Update the users doc with grade and stream
+    await db.collection('users').doc(_pendingUid).update({
+      grade, stream,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    setLoading('classBtn','classBtnTxt',false,'Confirm');
+
+    // Clear pending state — setup complete
+    localStorage.removeItem('cbe_pending_uid');
+    localStorage.removeItem('cbe_pending_email');
+
+    // Switch to login tab — they can now sign in
     document.getElementById('panelSignup').classList.remove('active');
     document.getElementById('panelLogin').classList.add('active');
     document.getElementById('tabLogin').classList.add('active');
     document.getElementById('tabSignup').classList.remove('active');
+
+    // Pre-fill email and show success
+    const savedEmail = localStorage.getItem('cbe_pending_email') || '';
+    const emailEl = document.getElementById('liEmail');
+    if(emailEl && savedEmail) emailEl.value = savedEmail;
     document.getElementById('loginOkMsg').textContent =
-      '✅ Account created! Your request is pending admin approval. You will be notified once activated.';
+      `✅ Setup complete! Class: ${grade} ${stream}. Sign in with your email and password.`;
     document.getElementById('loginOk').classList.add('show');
+
   }catch(e){
-    manualRedirect = false;
-    setLoading('signupBtn','signupBtnTxt',false,'Create Account');
-    const msg = e.code==='auth/email-already-in-use'
-      ? 'This email is already registered. Please sign in.'
-      : e.code==='auth/weak-password'
-      ? 'Password is too weak. Use at least 8 characters.'
-      : e.message;
-    showErr('signupErr', msg);
+    setLoading('classBtn','classBtnTxt',false,'Confirm');
+    showErr('signupErr','Failed: '+e.message);
   }
 }
 

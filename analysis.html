@@ -358,24 +358,13 @@ let _analysisSchoolId = null;
 
 async function _doLoadSettings(user){
   if(!user) return;
-  // For teachers: schoolId is stored in their users doc
-  // For admin: schoolId = their own uid
-  // Try to resolve schoolId from user's profile first
+  const sid = await _resolveSchoolFromUser(user);
+  if(!sid) return;
   try{
-    const profileSnap = await db.collection('users').doc(user.uid).get();
-    if(profileSnap.exists){
-      const profile = profileSnap.data();
-      // Admin: schoolId = uid; Teacher: schoolId stored in profile
-      const sid = profile.role === 'admin'
-        ? user.uid
-        : (profile.schoolId || user.uid);
-      _analysisSchoolId = sid;
-      window._schoolId  = sid;
-      const settSnap = await db.collection('settings').doc(sid).get();
-      if(settSnap.exists){
-        applySchoolSettings(settSnap.data());
-        console.log('[Analysis] Settings loaded for school', settSnap.data().name, '| role:', profile.role);
-      }
+    const settSnap = await db.collection('settings').doc(sid).get();
+    if(settSnap.exists){
+      applySchoolSettings(settSnap.data());
+      console.log('[Analysis] Settings loaded:', settSnap.data().name);
     }
   }catch(e){
     console.warn('[Analysis] Could not load school settings:', e.message);
@@ -383,20 +372,12 @@ async function _doLoadSettings(user){
 }
 
 function loadSchoolSettings(){
-  // Try currentUser first (already logged in — fast path)
   const current = firebase.auth().currentUser;
-  if(current){
-    _doLoadSettings(current);
-    return;
-  }
-  // Fall back to onAuthStateChanged (page just loaded)
+  if(current){ _doLoadSettings(current); return; }
   const unsub = firebase.auth().onAuthStateChanged(user=>{
-    unsub(); // unsubscribe immediately — only need one call
-    if(!user){
-      console.warn('[Analysis] No authenticated user');
-      return;
-    }
-    _doLoadSettings(user);
+    unsub();
+    if(user) _doLoadSettings(user);
+    else console.warn('[Analysis] No authenticated user');
   });
 }
 
@@ -501,22 +482,32 @@ let currentStudent = null;
 window.onGradeChange = async function(){
   const grade=el('selGrade').value, ss=el('selStream');
   ss.disabled=true; ss.innerHTML='<option value="">Loading…</option>';
-  if(!grade){ss.innerHTML='<option value="">-- Stream --</option>';return;}
+  if(!grade){ss.innerHTML='<option value="">-- Stream --</option>';ss.disabled=false;return;}
   try{
-    const schoolId = _analysisSchoolId || firebase.auth().currentUser?.uid;
-    const q = schoolId
-      ? db.collection('students').where('grade','==',grade).where('schoolId','==',schoolId)
-      : db.collection('students').where('grade','==',grade);
-    const snap = await q.get();
+    // Wait for schoolId — may not be ready if auth is still resolving
+    const schoolId = await _getSchoolId();
+    console.log('[Analysis] Loading streams for grade', grade, '| schoolId', schoolId);
+    const snap = await db.collection('students')
+      .where('grade','==',grade)
+      .where('schoolId','==',schoolId)
+      .get();
     const set=new Set();
     snap.forEach(d=>{const s=d.data();if(s.stream?.trim())set.add(s.stream.trim());});
     const arr=[...set].sort();
+    if(!arr.length){
+      ss.innerHTML='<option value="">No streams found</option>';
+      ss.disabled=false;
+      toast('No streams found for '+grade+'. Add students in Admission first.','info');
+      return;
+    }
     ss.innerHTML='<option value="">-- Stream --</option>'+arr.map(s=>`<option>${s}</option>`).join('');
     ss.disabled=false;
     if(arr.length===1){ss.value=arr[0];loadAnalysis();}
   }catch(e){
     ss.innerHTML='<option value="">-- Stream --</option>';
-    toast('Failed to load streams','err');
+    ss.disabled=false;
+    console.error('[Analysis] Failed to load streams:', e.message);
+    toast('Failed to load streams: '+e.message,'err');
   }
 };
 
@@ -528,13 +519,18 @@ window.loadAnalysis = async function(){
   el('mainContent').innerHTML=`<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading analysis…</div></div>`;
 
   try{
-    const schoolId = _analysisSchoolId || firebase.auth().currentUser?.uid;
-    const stuQuery = schoolId
-      ? db.collection('students').where('grade','==',grade).where('stream','==',stream).where('schoolId','==',schoolId)
-      : db.collection('students').where('grade','==',grade).where('stream','==',stream);
-    const resQuery = schoolId
-      ? db.collection('results').where('grade','==',grade).where('stream','==',stream).where('term','==',term).where('year','==',year).where('schoolId','==',schoolId)
-      : db.collection('results').where('grade','==',grade).where('stream','==',stream).where('term','==',term).where('year','==',year);
+    const schoolId = await _getSchoolId();
+    console.log('[Analysis] Loading analysis | grade', grade, stream, '| school', schoolId);
+    const stuQuery = db.collection('students')
+      .where('grade','==',grade)
+      .where('stream','==',stream)
+      .where('schoolId','==',schoolId);
+    const resQuery = db.collection('results')
+      .where('grade','==',grade)
+      .where('stream','==',stream)
+      .where('term','==',term)
+      .where('year','==',year)
+      .where('schoolId','==',schoolId);
 
     const [stuSnap, resSnap] = await Promise.all([stuQuery.get(), resQuery.get()]);
 
@@ -1037,7 +1033,7 @@ function printAllReports(){
   closePrintAllModal();
 
   const {ranked, resMap, classAvg} = pd;
-  const total = ranked.length;
+  const total = pd.scored.length > 0 ? allStudents.length : ranked.length; // total enrolled
 
   let allHtml = '';
   ranked.forEach((s, i) => {
@@ -1138,7 +1134,7 @@ window.printStudentReport = function(){
   const ranked=pd?pd.ranked:[];
   const rank=ranked.findIndex(x=>x.id===s.id)+1;
 
-  const printHtml=buildStudentPrintHtml(s,rec,avg,lv,rank,ranked.length,pd);
+  const printHtml=buildStudentPrintHtml(s,rec,avg,lv,rank,allStudents.length,pd);
   triggerPrint(printHtml);
 };
 

@@ -804,9 +804,10 @@ auth.onAuthStateChanged(async u => {
       show('Login'); return;
     }
 
-    // 3. Set school ID
+    // 3. Set school ID — stored in sessionStorage so other pages can read it
     _schoolId = u.uid;
     window._schoolId = u.uid;
+    sessionStorage.setItem('cbe_school_id', u.uid); // persists across tabs in same session
     el('adminName').textContent = '👤 ' + (profile.fullName || profile.email || '');
 
     // 4. Show dashboard IMMEDIATELY — don't wait for settings
@@ -844,6 +845,7 @@ async function doLogout(){
   if(_ownerMsgUnsub){ _ownerMsgUnsub(); _ownerMsgUnsub=null; }
   await _endSession().catch(()=>{});
   _schoolId=null; window._schoolId=null;
+  sessionStorage.removeItem('cbe_school_id');
   _redirecting = false; // reset flag so redirect works
   await auth.signOut();
   // onAuthStateChanged will fire with null user → redirects to registration.html

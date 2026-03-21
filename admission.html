@@ -420,6 +420,7 @@ body.dark{
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script>
 firebase.initializeApp({
   apiKey:"AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
@@ -429,19 +430,43 @@ firebase.initializeApp({
   messagingSenderId:"1055511650032",
   appId:"1:1055511650032:web:7e0f9c28e58515f549ac35"
 });
-const db = firebase.firestore();
+const db   = firebase.firestore();
+const auth = firebase.auth();
 
 // ── State ──
-let allStudents  = [];   // full list from Firestore
-let visStudents  = [];   // filtered view
-let allStreams    = [];   // distinct streams for suggestions
+let allStudents  = [];
+let visStudents  = [];
+let allStreams    = [];
 let pendingDelId = null;
 let editId       = null;
 
+// ── School ID — read from admin page (window._schoolId) or Firebase Auth ──
+// Admin sets window._schoolId when they log in — no separate auth call needed
+let _schoolId = null;
+
+function _getSchoolId(){
+  // 1. Already resolved this session
+  if(_schoolId) return Promise.resolve(_schoolId);
+  // 2. Admin page set it on window (same tab navigation)
+  if(window._schoolId){ _schoolId = window._schoolId; return Promise.resolve(_schoolId); }
+  // 3. Fallback — read from Firebase Auth directly
+  const user = auth.currentUser;
+  if(user){ _schoolId = user.uid; window._schoolId = user.uid; return Promise.resolve(_schoolId); }
+  // 4. Auth not ready yet — wait for it
+  return new Promise(resolve=>{
+    const unsub = auth.onAuthStateChanged(u=>{
+      unsub();
+      if(u){ _schoolId = u.uid; window._schoolId = u.uid; resolve(_schoolId); }
+      else resolve(null);
+    });
+  });
+}
+
+// Cache key is per-school so different schools don't share cached data
+function _cacheKey(){ return 'cbe_students_' + (_schoolId||'shared'); }
+
 // ── Cache Configuration ──
-const CACHE_KEY = 'cbe_students_cache';
-const CACHE_TIMESTAMP_KEY = 'cbe_students_timestamp';
-const CACHE_DURATION = 0; // Always fetch fresh — ensures new students/streams appear immediately
+const CACHE_DURATION = 0; // Always fetch fresh
 
 // ── Utils ──
 const el  = id => document.getElementById(id);
@@ -460,8 +485,9 @@ function initials(n){return(n||'?').split(' ').slice(0,2).map(w=>w[0]||'').join(
 // ── Cache Management ──
 function saveToCache(data) {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-    localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+    const key = _cacheKey();
+    localStorage.setItem(key, JSON.stringify(data));
+    localStorage.setItem(key+'_ts', Date.now().toString());
     updateCacheIndicator();
   } catch (e) {
     console.warn('Failed to save to cache:', e);
@@ -470,14 +496,12 @@ function saveToCache(data) {
 
 function loadFromCache() {
   try {
-    const cached = localStorage.getItem(CACHE_KEY);
-    const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
-    
+    const key = _cacheKey();
+    const cached    = localStorage.getItem(key);
+    const timestamp = localStorage.getItem(key+'_ts');
     if (cached && timestamp) {
       const age = Date.now() - parseInt(timestamp);
-      if (age < CACHE_DURATION) {
-        return JSON.parse(cached);
-      }
+      if (age < CACHE_DURATION) return JSON.parse(cached);
     }
   } catch (e) {
     console.warn('Failed to load from cache:', e);
@@ -486,7 +510,8 @@ function loadFromCache() {
 }
 
 function isCacheValid() {
-  const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+  const key = _cacheKey();
+  const timestamp = localStorage.getItem(key+'_ts');
   if (!timestamp) return false;
   return (Date.now() - parseInt(timestamp)) < CACHE_DURATION;
 }
@@ -607,17 +632,26 @@ el('admForm').addEventListener('submit', async e=>{
   // Normalise stream: trim + title-case first letter
   const streamNorm = val('fStream').trim().replace(/^\w/,c=>c.toUpperCase());
 
+  // Ensure schoolId is resolved before saving
+  const schoolId = await _getSchoolId();
+  if(!schoolId){
+    toast('School not identified — please log in again','err');
+    btn.innerHTML='✅ Register Student'; btn.disabled=false;
+    return;
+  }
+
   const data = {
-    name:        val('fName').trim().replace(/\s+/g,' '),   // collapse extra spaces
+    name:            val('fName').trim().replace(/\s+/g,' '),
     admissionNumber: admNo,
-    gender:      val('fGender'),
-    grade:       val('fGrade'),        // stored as "Grade 7" to match marks page query
-    stream:      streamNorm,           // stored as "East" etc. to match marks page query
-    year:        val('fYear'),
-    parentName:  val('fParent'),
-    parentPhone: val('fPhone'),
-    createdAt:   firebase.firestore.FieldValue.serverTimestamp(),
-    updatedAt:   firebase.firestore.FieldValue.serverTimestamp(),
+    gender:          val('fGender'),
+    grade:           val('fGrade'),
+    stream:          streamNorm,
+    year:            val('fYear'),
+    parentName:      val('fParent'),
+    parentPhone:     val('fPhone'),
+    schoolId,                          // ← links student to this school
+    createdAt:       firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt:       firebase.firestore.FieldValue.serverTimestamp(),
   };
 
   try{
@@ -656,25 +690,41 @@ async function loadStudents(forceRefresh = false) {
     }
   }
 
-  // If cache miss or force refresh, load from Firestore
+  // Fetch from Firestore filtered by schoolId
   console.log('Loading from Firestore');
   el('studentTable').innerHTML=`<tr><td colspan="9"><div class="empty"><div class="ei">⏳</div><p>Loading…</p></div></td></tr>`;
-  
+
   try{
-    const snap=await db.collection('students').orderBy('createdAt','desc').get();
+    const schoolId = await _getSchoolId();
+    if(!schoolId){ toast('Not logged in — please sign in first','err'); return; }
+
+    // Query only this school's students — no composite index needed (no orderBy)
+    const snap = await db.collection('students')
+      .where('schoolId','==',schoolId)
+      .get();
+
     allStudents=[];
     snap.forEach(d=>allStudents.push({id:d.id,...d.data()}));
-    
-    // Save to cache
+
+    // Sort newest first client-side
+    allStudents.sort((a,b)=>{
+      const ta=a.createdAt?.toDate?.()?.getTime()||0;
+      const tb=b.createdAt?.toDate?.()?.getTime()||0;
+      return tb-ta;
+    });
+
     saveToCache(allStudents);
-    
     buildStreamList();
     updateStats();
     filterTable();
     updateCacheIndicator();
+
+    // One-time patch: fix students without schoolId
+    _patchStudentsSchoolId(schoolId).catch(()=>{});
+
   }catch(e){
     el('studentTable').innerHTML=`<tr><td colspan="9"><div class="empty"><div class="ei">❌</div><p>${e.message}</p></div></td></tr>`;
-    toast('Failed to load students: ' + e.message, 'err');
+    toast('Failed to load students: '+e.message,'err');
   }
 }
 
@@ -797,7 +847,9 @@ window.saveEdit=async function(){
   if(dup){toast(`Adm no. ${admNo} belongs to ${dup.name}`,'err');return;}
 
   try{
+    const editSchoolId = await _getSchoolId();
     await db.collection('students').doc(editId).update({
+      ...(editSchoolId ? {schoolId: editSchoolId} : {}),
       name, admissionNumber:admNo, gender, grade, stream, year,
       updatedAt:firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -840,6 +892,26 @@ if(localStorage.getItem('cbe_theme')==='dark'){
 }
 
 // ── Init ──
+// ── One-time patch: assign schoolId to existing students ──
+async function _patchStudentsSchoolId(schoolId){
+  try{
+    const snap = await db.collection('students').get();
+    const batch = db.batch();
+    let count = 0;
+    snap.forEach(doc=>{
+      if(!doc.data().schoolId){
+        batch.update(doc.ref, {schoolId});
+        count++;
+      }
+    });
+    if(count > 0){
+      await batch.commit();
+      console.log(`Patched ${count} students with schoolId`);
+      loadStudents(true); // reload to pick up patched students
+    }
+  }catch(e){ console.warn('Patch failed:', e.message); }
+}
+
 loadStudents(); // This will use cache if valid
 </script>
 </body>

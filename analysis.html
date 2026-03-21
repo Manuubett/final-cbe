@@ -331,6 +331,7 @@ body.dark .level-row .bar-wrap{background:#1a2030}
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script>
 firebase.initializeApp({
   apiKey:"AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
@@ -352,31 +353,51 @@ let schoolSettings = {
   principal: ''
 };
 
-async function loadSchoolSettings(){
-  // 1. Try localStorage cache first (fast)
+// ── School settings — wait for auth then load ──
+let _analysisSchoolId = null;
+
+async function _doLoadSettings(user){
+  if(!user) return;
+  // For teachers: schoolId is stored in their users doc
+  // For admin: schoolId = their own uid
+  // Try to resolve schoolId from user's profile first
   try{
-    const raw = localStorage.getItem('cbe_school_settings');
-    if(raw){
-      const {data, ts} = JSON.parse(raw);
-      if(Date.now() - ts < 3600000){ // 1 hour
-        applySchoolSettings(data);
-        return;
+    const profileSnap = await db.collection('users').doc(user.uid).get();
+    if(profileSnap.exists){
+      const profile = profileSnap.data();
+      // Admin: schoolId = uid; Teacher: schoolId stored in profile
+      const sid = profile.role === 'admin'
+        ? user.uid
+        : (profile.schoolId || user.uid);
+      _analysisSchoolId = sid;
+      window._schoolId  = sid;
+      const settSnap = await db.collection('settings').doc(sid).get();
+      if(settSnap.exists){
+        applySchoolSettings(settSnap.data());
+        console.log('[Analysis] Settings loaded for school', settSnap.data().name, '| role:', profile.role);
       }
     }
-  }catch(_){}
-
-  // 2. Fetch from Firestore
-  try{
-    const snap = await db.collection('settings').doc('school').get();
-    if(snap.exists){
-      const data = snap.data();
-      // Update cache
-      localStorage.setItem('cbe_school_settings', JSON.stringify({data, ts:Date.now()}));
-      applySchoolSettings(data);
-    }
   }catch(e){
-    console.warn('Could not load school settings:', e.message);
+    console.warn('[Analysis] Could not load school settings:', e.message);
   }
+}
+
+function loadSchoolSettings(){
+  // Try currentUser first (already logged in — fast path)
+  const current = firebase.auth().currentUser;
+  if(current){
+    _doLoadSettings(current);
+    return;
+  }
+  // Fall back to onAuthStateChanged (page just loaded)
+  const unsub = firebase.auth().onAuthStateChanged(user=>{
+    unsub(); // unsubscribe immediately — only need one call
+    if(!user){
+      console.warn('[Analysis] No authenticated user');
+      return;
+    }
+    _doLoadSettings(user);
+  });
 }
 
 function applySchoolSettings(s){
@@ -482,7 +503,11 @@ window.onGradeChange = async function(){
   ss.disabled=true; ss.innerHTML='<option value="">Loading…</option>';
   if(!grade){ss.innerHTML='<option value="">-- Stream --</option>';return;}
   try{
-    const snap=await db.collection('students').where('grade','==',grade).get();
+    const schoolId = _analysisSchoolId || firebase.auth().currentUser?.uid;
+    const q = schoolId
+      ? db.collection('students').where('grade','==',grade).where('schoolId','==',schoolId)
+      : db.collection('students').where('grade','==',grade);
+    const snap = await q.get();
     const set=new Set();
     snap.forEach(d=>{const s=d.data();if(s.stream?.trim())set.add(s.stream.trim());});
     const arr=[...set].sort();
@@ -503,11 +528,15 @@ window.loadAnalysis = async function(){
   el('mainContent').innerHTML=`<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading analysis…</div></div>`;
 
   try{
-    const [stuSnap, resSnap] = await Promise.all([
-      db.collection('students').where('grade','==',grade).where('stream','==',stream).get(),
-      db.collection('results').where('grade','==',grade).where('stream','==',stream)
-        .where('term','==',term).where('year','==',year).get()
-    ]);
+    const schoolId = _analysisSchoolId || firebase.auth().currentUser?.uid;
+    const stuQuery = schoolId
+      ? db.collection('students').where('grade','==',grade).where('stream','==',stream).where('schoolId','==',schoolId)
+      : db.collection('students').where('grade','==',grade).where('stream','==',stream);
+    const resQuery = schoolId
+      ? db.collection('results').where('grade','==',grade).where('stream','==',stream).where('term','==',term).where('year','==',year).where('schoolId','==',schoolId)
+      : db.collection('results').where('grade','==',grade).where('stream','==',stream).where('term','==',term).where('year','==',year);
+
+    const [stuSnap, resSnap] = await Promise.all([stuQuery.get(), resQuery.get()]);
 
     allStudents=[];
     stuSnap.forEach(d=>allStudents.push({id:d.id,...d.data()}));
@@ -852,6 +881,8 @@ window.openStudent = function(sid){
   allResults.forEach(r=>resMap[r.studentId]=r);
   const ranked=[...allStudents.filter(st=>resMap[st.id]?.overallAvg>0)].sort((a,b)=>resMap[b.id].overallAvg-resMap[a.id].overallAvg);
   const rank=ranked.findIndex(x=>x.id===sid)+1;
+  const totalEnrolled = allStudents.length;  // total students in class (incl. those without results)
+  const totalScored   = ranked.length;       // students with actual results
   const pd=window._printData;
 
   let body=`
@@ -866,9 +897,11 @@ window.openStudent = function(sid){
         <div class="print-pts">${lv.p} Points</div>
       </div>
       <div class="print-bar-wrap">
-        <div style="font-size:10px;opacity:.75;margin-bottom:3px">Performance</div>
+        <div style="font-size:10px;opacity:.75;margin-bottom:3px">Class Position</div>
         <div class="print-bar-track"><div class="print-bar-fill" style="width:${avg}%"></div></div>
-        <div style="font-size:10px;opacity:.7;margin-top:5px">Rank #${rank} of ${ranked.length}</div>
+        <div style="font-size:11px;font-weight:800;color:#1e293b;margin-top:5px">
+          ${rank}<span style="font-size:9px;font-weight:600;color:#64748b"> / ${totalEnrolled} students</span>
+        </div>
       </div>
     </div>
 
@@ -877,6 +910,10 @@ window.openStudent = function(sid){
       <div class="print-meta-box"><div class="print-meta-lbl">Adm No.</div><div class="print-meta-val">${s.admissionNumber||'—'}</div></div>
       <div class="print-meta-box"><div class="print-meta-lbl">Grade & Stream</div><div class="print-meta-val">${rec.grade} ${rec.stream}</div></div>
       <div class="print-meta-box"><div class="print-meta-lbl">Term / Year</div><div class="print-meta-val">${rec.term} / ${rec.year}</div></div>
+      <div class="print-meta-box" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd">
+        <div class="print-meta-lbl" style="color:#1e40af">Class Position</div>
+        <div class="print-meta-val" style="color:#1e40af;font-size:18px">${rank} <span style="font-size:11px;font-weight:600;color:#3b82f6">of ${totalEnrolled} students</span></div>
+      </div>
     </div>
 
     <div class="print-section">

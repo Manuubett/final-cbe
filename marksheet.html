@@ -250,8 +250,11 @@ body.dark .pct-c{background:#161d2e}
 <!-- HEADER -->
 <header>
   <div class="logo">
-    <div class="lm">📊</div>
-    <div><div class="lt">CBE Mark Sheet</div><div class="ls">Junior School · Kenya CBC</div></div>
+    <div class="lm" id="hdrLogo">📊</div>
+    <div>
+      <div class="lt" id="hdrSchoolName">CBE Mark Sheet</div>
+      <div class="ls" id="hdrSchoolSub">Junior School · Kenya CBC</div>
+    </div>
   </div>
   <div class="hdr-r">
     <div id="hdrUserInfo" style="display:none;align-items:center;gap:6px">
@@ -374,8 +377,13 @@ async function initUser(fbUser){
       return;
     }
 
-    // Apply school branding
-    applySchoolSettings(db).catch(()=>{});
+    // Load school settings using the teacher's schoolId — not shared cache
+    if(currentUser.schoolId){
+      loadSchoolBranding(currentUser.schoolId).catch(()=>{});
+      // Store in sessionStorage so analysis/admission pages can use it
+      sessionStorage.setItem('cbe_school_id', currentUser.schoolId);
+      window._schoolId = currentUser.schoolId;
+    }
 
     // Show name + class in header
     const infoEl = el('hdrUserInfo');
@@ -392,6 +400,50 @@ async function initUser(fbUser){
     }
   }catch(e){
     toast(`Auth error: ${e.message}`,'err');
+  }
+}
+
+// ── Load school name, logo and motto from Firestore settings ──
+async function loadSchoolBranding(schoolId){
+  try{
+    const snap = await db.collection('settings').doc(schoolId).get();
+    if(!snap.exists) return;
+    const s = snap.data();
+
+    // Page title
+    if(s.name) document.title = s.name + ' | CBC Mark Sheet';
+
+    // Header school name
+    const nameEl = el('hdrSchoolName');
+    if(nameEl && s.name) nameEl.textContent = s.name;
+
+    // Header subtitle — motto · county · Kenya CBC
+    const subEl = el('hdrSchoolSub');
+    if(subEl){
+      const parts = [s.motto, s.county, 'Kenya CBC'].filter(Boolean);
+      subEl.textContent = parts.join(' · ');
+    }
+
+    // Logo
+    if(s.logoUrl){
+      const lm = el('hdrLogo');
+      if(lm) lm.innerHTML = `<img src="${s.logoUrl}"
+        style="width:100%;height:100%;object-fit:contain;border-radius:inherit"
+        onerror="this.parentElement.textContent='📊'">`;
+    }
+
+    // Brand colour
+    if(s.primaryColor){
+      document.documentElement.style.setProperty('--accent', s.primaryColor);
+      document.documentElement.style.setProperty('--ah',     s.primaryColor);
+    }
+
+    // Store globally for print headers
+    window.schoolSettings = s;
+
+    console.log('[Marksheet] School branding loaded:', s.name);
+  }catch(e){
+    console.warn('[Marksheet] School branding failed:', e.message);
   }
 }
 
@@ -479,7 +531,10 @@ window.onGradeChange = async function(){
 
   // ── 2. Always also fetch live from Firestore to catch new streams ──
   try{
-    const snap=await db.collection('students').where('grade','==',grade).get();
+    const _sid = currentUser?.schoolId || sessionStorage.getItem('cbe_school_id');
+    const snap=await (_sid
+      ? db.collection('students').where('grade','==',grade).where('schoolId','==',_sid)
+      : db.collection('students').where('grade','==',grade)).get();
     const set=new Set(arr); // seed with cached
     snap.forEach(d=>{const s=d.data();if(s.stream?.trim())set.add(s.stream.trim());});
     arr=[...set].sort();
@@ -515,15 +570,18 @@ window.loadStudents = async function(){
   el('tblWrap').innerHTML=`<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading ${grade} ${stream}…</div></div>`;
 
   try{
-    const snap=await db.collection('students').where('grade','==',grade).where('stream','==',stream).get();
+    const _sid = currentUser?.schoolId || sessionStorage.getItem('cbe_school_id');
+    const stuRef = db.collection('students').where('grade','==',grade).where('stream','==',stream);
+    const snap = await (_sid ? stuRef.where('schoolId','==',_sid) : stuRef).get();
     students=[];
     snap.forEach(d=>students.push({id:d.id,...d.data()}));
     students.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
 
     savedMap={}; savedCount=0;
-    const rs=await db.collection('results')
+    const resRef = db.collection('results')
       .where('grade','==',grade).where('stream','==',stream)
-      .where('term','==',term).where('year','==',year).get();
+      .where('term','==',term).where('year','==',year);
+    const rs = await (_sid ? resRef.where('schoolId','==',_sid) : resRef).get();
     rs.forEach(d=>{savedMap[d.data().studentId]={id:d.id,...d.data()};savedCount++;});
 
     el('pilS').textContent=students.length;
@@ -803,6 +861,7 @@ window.saveRow=async function(sid){
     studentId:sid, studentName:s.name, admissionNumber:s.admissionNumber||'',
     grade:el('selGrade').value, stream:el('selStream').value,
     term:el('selTerm').value,   year:el('selYear').value,
+    schoolId:    currentUser?.schoolId   || sessionStorage.getItem('cbe_school_id') || '',
     teacherId:   currentUser?.uid        || '',
     teacherName: currentUser?.fullName   || '',
     ...d, updatedAt:firebase.firestore.FieldValue.serverTimestamp()

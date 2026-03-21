@@ -575,7 +575,7 @@ async function createAccount(){
     btn.disabled=false;
     txt.textContent='Create Account →';
     const msg=e.code==='auth/email-already-in-use'
-      ?'This email is already registered. <a href="admin.html" style="color:var(--red-tx);font-weight:700">Sign in instead →</a>'
+      ?'This email is already registered. <a href="admin1.html" style="color:var(--red-tx);font-weight:700">Sign in instead →</a>'
       :e.code==='auth/invalid-email'?'Invalid email address.'
       :e.message;
     el('acctErrMsg').innerHTML=msg;
@@ -698,7 +698,7 @@ function listenForOwnerResponse(uid){
 
       if(d.status==='approved'){
         // ✅ AUTO-REDIRECT immediately when owner approves
-        log('info','APPROVED — redirecting to admin.html');
+        log('info','APPROVED — redirecting to admin1.html');
 
         // Show a brief success message then redirect
         showOwnerBanner('approved',
@@ -714,7 +714,7 @@ function listenForOwnerResponse(uid){
         if(title) title.textContent='Approved!';
 
         // Redirect after 1.5 seconds so they can see the success message
-        setTimeout(()=>{ window.location.href='admin.html'; }, 1500);
+        setTimeout(()=>{ window.location.href='admin1.html'; }, 1500);
         return;
       }
 
@@ -792,7 +792,7 @@ auth.onAuthStateChanged(async u=>{
       if(d.status==='approved'){
         // ✅ APPROVED — redirect immediately, no clicks needed
         log('info','User is approved — redirecting to admin',u.email);
-        window.location.href='admin.html';
+        window.location.href='admin1.html';
         return;
       }
 

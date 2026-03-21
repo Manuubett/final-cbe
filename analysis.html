@@ -356,29 +356,18 @@ let schoolSettings = {
 // ── School settings — wait for auth then load ──
 let _analysisSchoolId = null;
 
-async function _doLoadSettings(user){
-  if(!user) return;
-  const sid = await _resolveSchoolFromUser(user);
-  if(!sid) return;
+async function loadSchoolSettings(){
   try{
-    const settSnap = await db.collection('settings').doc(sid).get();
-    if(settSnap.exists){
-      applySchoolSettings(settSnap.data());
-      console.log('[Analysis] Settings loaded:', settSnap.data().name);
+    const sid = await _getSchoolId();
+    if(!sid){ console.warn('[Analysis] No schoolId — settings not loaded'); return; }
+    const snap = await db.collection('settings').doc(sid).get();
+    if(snap.exists){
+      applySchoolSettings(snap.data());
+      console.log('[Analysis] Settings loaded:', snap.data().name);
     }
   }catch(e){
-    console.warn('[Analysis] Could not load school settings:', e.message);
+    console.warn('[Analysis] Settings load failed:', e.message);
   }
-}
-
-function loadSchoolSettings(){
-  const current = firebase.auth().currentUser;
-  if(current){ _doLoadSettings(current); return; }
-  const unsub = firebase.auth().onAuthStateChanged(user=>{
-    unsub();
-    if(user) _doLoadSettings(user);
-    else console.warn('[Analysis] No authenticated user');
-  });
 }
 
 function applySchoolSettings(s){

@@ -752,19 +752,32 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
 
   <!-- REG LINK MODAL -->
   <div class="overlay" id="regLinkOverlay">
-    <div class="modal" style="max-width:420px">
+    <div class="modal" style="max-width:460px">
       <div class="modal-head">
         <div class="modal-title">🔗 Teacher Registration Link</div>
         <button class="modal-close" onclick="el('regLinkOverlay').classList.remove('open')">✕</button>
       </div>
       <div class="modal-body">
-        <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">
-          Share this link with teachers. When they open it, the school is pre-identified — they just fill their name, email and password.
+        <div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">
+          Share this link with teachers. They open it, fill their details and submit — the school is identified automatically.
         </div>
-        <div style="background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px;font-family:monospace;font-size:12px;color:var(--accent);word-break:break-all;margin-bottom:12px" id="regLinkText">—</div>
+
+        <div class="mfield">
+          <label>Base URL of your site</label>
+          <input class="minp" id="regBaseUrl" placeholder="e.g. https://yoursite.com/" oninput="updateRegLink()">
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">
+            The folder/domain where login.html is hosted. Edit if the auto-detected URL is wrong.
+          </div>
+        </div>
+
+        <div class="mfield">
+          <label>Full Registration Link</label>
+          <div style="background:var(--surf2);border:1.5px solid var(--border);border-radius:var(--r2);padding:10px 14px;font-family:monospace;font-size:12px;color:var(--accent);word-break:break-all;user-select:all;cursor:text" id="regLinkText">—</div>
+        </div>
+
         <div style="display:flex;gap:8px">
           <button class="btn btn-primary" style="flex:1" onclick="doCopyLink()">📋 Copy Link</button>
-          <button class="btn btn-outline" style="flex:1" onclick="doShareWhatsApp()">💬 Share on WhatsApp</button>
+          <button class="btn btn-outline" style="flex:1" onclick="doShareWhatsApp()">💬 WhatsApp</button>
         </div>
       </div>
     </div>
@@ -789,7 +802,7 @@ apiKey: "AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
 });
 const db   = firebase.firestore();
 const auth = firebase.auth();
-// Persistence is set at login time in registration.html — not here
+// Persistence is set at login time in register.html — not here
 
 let allTeachers = [], editingUid = null, deletingUid = null;
 const el = id => document.getElementById(id);
@@ -805,7 +818,7 @@ function show(screen){
   if(screen === 'Login'){
     if(_redirecting) return; // already redirecting — don't loop
     _redirecting = true;
-    window.location.href = 'registration.html';
+    window.location.href = 'register.html';
     return;
   }
   const target = el('screen'+screen);
@@ -904,7 +917,7 @@ auth.onAuthStateChanged(async u => {
   }
 });
 
-// Login handled by registration.html — no login screen in admin.html
+// Login handled by register.html — no login screen in admin.html
 
 // ── LOGOUT ──
 async function doLogout(){
@@ -914,7 +927,7 @@ async function doLogout(){
   sessionStorage.removeItem('cbe_school_id');
   _redirecting = false; // reset flag so redirect works
   await auth.signOut();
-  // onAuthStateChanged will fire with null user → redirects to registration.html
+  // onAuthStateChanged will fire with null user → redirects to register.html
 }
 
 // ══════════════════════════════════════════════
@@ -1540,16 +1553,27 @@ async function saveAddTeacher(){
 // ── REGISTRATION LINK ──
 function copyRegLink(){
   if(!_schoolId){ toast('Not logged in','err'); return; }
-  const base = window.location.origin + window.location.pathname.replace('admin.html','');
-  const link = `${base}login.html?sid=${_schoolId}`;
-  el('regLinkText').textContent = link;
+  // Strip current filename — works for admin.html, admin1.html, any name
+  const href = window.location.href.split('?')[0].split('#')[0];
+  const base = href.substring(0, href.lastIndexOf('/') + 1);
+  el('regBaseUrl').value = base;
+  updateRegLink();
   el('regLinkOverlay').classList.add('open');
 }
 
+function updateRegLink(){
+  let base = el('regBaseUrl').value.trim();
+  if(!base) return;
+  if(!base.endsWith('/')) base += '/';
+  const link = base + 'login.html?sid=' + _schoolId;
+  el('regLinkText').value = link;
+}
+
 function doCopyLink(){
-  const link = el('regLinkText').textContent;
-  navigator.clipboard.writeText(link).then(()=>toast('✅ Link copied to clipboard'))
-    .catch(()=>{ el('regLinkText').select?.(); toast('Copy the link manually','info'); });
+  const link = el('regLinkText').value || el('regLinkText').textContent;
+  navigator.clipboard.writeText(link)
+    .then(()=>{ toast('✅ Link copied to clipboard'); })
+    .catch(()=>{ el('regLinkText').select?.(); document.execCommand('copy'); toast('✅ Copied'); });
 }
 
 function doShareWhatsApp(){

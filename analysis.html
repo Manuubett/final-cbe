@@ -356,6 +356,35 @@ let schoolSettings = {
 // ── School settings — wait for auth then load ──
 let _analysisSchoolId = null;
 
+// ── Get schoolId — sessionStorage first, then Firebase Auth ──
+function _getSchoolId(){
+  if(_analysisSchoolId) return Promise.resolve(_analysisSchoolId);
+  // sessionStorage set by admin.html on login — survives new tabs
+  const stored = sessionStorage.getItem('cbe_school_id');
+  if(stored){
+    _analysisSchoolId = stored;
+    return Promise.resolve(stored);
+  }
+  // Firebase Auth direct — works if same browser session
+  const user = firebase.auth().currentUser;
+  if(user){
+    _analysisSchoolId = user.uid;
+    sessionStorage.setItem('cbe_school_id', user.uid);
+    return Promise.resolve(user.uid);
+  }
+  // Wait for auth state
+  return new Promise(resolve=>{
+    const unsub = firebase.auth().onAuthStateChanged(u=>{
+      unsub();
+      if(u){
+        _analysisSchoolId = u.uid;
+        sessionStorage.setItem('cbe_school_id', u.uid);
+        resolve(u.uid);
+      } else resolve(null);
+    });
+  });
+}
+
 async function loadSchoolSettings(){
   try{
     const sid = await _getSchoolId();

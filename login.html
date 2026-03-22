@@ -984,55 +984,75 @@ function validateStep0(){
 }
 // ── Load streams for signup — uses fixed options (teacher selects after approval) ──
 async function onSignupGradeChange(){
-  const grade   = document.getElementById('suGrade').value;
-  const ss      = document.getElementById('suStream');
-  const hint    = document.getElementById('streamHint');
-  ss.innerHTML  = '<option value="">Loading streams…</option>';
-  if(!grade){ ss.innerHTML='<option value="">-- Select Grade first --</option>'; hint.textContent=''; return; }
+  const grade = document.getElementById('suGrade').value;
+  const ss    = document.getElementById('suStream');
+  const hint  = document.getElementById('streamHint');
+  ss.innerHTML = '<option value="">Loading streams…</option>';
+  ss.disabled  = true;
+  if(!grade){ ss.innerHTML='<option value="">-- Select Grade first --</option>'; ss.disabled=false; hint.textContent=''; return; }
+
+  // Resolve schoolId — from memory, or read from teacher's own profile
+  let sid = _schoolId;
+  if(!sid){
+    try{
+      const u = auth.currentUser;
+      if(u){
+        const snap = await db.collection('users').doc(u.uid).get();
+        if(snap.exists) sid = snap.data().schoolId || null;
+        if(sid) _schoolId = sid;
+      }
+    }catch(_){}
+  }
+
+  if(!sid){
+    ss.innerHTML = '<option value="">School not identified — contact admin</option>';
+    ss.disabled  = false;
+    hint.textContent = 'Could not identify your school. Please contact the administrator.';
+    hint.style.color = 'var(--err)';
+    return;
+  }
 
   let streams = [];
 
-  // 1. Try localStorage cache written by admission page
+  // 1. Try localStorage cache first (instant)
   try{
     const raw = localStorage.getItem('cbe_streams');
     if(raw){
       const map = JSON.parse(raw);
-      if(map[grade] && map[grade].length) streams = map[grade];
+      if(map[grade]?.length) streams = map[grade];
     }
   }catch(_){}
 
-  // 2. Fetch live from Firestore — scoped by schoolId
-  // Teacher re-signs in before class selection so auth is active
+  // 2. Fetch live from Firestore — teacher is authenticated at this point
   try{
-    const sid = _schoolId; // set from ?sid= URL param or approval flow
-    const q = sid
-      ? db.collection('students').where('grade','==',grade).where('schoolId','==',sid)
-      : db.collection('students').where('grade','==',grade);
-    const snap = await q.get();
-    const set  = new Set(streams);
+    const snap = await db.collection('students')
+      .where('grade','==',grade)
+      .where('schoolId','==',sid)
+      .get();
+    const set = new Set(streams);
     snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
     streams = [...set].sort();
-
     // Update cache
     try{
-      const raw  = localStorage.getItem('cbe_streams');
-      const map  = raw ? JSON.parse(raw) : {};
+      const map = JSON.parse(localStorage.getItem('cbe_streams')||'{}');
       map[grade] = streams;
       localStorage.setItem('cbe_streams', JSON.stringify(map));
-      localStorage.setItem('cbe_streams_ts', Date.now().toString());
     }catch(_){}
   }catch(e){
     console.warn('Stream fetch failed:', e.message);
-    // Firestore failed — use whatever we got from cache
+    hint.textContent = 'Could not load streams: '+e.message;
+    hint.style.color = 'var(--err)';
   }
 
   if(!streams.length){
     ss.innerHTML = '<option value="">No streams found for this grade</option>';
-    hint.textContent = 'No streams found. Make sure students are registered in the admission page first.';
+    ss.disabled  = false;
+    hint.textContent = 'No streams found. Ask admin to add students in Admission first.';
     hint.style.color = 'var(--err)';
   } else {
     ss.innerHTML = '<option value="">-- Select Stream --</option>' +
       streams.map(s=>`<option value="${s}">${s}</option>`).join('');
+    ss.disabled  = false;
     hint.textContent = `${streams.length} stream${streams.length>1?'s':''} found for ${grade}`;
     hint.style.color = 'var(--success)';
   }
@@ -1330,6 +1350,12 @@ async function saveClassAssignment(){
   const stream = document.getElementById('suStream').value;
   if(!grade||!stream){showErr('signupErr','Please select your grade and stream.');return;}
   if(!_pendingUid){showErr('signupErr','Session expired. Please refresh.');return;}
+
+  // Must be authenticated to update users doc
+  if(!auth.currentUser){
+    showErr('signupErr','Session expired. Please sign in again with your email and password, then complete setup.');
+    return;
+  }
 
   setLoading('classBtn','classBtnTxt',true,'Confirm');
   try{

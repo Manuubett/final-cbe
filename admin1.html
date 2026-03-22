@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Get Started | CBE Mark Sheet System</title>
+<title>CBE Admin | Teacher Management</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Familjen+Grotesk:wght@700;800&display=swap" rel="stylesheet">
 <style>
@@ -19,900 +19,1735 @@
   --r:10px;--r2:6px;
 }
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:32px 32px;opacity:.4;pointer-events:none}
 
-.page{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:28px 20px 60px}
-
-/* HEADER */
-.hd{text-align:center;margin-bottom:24px}
-.hd-logo{width:50px;height:50px;background:var(--accent);border-radius:12px;display:grid;place-items:center;font-size:24px;margin:0 auto 12px;box-shadow:0 4px 14px rgba(26,86,219,.3)}
-.hd-title{font-family:'Familjen Grotesk',sans-serif;font-size:22px;font-weight:800;margin-bottom:4px}
-.hd-sub{font-size:12.5px;color:var(--text2)}
-
-/* STEP INDICATOR */
-.steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:22px}
-.stp{display:flex;align-items:center;gap:6px}
-.stp-num{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;transition:all .2s}
-.stp.done .stp-num{background:var(--green);color:#fff}
-.stp.active .stp-num{background:var(--accent);color:#fff;box-shadow:0 0 0 3px var(--alight)}
-.stp.wait .stp-num{background:var(--border);color:var(--text3)}
-.stp-lbl{font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap}
-.stp.active .stp-lbl{color:var(--accent);font-weight:700}
-.stp.done .stp-lbl{color:var(--green-tx)}
-.stp-line{width:32px;height:1.5px;background:var(--border);margin:0 4px;flex-shrink:0;transition:background .3s}
-.stp.done+.stp-line,.done-line{background:var(--green)}
-
-/* CARD */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh2);overflow:hidden;animation:fadeUp .3s ease}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-.card-head{padding:14px 22px;background:var(--surf2);border-bottom:1px solid var(--border)}
-.card-head-title{font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;display:flex;align-items:center;gap:7px}
-.card-head-sub{font-size:11.5px;color:var(--text3);margin-top:2px}
-.card-body{padding:22px}
-
-/* SCREEN display */
-.screen{display:none}.screen.active{display:block}
-
-/* PAYMENT SCREEN */
-.price-hero{text-align:center;padding:20px 0 16px}
-.price-badge{display:inline-block;background:var(--alight);color:var(--accent);border:1px solid #c7d9ff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:14px;letter-spacing:.3px}
-.price-amount{font-family:'Familjen Grotesk',sans-serif;font-size:42px;font-weight:800;color:var(--text);line-height:1}
-.price-period{font-size:13px;color:var(--text3);margin-top:4px}
-.features{display:flex;flex-direction:column;gap:8px;margin:18px 0}
-.feat{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
-.feat-icon{width:24px;height:24px;border-radius:6px;background:var(--green-bg);display:grid;place-items:center;font-size:13px;flex-shrink:0}
-.divider{height:1px;background:var(--border);margin:18px 0}
-.payment-details{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:var(--r2);padding:14px 16px;margin-bottom:18px}
-.pd-title{font-size:11px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
-.pd-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px}
-.pd-row:last-child{margin-bottom:0}
-.pd-label{color:#166534;font-weight:600}
-.pd-value{font-family:'Familjen Grotesk',sans-serif;font-weight:800;color:#15803d;font-size:15px}
-.notice{background:var(--amber-bg);border:1px solid #fcd34d;border-radius:var(--r2);padding:10px 14px;font-size:12px;color:var(--amber-tx);line-height:1.6;margin-bottom:18px}
-
-/* ACCOUNT SCREEN */
-.field{margin-bottom:16px}
-.field label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
-.field .hint{font-size:11px;color:var(--text3);margin-top:4px}
-.inp-wrap{position:relative}
-.inp-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.45}
-.inp{width:100%;height:40px;padding:0 12px 0 34px;border:1.5px solid var(--border);border-radius:var(--r2);font-family:inherit;font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s}
-.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
-.inp::placeholder{color:var(--text3)}
-.inp.no-icon{padding-left:12px}
-.eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;color:var(--text3)}
-.inp.has-eye{padding-right:36px}
-.pw-strength{height:3px;border-radius:2px;margin-top:6px;transition:all .3s;background:var(--border)}
-.pw-strength.weak{background:var(--red);width:33%}
-.pw-strength.fair{background:var(--amber);width:66%}
-.pw-strength.strong{background:var(--green);width:100%}
-
-/* DETAILS SCREEN */
-.sec-div{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:6px;margin:18px 0 14px}
-.sec-div:first-child{margin-top:0}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-select.inp{cursor:pointer;padding-left:12px}
-.autosave-bar{display:none;align-items:center;gap:6px;font-size:11.5px;color:var(--green-tx);margin-bottom:16px;background:var(--green-bg);padding:6px 12px;border-radius:5px;border:1px solid #a7f3d0}
-.autosave-bar.show{display:flex}
-.save-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:dotpulse 2s infinite}
-@keyframes dotpulse{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* SUBMITTED SCREEN */
-.sub-center{text-align:center;padding:20px 10px}
-.sub-icon{font-size:54px;margin-bottom:14px}
-.sub-title{font-family:'Familjen Grotesk',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px}
-.sub-msg{font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:20px}
-.sub-ref{background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 16px;font-family:monospace;font-size:13px;color:var(--accent);font-weight:700;margin-bottom:6px;word-break:break-all}
-.sub-ref-lbl{font-size:11px;color:var(--text3);margin-bottom:16px}
-.wa-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#16a34a;color:#fff;border-radius:var(--r2);font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;text-decoration:none;box-shadow:0 4px 14px rgba(22,163,74,.3);transition:all .15s}
-.wa-btn:hover{transform:translateY(-1px)}
-
-/* OWNER MESSAGE BANNER (shown when owner responds) */
-.owner-banner{display:none;border-radius:var(--r2);padding:12px 16px;margin-bottom:20px;border:1.5px solid}
-.owner-banner.show{display:flex;align-items:flex-start;gap:10px}
-.owner-banner.approved{background:var(--green-bg);border-color:#6ee7b7}
-.owner-banner.pending{background:var(--amber-bg);border-color:#fcd34d}
-.owner-banner.rejected{background:var(--red-bg);border-color:#fca5a5}
-.ob-icon{font-size:18px;flex-shrink:0}
-.ob-body{flex:1}
-.ob-title{font-weight:800;font-size:13px;margin-bottom:3px}
-.ob-msg{font-size:12px;line-height:1.6;color:var(--text2)}
-.ob-wa{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:5px 14px;background:#16a34a;color:#fff;border-radius:5px;font-weight:700;font-size:12px;text-decoration:none}
-
-/* BUTTONS */
-.btn-primary{width:100%;height:44px;background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;border:none;border-radius:var(--r2);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s;box-shadow:0 4px 14px rgba(26,86,219,.3);margin-top:6px}
-.btn-primary:hover:not(:disabled){transform:translateY(-1px)}
-.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
-.btn-outline{width:100%;height:40px;background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:var(--r2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .14s;margin-top:8px}
-.btn-outline:hover{background:var(--bg)}
-.spin-sm{width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
+/* ══════════════════════════════════════
+   LOADING SCREEN
+══════════════════════════════════════ */
+#screenLoad{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:14px;z-index:900;
+}
+#screenLoad .spin{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .65s linear infinite}
+#screenLoad p{font-size:12px;color:var(--text3);font-weight:600;letter-spacing:.3px}
 @keyframes sp{to{transform:rotate(360deg)}}
 
-/* ALERT */
-.alert{display:none;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:var(--r2);font-size:12px;font-weight:500;line-height:1.5;margin-bottom:14px}
-.alert.show{display:flex}
-.alert.err{background:var(--red-bg);border:1px solid #fca5a5;color:var(--red-tx)}
+/* ══════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════ */
+#screenDash{display:none}
+#screenDash.show{display:block}
 
-/* FOOTER */
-.footer{text-align:center;font-size:12px;color:var(--text3);margin-top:18px;line-height:1.8}
-.footer a{color:var(--accent);text-decoration:none;font-weight:600}
+/* header */
+header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;box-shadow:var(--sh);
+}
+.logo{display:flex;align-items:center;gap:9px}
+.lm{width:30px;height:30px;background:var(--accent);border-radius:7px;display:grid;place-items:center;color:#fff;font-size:15px}
+.lt{font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;letter-spacing:-.3px}
+.ls{font-size:10px;color:var(--text3)}
+.hdr-r{display:flex;align-items:center;gap:8px}
+.admin-badge{
+  background:var(--alight);color:var(--accent);border:1px solid #c7d9ff;
+  font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;letter-spacing:.3px;
+}
 
-/* LOGIN SCREEN */
-#screen0 .btn-outline{display:flex;align-items:center;justify-content:center;height:40px;width:100%;background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:var(--r2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .14s}
-#screen0 .btn-outline:hover{background:var(--bg)}
+/* buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:5px;padding:5px 13px;
+  border-radius:var(--r2);font-family:inherit;font-size:12.5px;font-weight:600;
+  cursor:pointer;border:none;transition:all .14s;white-space:nowrap;height:32px;
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--ah)}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--text2)}
+.btn-outline:hover{background:var(--bg);color:var(--text)}
+.btn-sm{padding:3px 9px;font-size:11.5px;height:26px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
 
-/* TOAST */
-#tc{position:fixed;top:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
+/* outer */
+.outer{padding:20px 24px;max-width:1200px;margin:0 auto}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:22px}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:14px 16px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:4px;
+  animation:fadeUp .3s ease both;
+}
+.stat-card:nth-child(2){animation-delay:.05s}
+.stat-card:nth-child(3){animation-delay:.1s}
+.stat-card:nth-child(4){animation-delay:.15s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.stat-icon{font-size:20px;margin-bottom:2px}
+.stat-val{font-family:'Familjen Grotesk',sans-serif;font-size:28px;font-weight:800;line-height:1}
+.stat-lbl{font-size:10.5px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.s-active   .stat-val{color:var(--green)}
+.s-pending  .stat-val{color:var(--amber)}
+.s-suspended.stat-val,.s-suspended .stat-val{color:var(--red)}
+
+/* ── QUICK REPORTS ── */
+.quick-reports{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);box-shadow:var(--sh);
+  margin-bottom:22px;overflow:hidden;
+  animation:fadeUp .3s .2s ease both;
+}
+.qr-head{
+  padding:12px 18px;background:var(--surf2);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+}
+.qr-title{font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;display:flex;align-items:center;gap:7px}
+.qr-body{padding:14px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.qr-lbl{font-size:11px;color:var(--text3);font-weight:700}
+
+/* ── RESULTS STAT CARD ── */
+.stat-card.s-results .stat-val{color:var(--accent)}
+
+/* sec head */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px}
+.sec-title{font-family:'Familjen Grotesk',sans-serif;font-size:16px;font-weight:800}
+.sec-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.search-wrap{position:relative}
+.search-wrap input{
+  height:32px;padding:0 10px 0 30px;
+  border:1.5px solid var(--border);border-radius:var(--r2);
+  font-family:inherit;font-size:12.5px;color:var(--text);background:var(--surface);
+  outline:none;width:200px;transition:border-color .14s;
+}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-wrap::before{content:'🔍';position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none;opacity:.5}
+.fsel{
+  height:32px;padding:0 9px;border:1.5px solid var(--border);border-radius:var(--r2);
+  font-family:inherit;font-size:12.5px;color:var(--text);background:var(--surface);cursor:pointer;outline:none;
+}
+.fsel:focus{border-color:var(--accent)}
+
+/* table */
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;animation:fadeUp .35s .1s ease both}
+.tbl-scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:700px}
+thead th{
+  background:#1e2d4d;color:#c8d8f8;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  padding:0 14px;text-align:left;height:34px;white-space:nowrap;border-bottom:1px solid #2d3e61;
+}
+thead th.tc{text-align:center}
+tbody td{padding:0 14px;height:46px;border-bottom:1px solid var(--border);font-size:12.5px;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surf2)}
+tbody td.tc{text-align:center}
+.t-name{font-weight:700}
+.t-email{font-size:11.5px;color:var(--text3)}
+.t-meta{font-size:11.5px;color:var(--text2)}
+
+/* status badge */
+.sbadge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:700}
+.sbadge::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.sbadge.active   {background:var(--green-bg);color:var(--green-tx)}.sbadge.active::before{background:var(--green)}
+.sbadge.pending  {background:var(--amber-bg);color:var(--amber-tx)}.sbadge.pending::before{background:var(--amber)}
+.sbadge.suspended{background:var(--red-bg);color:var(--red-tx)}.sbadge.suspended::before{background:var(--red)}
+
+/* action buttons */
+.act-wrap{display:flex;align-items:center;gap:5px;justify-content:flex-end}
+.act-btn{padding:3px 10px;border-radius:5px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:all .12s;white-space:nowrap}
+.act-approve {background:var(--green-bg);color:var(--green-tx)}.act-approve:hover{background:#a7f3d0}
+.act-suspend {background:var(--red-bg);color:var(--red-tx)}.act-suspend:hover{background:#fecaca}
+.act-activate{background:var(--alight);color:var(--accent)}.act-activate:hover{background:#c7d9ff}
+.act-edit    {background:var(--surf2);color:var(--text2);border:1px solid var(--border)}.act-edit:hover{background:var(--bg)}
+.act-delete  {background:none;color:var(--text3);border:none;font-size:14px;padding:3px 6px;line-height:1}.act-delete:hover{color:var(--red)}
+
+/* empty row */
+.empty-row td{text-align:center;padding:44px;color:var(--text3)}
+.empty-icon{font-size:30px;margin-bottom:8px}
+
+/* ── MODALS ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh2);width:100%;max-width:440px;animation:modalIn .22s cubic-bezier(.22,1,.36,1) both}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800}
+.modal-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--text3);line-height:1;padding:2px}.modal-close:hover{color:var(--text)}
+.modal-body{padding:20px}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.minp{width:100%;height:36px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--r2);font-family:inherit;font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color .14s}
+.minp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239aaabb'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.mfield{margin-bottom:14px}
+.mfield label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.confirm-icon{font-size:36px;text-align:center;margin-bottom:10px}
+.confirm-msg{font-size:13px;color:var(--text2);text-align:center;line-height:1.7}
+
+/* ══════════════════════════════════════
+   PAYMENT GATE OVERLAY
+   Full-screen blur lock — professional
+══════════════════════════════════════ */
+/* ══════════════════════════════
+   PENDING TEACHERS BANNER
+══════════════════════════════ */
+.pending-banner{
+  background:var(--surface);border:1.5px solid #fcd34d;
+  border-left:4px solid var(--amber);border-radius:var(--r);
+  box-shadow:var(--sh);margin-bottom:20px;overflow:hidden;
+  animation:fadeUp .3s ease;
+}
+.pb-head{
+  padding:11px 18px;background:var(--amber-bg);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.pb-title{
+  font-family:'Familjen Grotesk',sans-serif;font-size:13.5px;font-weight:800;
+  color:var(--amber-tx);display:flex;align-items:center;gap:7px;
+}
+.pb-count{
+  background:var(--amber);color:#fff;
+  font-size:11px;font-weight:800;padding:1px 8px;border-radius:20px;
+}
+.pb-body{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.pb-card{
+  background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:11px 14px;display:flex;align-items:center;gap:12px;
+  transition:border-color .14s;
+}
+.pb-card:hover{border-color:var(--accent)}
+.pb-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--alight),#c7d9ff);
+  display:grid;place-items:center;font-size:17px;flex-shrink:0;
+  border:1px solid #c7d9ff;
+}
+.pb-info{flex:1;min-width:0}
+.pb-name{font-weight:700;font-size:13px;color:var(--text);margin-bottom:2px}
+.pb-meta{font-size:11.5px;color:var(--text2)}
+.pb-time{font-size:11px;color:var(--text3);white-space:nowrap}
+.pb-actions{display:flex;gap:6px;flex-shrink:0}
+.pb-approve{
+  padding:5px 13px;border-radius:5px;
+  font-family:inherit;font-size:11.5px;font-weight:700;
+  cursor:pointer;border:none;
+  background:var(--green-bg);color:var(--green-tx);
+  transition:all .12s;
+}
+.pb-approve:hover{background:#a7f3d0}
+.pb-reject{
+  padding:5px 10px;border-radius:5px;
+  font-family:inherit;font-size:11.5px;font-weight:700;
+  cursor:pointer;background:var(--red-bg);color:var(--red-tx);
+  border:none;transition:all .12s;
+}
+.pb-reject:hover{background:#fecaca}
+
+/* ── REASSIGN CLASS MODAL ── */
+.reassign-field{margin-bottom:12px}
+.reassign-field label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+
+/* ══════════════════════════════
+   PAYMENT GATE — compact modal
+══════════════════════════════ */
+#paymentOverlay{
+  display:none;position:fixed;inset:0;z-index:800;
+  background:rgba(6,12,28,.78);
+  backdrop-filter:blur(20px) saturate(.35);
+  -webkit-backdrop-filter:blur(20px) saturate(.35);
+  align-items:center;justify-content:center;padding:20px;
+}
+#paymentOverlay.show{display:flex}
+.pov-card{
+  background:#fff;border-radius:16px;
+  box-shadow:0 24px 60px rgba(0,0,0,.5);
+  width:100%;max-width:400px;
+  overflow:hidden;
+  animation:povIn .35s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes povIn{from{opacity:0;transform:scale(.94) translateY(20px)}to{opacity:1;transform:none}}
+
+/* Compact top band */
+.pov-top{
+  background:linear-gradient(135deg,#0f172a,#1e3a8a 70%,#1a56db);
+  padding:20px 22px 16px;text-align:center;color:#fff;position:relative;overflow:hidden;
+}
+.pov-top::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 75% 10%,rgba(99,179,237,.15) 0%,transparent 60%)}
+.pov-lock-ring{
+  width:48px;height:48px;border-radius:50%;
+  background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.22);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin:0 auto 10px;
+  box-shadow:0 0 0 6px rgba(255,255,255,.05);position:relative;z-index:1;
+}
+.pov-title{font-family:'Familjen Grotesk',sans-serif;font-size:17px;font-weight:800;margin-bottom:4px;position:relative;z-index:1;letter-spacing:-.2px}
+.pov-school-tag{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);padding:2px 12px;border-radius:20px;font-size:11px;color:rgba(255,255,255,.8);position:relative;z-index:1;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Body */
+.pov-body{padding:16px 20px 0}
+
+/* Admin message — compact */
+.pov-msg-box{background:#fffbeb;border:1px solid #fcd34d;border-left:3px solid #f59e0b;border-radius:8px;padding:10px 14px;margin-bottom:14px}
+.pov-msg-from{font-size:9.5px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.pov-msg-text{font-size:12.5px;color:#1e293b;line-height:1.65;white-space:pre-line}
+
+/* Inline M-Pesa strip — single compact row */
+.pov-mpesa-strip{
+  display:flex;align-items:center;gap:10px;
+  background:#f0fdf4;border:1px solid #86efac;
+  border-radius:8px;padding:8px 14px;margin-bottom:14px;
+  flex-wrap:wrap;
+}
+.pov-mpesa-item{display:flex;flex-direction:column;gap:1px}
+.pov-mpesa-lbl{font-size:9px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.4px}
+.pov-mpesa-val{font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;color:#15803d}
+.pov-mpesa-sep{width:1px;height:28px;background:#86efac;flex-shrink:0}
+
+/* Request form — inline inside modal */
+.pov-form{margin-bottom:14px}
+.pov-form-label{font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;display:block}
+.pov-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.pov-inp{
+  height:36px;padding:0 10px;
+  border:1.5px solid #e2e8f0;border-radius:7px;
+  font-family:inherit;font-size:12.5px;color:#1e293b;
+  background:#f8fafc;outline:none;width:100%;
+  transition:border-color .14s;
+}
+.pov-inp:focus{border-color:#1a56db;background:#fff;box-shadow:0 0 0 3px rgba(26,86,219,.08)}
+.pov-inp::placeholder{color:#94a3b8}
+.pov-submit-btn{
+  width:100%;height:38px;
+  background:linear-gradient(135deg,#1a56db,#1447c0);
+  color:#fff;border:none;border-radius:7px;
+  font-family:'Familjen Grotesk',sans-serif;font-size:13.5px;font-weight:800;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:all .14s;box-shadow:0 3px 10px rgba(26,86,219,.3);
+}
+.pov-submit-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 5px 14px rgba(26,86,219,.4)}
+.pov-submit-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+/* Submitted state — shows inside modal after request sent */
+.pov-submitted{display:none;text-align:center;padding:6px 0 12px}
+.pov-submitted.show{display:block}
+.pov-sub-icon{font-size:32px;margin-bottom:6px}
+.pov-sub-title{font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;color:#1e293b;margin-bottom:4px}
+.pov-sub-msg{font-size:12px;color:#64748b;line-height:1.6}
+
+/* Actions strip */
+.pov-actions{padding:0 20px 18px;display:flex;gap:8px}
+.pov-wa-btn{
+  flex:1;padding:9px;border-radius:8px;
+  font-family:inherit;font-size:12px;font-weight:700;
+  cursor:pointer;border:none;
+  background:#16a34a;color:#fff;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  text-decoration:none;transition:all .14s;
+}
+.pov-wa-btn:hover{background:#15803d}
+.pov-logout-btn{
+  padding:9px 14px;border-radius:8px;
+  font-family:inherit;font-size:12px;font-weight:600;
+  cursor:pointer;background:none;border:1.5px solid #e2e8f0;color:#94a3b8;transition:all .14s;
+}
+.pov-logout-btn:hover{border-color:#cbd5e1;color:#64748b}
+
+/* Footer wait bar */
+.pov-wait-bar{
+  background:#f8fafc;border-top:1px solid #f1f5f9;
+  padding:8px 20px;display:flex;align-items:center;gap:7px;
+  font-size:11px;color:#94a3b8;
+}
+.pov-pulse{width:6px;height:6px;border-radius:50%;background:#f59e0b;flex-shrink:0;animation:ppulse 2s infinite}
+@keyframes ppulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+/* toast */
+#tc{position:fixed;top:62px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
 .t{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:var(--r2);font-size:12.5px;font-weight:500;box-shadow:var(--sh2);animation:tin .25s ease;min-width:210px}
-.t.ok{background:#064e3b;color:#ecfdf5;border-left:3px solid #10b981}
+.t.ok {background:#064e3b;color:#ecfdf5;border-left:3px solid #10b981}
 .t.err{background:#7f1d1d;color:#fef2f2;border-left:3px solid #ef4444}
-@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.t.info{background:#1e3a5f;color:#dbeafe;border-left:3px solid var(--accent)}
+@keyframes tin {from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes tout{to{transform:translateX(110%);opacity:0}}
 </style>
 </head>
 <body>
+
 <div id="tc"></div>
 
-<div class="page">
-
-  <div class="hd">
-    <div class="hd-logo">🏫</div>
-    <div class="hd-title">CBE Mark Sheet System</div>
-    <div class="hd-sub">Kenya CBE · Junior School (Grades 7–9)</div>
-  </div>
-
-  <!-- PAGE LOADER — shown while checking if returning user -->
-  <div id="pageInitLoader" style="text-align:center;padding:40px 20px">
-    <div style="width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .6s linear infinite;margin:0 auto 12px"></div>
-    <div style="font-size:12px;color:var(--text3);font-weight:600">Loading…</div>
-  </div>
-
-  <!-- STEP INDICATORS -->
-  <div class="steps" id="stepsBar" style="display:none">
-    <div class="stp active" id="stp1"><div class="stp-num">1</div><div class="stp-lbl">Pricing</div></div>
-    <div class="stp-line" id="line1"></div>
-    <div class="stp wait" id="stp2"><div class="stp-num">2</div><div class="stp-lbl">Create Account</div></div>
-    <div class="stp-line" id="line2"></div>
-    <div class="stp wait" id="stp3"><div class="stp-num">3</div><div class="stp-lbl">School Details</div></div>
-  </div>
-
-  <!-- OWNER BANNER — shows when owner sends response -->
-  <div class="owner-banner" id="ownerBanner">
-    <div class="ob-icon" id="obIcon">📩</div>
-    <div class="ob-body">
-      <div class="ob-title" id="obTitle">Message from Administrator</div>
-      <div class="ob-msg" id="obMsg">—</div>
-      <a class="ob-wa" href="https://wa.me/254704518130" target="_blank">💬 WhatsApp</a>
-    </div>
-  </div>
-
-  <!-- ══ STEP 0: RETURNING USER LOGIN ══ -->
-  <div class="screen" id="screen0">
-    <div class="card">
-      <div class="card-head">
-        <div class="card-head-title">🔑 Welcome Back</div>
-        <div class="card-head-sub">Sign in to your existing school account</div>
-      </div>
-      <div class="card-body">
-        <div class="alert err" id="loginErr"><span>⚠️</span><span id="loginErrMsg"></span></div>
-        <div class="field">
-          <label>Email Address</label>
-          <div class="inp-wrap"><span class="inp-icon">✉️</span><input class="inp" id="liEmail" type="email" placeholder="admin@school.ac.ke" autocomplete="email"></div>
-        </div>
-        <div class="field">
-          <label>Password</label>
-          <div class="inp-wrap">
-            <span class="inp-icon">🔑</span>
-            <input class="inp has-eye" id="liPass" type="password" placeholder="••••••••" autocomplete="current-password">
-            <button class="eye-btn" onclick="toggleEye('liPass',this)" tabindex="-1">👁️</button>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-          <input type="checkbox" id="rememberMe" style="width:15px;height:15px;cursor:pointer;accent-color:var(--accent)">
-          <label for="rememberMe" style="font-size:12.5px;color:var(--text2);cursor:pointer;font-weight:600">Remember me on this device</label>
-        </div>
-        <button class="btn-primary" id="loginBtn" onclick="doLogin()">
-          <span id="loginBtnTxt">Sign In →</span>
-        </button>
-        <button class="btn-outline" onclick="localStorage.removeItem('cbe_reg_uid');localStorage.removeItem('cbe_reg_email');goToStep(1);" style="margin-top:8px">
-          New school? Register here →
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ STEP 1: PRICING ══ -->
-  <div class="screen" id="screen1">
-    <div class="card">
-      <div class="card-head">
-        <div class="card-head-title">💰 Subscription Plan</div>
-        <div class="card-head-sub">Review pricing before creating your account</div>
-      </div>
-      <div class="card-body">
-        <div class="price-hero">
-          <div class="price-badge">MONTHLY SUBSCRIPTION</div>
-          <div class="price-amount">Ksh 2,599</div>
-          <div class="price-period">per month · billed monthly</div>
-        </div>
-
-        <div class="features">
-          <div class="feat"><div class="feat-icon">✅</div>CBE Mark Sheet for Grades 7, 8 &amp; 9</div>
-          <div class="feat"><div class="feat-icon">✅</div>All subjects — per Kenya CBE curriculum</div>
-          <div class="feat"><div class="feat-icon">✅</div>Student performance analysis &amp; reports</div>
-          <div class="feat"><div class="feat-icon">✅</div>Unlimited teachers &amp; streams</div>
-          <div class="feat"><div class="feat-icon">✅</div>Print-ready report cards</div>
-          <div class="feat"><div class="feat-icon">✅</div>Admin &amp; teacher role management</div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="payment-details">
-          <div class="pd-title">💳 M-Pesa Payment Details</div>
-          <div class="pd-row"><span class="pd-label">Till Number</span><span class="pd-value">4585402</span></div>
-          <div class="pd-row"><span class="pd-label">Business Name</span><span style="font-size:13px;font-weight:700;color:#15803d">CBE Mark Sheet</span></div>
-          <div class="pd-row"><span class="pd-label">Amount</span><span class="pd-value">Ksh 2,599</span></div>
-        </div>
-
-        <div class="notice">
-          ⚠️ <strong>Important:</strong> Payment is reviewed manually. After registering, send your M-Pesa confirmation to <strong>0704 518 130</strong> on WhatsApp to get your account activated quickly.
-        </div>
-
-        <button class="btn-primary" onclick="agreeAndProceed()">
-          I Agree — Create My Account →
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ STEP 2: CREATE ACCOUNT ══ -->
-  <div class="screen" id="screen2">
-    <div class="card">
-      <div class="card-head">
-        <div class="card-head-title">👤 Create Your Admin Account</div>
-        <div class="card-head-sub">These credentials will be used to log in to the system</div>
-      </div>
-      <div class="card-body">
-        <div class="alert err" id="acctErr"><span>⚠️</span><span id="acctErrMsg"></span></div>
-
-        <div class="field">
-          <label>Full Name <span style="color:var(--red)">*</span></label>
-          <div class="inp-wrap"><span class="inp-icon">👤</span><input class="inp" id="aName" placeholder="e.g. Jane Mwangi" autocomplete="name"></div>
-        </div>
-        <div class="field">
-          <label>Email Address <span style="color:var(--red)">*</span></label>
-          <div class="inp-wrap"><span class="inp-icon">✉️</span><input class="inp" id="aEmail" type="email" placeholder="admin@school.ac.ke" autocomplete="email"></div>
-          <div class="hint">This will be your login email — use a school email if possible</div>
-        </div>
-        <div class="field">
-          <label>Password <span style="color:var(--red)">*</span></label>
-          <div class="inp-wrap">
-            <span class="inp-icon">🔑</span>
-            <input class="inp has-eye" id="aPass" type="password" placeholder="Min 8 characters" autocomplete="new-password" oninput="checkPwStrength(this.value)">
-            <button class="eye-btn" onclick="toggleEye('aPass',this)" tabindex="-1">👁️</button>
-          </div>
-          <div class="pw-strength" id="pwStrength"></div>
-          <div class="hint" id="pwHint">Use at least 8 characters with numbers and symbols</div>
-        </div>
-        <div class="field">
-          <label>Confirm Password <span style="color:var(--red)">*</span></label>
-          <div class="inp-wrap"><span class="inp-icon">🔑</span><input class="inp has-eye" id="aPass2" type="password" placeholder="Repeat password" autocomplete="new-password"><button class="eye-btn" onclick="toggleEye('aPass2',this)" tabindex="-1">👁️</button></div>
-        </div>
-
-        <button class="btn-primary" id="acctBtn" onclick="createAccount()">
-          <span id="acctBtnTxt">Create Account →</span>
-        </button>
-        <button class="btn-outline" onclick="goToStep(1)">← Back</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ STEP 3: SCHOOL DETAILS ══ -->
-  <div class="screen" id="screen3">
-    <div class="card">
-      <div class="card-head">
-        <div class="card-head-title">🏫 School Details</div>
-        <div class="card-head-sub">Progress is auto-saved — you can leave and return</div>
-      </div>
-      <div class="card-body">
-        <div class="autosave-bar" id="savebar"><div class="save-dot"></div>Progress saved — return anytime</div>
-
-        <div class="sec-div">School Identity</div>
-        <div class="field">
-          <label>School Name <span style="color:var(--red)">*</span></label>
-          <input class="inp no-icon" id="sName" placeholder="e.g. Embu Junior School" oninput="autoSave()">
-        </div>
-        <div class="grid2">
-          <div class="field"><label>Short Name</label><input class="inp no-icon" id="sShort" placeholder="e.g. EJS" oninput="autoSave()"></div>
-          <div class="field"><label>Motto</label><input class="inp no-icon" id="sMotto" placeholder="Excellence in Learning" oninput="autoSave()"></div>
-        </div>
-        <div class="grid2">
-          <div class="field">
-            <label>County <span style="color:var(--red)">*</span></label>
-            <select class="inp" id="sCounty" onchange="onCountyChange();autoSave()"><option value="">-- Select County --</option></select>
-          </div>
-          <div class="field">
-            <label>Sub-County</label>
-            <select class="inp" id="sSubCounty" onchange="autoSave()"><option value="">-- Select Sub-County --</option></select>
-          </div>
-        </div>
-
-        <div class="sec-div">Contact</div>
-        <div class="grid2">
-          <div class="field"><label>Principal <span style="color:var(--red)">*</span></label><input class="inp no-icon" id="sPrincipal" placeholder="Mr. James Mwangi" oninput="autoSave()"></div>
-          <div class="field"><label>Phone <span style="color:var(--red)">*</span></label><input class="inp no-icon" id="sPhone" type="tel" placeholder="0712 345 678" oninput="autoSave()"></div>
-        </div>
-
-        <div class="sec-div">School Info</div>
-        <div class="grid2">
-          <div class="field">
-            <label>Streams per grade</label>
-            <select class="inp" id="sStreams" onchange="autoSave()"><option value="1">1 stream</option><option value="2">2 streams</option><option value="3">3 streams</option><option value="4">4+</option></select>
-          </div>
-          <div class="field">
-            <label>Approx. students</label>
-            <select class="inp" id="sStudents" onchange="autoSave()"><option value="<100">Less than 100</option><option value="100-300">100–300</option><option value="300-500">300–500</option><option value="500+">500+</option></select>
-          </div>
-        </div>
-
-        <button class="btn-primary" id="submitBtn" onclick="submitDetails()">
-          <span id="submitTxt">📤 Submit for Approval</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ SUBMITTED — WAITING FOR APPROVAL ══ -->
-  <div class="screen" id="screen4">
-    <div class="card">
-      <div class="card-body">
-        <div class="sub-center">
-          <div class="sub-icon">⏳</div>
-          <div class="sub-title">Awaiting Approval</div>
-          <div class="sub-msg">
-            Your registration has been submitted and is being reviewed.<br><br>
-            <strong>To speed up activation:</strong><br>
-            Pay <strong>Ksh 2,599</strong> via M-Pesa Till <strong>4585402</strong> then send your confirmation to <strong>0704 518 130</strong> on WhatsApp.
-          </div>
-
-          <!-- Waiting indicator -->
-          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin:16px 0;padding:12px 16px;background:var(--amber-bg);border:1px solid #fcd34d;border-radius:var(--r2);font-size:13px;color:var(--amber-tx)">
-            <div style="width:8px;height:8px;border-radius:50%;background:var(--amber);animation:dotpulse 2s infinite;flex-shrink:0"></div>
-            Waiting for administrator approval — this page will update automatically
-          </div>
-
-          <div class="sub-ref" id="subRef">—</div>
-          <div class="sub-ref-lbl">Your reference — keep this page open</div>
-
-          <a class="wa-btn" href="https://wa.me/254704518130?text=Hello%2C%20I%20have%20registered%20for%20CBE%20Mark%20Sheet%20System%20and%20paid%20Ksh%202%2C599%20via%20M-Pesa%20Till%204585402.%20Please%20activate%20my%20account." target="_blank" style="margin-bottom:12px">
-            💬 Send M-Pesa Confirmation on WhatsApp
-          </a>
-
-          <div style="font-size:12px;color:var(--text3);margin-top:8px">
-            Already approved? <a href="admin1.html" style="color:var(--accent);font-weight:600">Try signing in →</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer">
-    Already registered? <a href="#" onclick="goToStep(0);return false">Sign in here →</a>
-    &nbsp;·&nbsp; New school? <a href="#" onclick="localStorage.removeItem('cbe_reg_uid');localStorage.removeItem('cbe_reg_email');goToStep(1);return false">Register →</a><br>
-    CBE Mark Sheet System · Kenya CBE Junior School
-  </div>
+<!-- ══════════ LOADING ══════════ -->
+<div id="screenLoad">
+  <div class="spin"></div>
+  <p>VERIFYING ACCESS…</p>
 </div>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div id="screenDash">
+
+  <!-- PAYMENT GATE OVERLAY — blurs dashboard, stays until owner approves -->
+  <div id="paymentOverlay">
+    <div class="pov-card">
+
+      <div class="pov-top">
+        <div class="pov-lock-ring">🔒</div>
+        <div class="pov-title">Subscription Required</div>
+        <div class="pov-school-tag" id="povSchoolName">Your School</div>
+      </div>
+
+      <div class="pov-body">
+
+        <!-- Admin message -->
+        <div class="pov-msg-box">
+          <div class="pov-msg-from">📩 Message from Administrator</div>
+          <div class="pov-msg-text" id="povMsgText">Your subscription payment is due. Please pay and submit your confirmation below.</div>
+        </div>
+
+        <!-- Compact M-Pesa strip -->
+        <div class="pov-mpesa-strip">
+          <div class="pov-mpesa-item">
+            <span class="pov-mpesa-lbl">Till Number</span>
+            <span class="pov-mpesa-val">4585402</span>
+          </div>
+          <div class="pov-mpesa-sep"></div>
+          <div class="pov-mpesa-item">
+            <span class="pov-mpesa-lbl">Amount</span>
+            <span class="pov-mpesa-val">Ksh 2,599</span>
+          </div>
+          <div class="pov-mpesa-sep"></div>
+          <div class="pov-mpesa-item">
+            <span class="pov-mpesa-lbl">Business</span>
+            <span class="pov-mpesa-val" style="font-size:12px">CBE Mark Sheet</span>
+          </div>
+        </div>
+
+        <!-- Inline request form — submit without leaving page -->
+        <div class="pov-form" id="povForm">
+          <span class="pov-form-label">Submit your payment confirmation</span>
+          <div class="pov-fields">
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.4px">Your Phone</span>
+              <input class="pov-inp" id="povPhone" placeholder="07XX XXX XXX" type="tel">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.4px">M-Pesa Payment Name</span>
+              <input class="pov-inp" id="povPayName" placeholder="e.g. JANE WANJIKU"
+                oninput="this.value=this.value.toUpperCase()" style="text-transform:uppercase">
+            </div>
+          </div>
+          <div style="font-size:10.5px;color:#94a3b8;margin-bottom:8px;line-height:1.5">Enter the <strong>sender name</strong> exactly as shown in your M-Pesa confirmation message.</div>
+          <button class="pov-submit-btn" id="povSubmitBtn" onclick="submitRenewalRequest()">
+            <span id="povSubmitTxt">📤 Send Approval Request</span>
+          </button>
+        </div>
+
+        <!-- Submitted state — replaces form after sending -->
+        <div class="pov-submitted" id="povSubmitted">
+          <div class="pov-sub-icon">⏳</div>
+          <div class="pov-sub-title">Request Sent — Awaiting Approval</div>
+          <div class="pov-sub-msg">Your payment details have been sent to the administrator.<br>This screen will close automatically once approved.</div>
+        </div>
+
+      </div>
+
+      <div class="pov-actions">
+        <a class="pov-wa-btn"
+           href="https://wa.me/254704518130?text=Hello%2C%20I%20have%20paid%20for%20CBE%20Mark%20Sheet%20renewal%20via%20M-Pesa%20Till%204585402.%20Please%20reactivate%20my%20account."
+           target="_blank">💬 WhatsApp</a>
+        <button class="pov-logout-btn" onclick="doLogout()">← Sign Out</button>
+      </div>
+
+      <div class="pov-wait-bar">
+        <div class="pov-pulse"></div>
+        Waiting for administrator approval — this clears automatically
+      </div>
+
+    </div>
+  </div>
+
+  <!-- EDIT MODAL -->
+  <div class="overlay" id="editOverlay">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">✏️ Edit Teacher</div>
+        <button class="modal-close" onclick="closeEdit()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="mfield"><label>First Name</label><input class="minp" type="text" id="eFirst"></div>
+          <div class="mfield"><label>Last Name</label><input class="minp" type="text" id="eLast"></div>
+        </div>
+        <div class="mfield"><label>TSC Number</label><input class="minp" type="text" id="eTSC" placeholder="Optional"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="mfield">
+            <label>Grade</label>
+            <select class="minp" id="eGrade" onchange="onEditGradeChange()">
+              <option value="">-- Grade --</option>
+              <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+            </select>
+          </div>
+          <div class="mfield">
+            <label>Stream</label>
+            <select class="minp" id="eStream">
+              <option value="">-- Select Grade first --</option>
+            </select>
+            <span id="eStreamHint" style="font-size:10.5px;color:var(--text3);margin-top:3px;display:block"></span>
+          </div>
+        </div>
+        <div class="mfield">
+          <label>Status</label>
+          <select class="minp" id="eStatus">
+            <option value="active">Active</option>
+            <option value="pending">Pending</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeEdit()">Cancel</button>
+        <button class="btn btn-primary" id="editSaveBtn" onclick="saveEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRM MODAL -->
+  <div class="overlay" id="delOverlay">
+    <div class="modal" style="max-width:360px">
+      <div class="modal-head">
+        <div class="modal-title">🗑️ Delete Teacher</div>
+        <button class="modal-close" onclick="closeDel()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-icon">⚠️</div>
+        <div class="confirm-msg">
+          Remove <strong id="delName"></strong> from the system?<br><br>
+          <span style="font-size:11.5px;color:var(--text3)">This deletes their Firestore profile. To fully remove their login, delete them from Firebase Console → Authentication.</span>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeDel()">Cancel</button>
+        <button class="btn" style="background:var(--red);color:#fff" id="delConfirmBtn" onclick="confirmDelete()">Delete Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="lm">⚙️</div>
+      <div><div class="lt">CBE Admin</div><div class="ls">Teacher Management · Junior School</div></div>
+    </div>
+    <div class="hdr-r">
+      <span class="admin-badge">ADMIN</span>
+      <span id="adminName" style="font-size:11.5px;color:var(--text2);font-weight:600"></span>
+      <a href="settings.html" class="btn btn-outline btn-sm">⚙️ Settings</a>
+      <a href="admission.html" class="btn btn-outline btn-sm">🎓 Admission</a>
+      <a href="marksheet.html" class="btn btn-outline btn-sm">📊 Mark Sheet</a>
+      <a href="analysis.html" class="btn btn-outline btn-sm">📈 Analysis</a>
+      <button class="btn btn-outline btn-sm" style="color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="doLogout()">🚪 Sign Out</button>
+    </div>
+  </header>
+
+  <!-- PENDING TEACHER APPROVALS BANNER -->
+  <div class="pending-banner" id="pendingBanner" style="display:none">
+    <div class="pb-head">
+      <div class="pb-title">
+        🔔 Pending Teacher Approvals
+        <span class="pb-count" id="pendingCount">0</span>
+      </div>
+      <span style="font-size:11.5px;color:var(--amber-tx);font-weight:600">Review and approve before teachers can login</span>
+    </div>
+    <div class="pb-body" id="pendingCards"></div>
+  </div>
+
+  <!-- REASSIGN CLASS MODAL -->
+  <div class="overlay" id="reassignOverlay">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-head">
+        <div class="modal-title">🏫 Change Class Assignment</div>
+        <button class="modal-close" onclick="closeReassign()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px;margin-bottom:14px">
+          <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Teacher</div>
+          <div style="font-weight:800;font-size:14px;color:var(--text);margin-top:2px" id="reassignTeacherName">—</div>
+          <div style="font-size:12px;color:var(--text2)" id="reassignCurrentClass">—</div>
+        </div>
+        <div class="reassign-field">
+          <label>New Grade</label>
+          <select class="minp" id="reassignGrade" onchange="onReassignGradeChange()">
+            <option value="">-- Select Grade --</option>
+            <option>Grade 7</option>
+            <option>Grade 8</option>
+            <option>Grade 9</option>
+          </select>
+        </div>
+        <div class="reassign-field">
+          <label>New Stream</label>
+          <select class="minp" id="reassignStream">
+            <option value="">-- Select Grade first --</option>
+          </select>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px" id="reassignStreamHint"></div>
+        </div>
+        <div class="reassign-field">
+          <label>Status</label>
+          <select class="minp" id="reassignStatus">
+            <option value="active">Active — can login</option>
+            <option value="pending">Pending — awaiting approval</option>
+            <option value="suspended">Suspended — blocked</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeReassign()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveReassign()">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS SECTION -->
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-val" id="statTotal">—</div>
+        <div class="stat-lbl">Total Teachers</div>
+      </div>
+      <div class="stat-card s-active">
+        <div class="stat-icon">✅</div>
+        <div class="stat-val" id="statActive">—</div>
+        <div class="stat-lbl">Active</div>
+      </div>
+      <div class="stat-card s-pending">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-val" id="statPending">—</div>
+        <div class="stat-lbl">Pending Approval</div>
+      </div>
+      <div class="stat-card s-suspended">
+        <div class="stat-icon">🚫</div>
+        <div class="stat-val" id="statSuspended">—</div>
+        <div class="stat-lbl">Suspended</div>
+      </div>
+      <div class="stat-card s-results">
+        <div class="stat-icon">📈</div>
+        <div class="stat-val" id="statResults">—</div>
+        <div class="stat-lbl">Results Saved</div>
+      </div>
+    </div>
+
+    <!-- QUICK REPORTS -->
+    <div class="quick-reports">
+      <div class="qr-head">
+        <div class="qr-title">📈 Quick Analysis — Jump to any class report</div>
+        <a href="analysis.html" class="btn btn-outline btn-sm">Open Full Analysis →</a>
+      </div>
+      <div class="qr-body">
+        <span class="qr-lbl">Grade</span>
+        <select class="fsel" id="qrGrade" onchange="onQrGradeChange()">
+          <option value="">-- Grade --</option>
+          <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+        </select>
+        <span class="qr-lbl">Stream</span>
+        <select class="fsel" id="qrStream" disabled>
+          <option value="">-- Stream --</option>
+        </select>
+        <span class="qr-lbl">Term</span>
+        <select class="fsel" id="qrTerm">
+          <option>Term 1</option><option>Term 2</option><option>Term 3</option>
+        </select>
+        <span class="qr-lbl">Year</span>
+        <input type="number" class="fsel" id="qrYear" value="2026" min="2020" max="2040" style="width:72px">
+        <button class="btn btn-primary btn-sm" onclick="openAnalysis()">📈 View Analysis</button>
+        <button class="btn btn-outline btn-sm" onclick="openMarkSheet()">📊 Open Mark Sheet</button>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="sec-head">
+      <div class="sec-title">Teachers</div>
+      <div class="sec-tools">
+        <div class="search-wrap">
+          <input type="text" id="searchInp" placeholder="Search name, email, class…" oninput="renderTable()">
+        </div>
+        <select class="fsel" id="filterStatus" onchange="renderTable()">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="pending">Pending</option>
+          <option value="suspended">Suspended</option>
+        </select>
+        <select class="fsel" id="filterGrade" onchange="renderTable()">
+          <option value="">All Grades</option>
+          <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="loadTeachers()">🔄 Refresh</button>
+        <button class="btn btn-outline btn-sm" onclick="copyRegLink()" title="Copy self-registration link for teachers">🔗 Reg Link</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddTeacher()">➕ Add Teacher</button>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="tbl-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Teacher</th>
+              <th>TSC No.</th>
+              <th>Class</th>
+              <th class="tc">Status</th>
+              <th>Registered</th>
+              <th class="tc">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="teacherTbody">
+            <tr class="empty-row"><td colspan="7"><div class="empty-icon">⏳</div><div>Loading…</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+  <!-- ADD TEACHER MODAL -->
+  <div class="overlay" id="addTeacherOverlay">
+    <div class="modal" style="max-width:460px">
+      <div class="modal-head">
+        <div class="modal-title">➕ Add Teacher</div>
+        <button class="modal-close" onclick="closeAddTeacher()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert err" id="addTeacherErr"><span>⚠️</span><span id="addTeacherErrMsg"></span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="mfield"><label>First Name *</label><input class="minp" id="atFirst" placeholder="Mary"></div>
+          <div class="mfield"><label>Last Name *</label><input class="minp" id="atLast" placeholder="Wanjiku"></div>
+        </div>
+        <div class="mfield"><label>Email Address *</label><input class="minp" type="email" id="atEmail" placeholder="teacher@school.ac.ke"></div>
+        <div class="mfield"><label>TSC Number</label><input class="minp" id="atTSC" placeholder="Optional"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="mfield">
+            <label>Grade *</label>
+            <select class="minp" id="atGrade" onchange="onAddTeacherGradeChange()">
+              <option value="">-- Grade --</option>
+              <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+            </select>
+          </div>
+          <div class="mfield">
+            <label>Stream *</label>
+            <select class="minp" id="atStream"><option value="">-- Select Grade --</option></select>
+          </div>
+        </div>
+        <div class="mfield">
+          <label>Temporary Password *</label>
+          <div style="position:relative">
+            <input class="minp" id="atPass" type="text" value="Teacher@2026" style="padding-right:90px">
+            <button onclick="generatePassword()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer;background:var(--surf2);border:1px solid var(--border);color:var(--text2)">🔄 Generate</button>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">Teacher uses this to sign in. Share it with them securely.</div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeAddTeacher()">Cancel</button>
+        <button class="btn btn-primary" id="addTeacherBtn" onclick="saveAddTeacher()">➕ Add Teacher</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REG LINK MODAL -->
+  <div class="overlay" id="regLinkOverlay">
+    <div class="modal" style="max-width:460px">
+      <div class="modal-head">
+        <div class="modal-title">🔗 Teacher Registration Link</div>
+        <button class="modal-close" onclick="el('regLinkOverlay').classList.remove('open')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">
+          Share this link with teachers. They open it, fill their details and submit — the school is identified automatically.
+        </div>
+
+        <div class="mfield">
+          <label>Base URL of your site</label>
+          <input class="minp" id="regBaseUrl" placeholder="e.g. https://yoursite.com/" oninput="updateRegLink()">
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">
+            The folder/domain where login.html is hosted. Edit if the auto-detected URL is wrong.
+          </div>
+        </div>
+
+        <div class="mfield">
+          <label>Full Registration Link</label>
+          <div style="background:var(--surf2);border:1.5px solid var(--border);border-radius:var(--r2);padding:10px 14px;font-family:monospace;font-size:12px;color:var(--accent);word-break:break-all;user-select:all;cursor:text" id="regLinkText">—</div>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1" onclick="doCopyLink()">📋 Copy Link</button>
+          <button class="btn btn-outline" style="flex:1" onclick="doShareWhatsApp()">💬 WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /screenDash -->
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script>
 firebase.initializeApp({
-  apiKey:"AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
-  authDomain:"bett-294a2.firebaseapp.com",
-  projectId:"bett-294a2",
-  storageBucket:"bett-294a2.appspot.com",
-  messagingSenderId:"1055511650032",
-  appId:"1:1055511650032:web:7e0f9c28e58515f549ac35"
+
+apiKey: "AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
+      authDomain: "bett-294a2.firebaseapp.com",
+      projectId: "bett-294a2",
+      storageBucket: "bett-294a2.appspot.com",
+      messagingSenderId: "1055511650032",
+      appId: "1:1055511650032:web:7e0f9c28e58515f549ac35"
+
+  
 });
-const db=firebase.firestore(), auth=firebase.auth();
-const el=id=>document.getElementById(id);
+const db   = firebase.firestore();
+const auth = firebase.auth();
+// Persistence is set at login time in registration.ht — not here
+
+let allTeachers = [], editingUid = null, deletingUid = null;
+const el = id => document.getElementById(id);
+
+// ── SCREEN SWITCHER ──
+let _redirecting = false; // guard against redirect loops
+function show(screen){
+  ['screenLoad','screenDash'].forEach(s=>{
+    const node = el(s); if(!node) return;
+    node.style.display = 'none';
+    node.classList.remove('show');
+  });
+  if(screen === 'Login'){
+    if(_redirecting) return; // already redirecting — don't loop
+    _redirecting = true;
+    window.location.href = 'registration.ht';
+    return;
+  }
+  const target = el('screen'+screen);
+  if(!target) return;
+  if(screen === 'Load') target.style.display = 'flex';
+  else { target.style.display = 'block'; target.classList.add('show'); }
+}
+
+// ── TOAST ──
+function toast(msg, type='ok'){
+  const t = document.createElement('div');
+  t.className = `t ${type}`;
+  t.innerHTML = `<span>${type==='ok'?'✅':type==='err'?'❌':'ℹ️'}</span>${msg}`;
+  el('tc').appendChild(t);
+  setTimeout(()=>{t.style.animation='tout .25s ease forwards';setTimeout(()=>t.remove(),280);},2800);
+}
+
+// ── AUTH STATE — decide which screen to show ──
+// ── In-memory state — no localStorage ──
+let _schoolId = null;
+let _ownerMsgUnsub = null;
+let _sessionId = null;
 
 // ── Logger ──
-function log(level,msg,data){
+const _logs = [];
+function log(level, msg, data){
+  const entry={level,msg,data:data||null,ts:new Date().toISOString()};
+  _logs.unshift(entry); if(_logs.length>100) _logs.pop();
   const fn=level==='error'?console.error:level==='warn'?console.warn:console.log;
-  fn('[CBE Register]',msg,data||'');
+  fn('[CBE Admin]',msg,data||'');
 }
+window._getLogs = ()=>_logs.map(l=>`[${l.ts}] ${l.level.toUpperCase()}: ${l.msg}${l.data?' | '+JSON.stringify(l.data):''}`).join('\n');
 
-// ── Toast ──
-function toast(msg,type='ok'){
-  const t=document.createElement('div');t.className=`t ${type}`;
-  t.innerHTML=`<span>${type==='ok'?'✅':'❌'}</span>${msg}`;
-  el('tc').appendChild(t);
-  setTimeout(()=>{t.style.animation='tout .25s ease forwards';setTimeout(()=>t.remove(),280);},3200);
-}
+auth.onAuthStateChanged(async u => {
+  // Guard: if already redirecting, do nothing
+  if(_redirecting) return;
 
-// ── State ──
-let currentStep=1, _createdUid=null, _regUnsub=null;
-const SAVE_KEY='cbe_reg_details';
-
-// ── Returning user login ──
-async function doLogin(){
-  el('loginErr').classList.remove('show');
-  const email=el('liEmail').value.trim();
-  const pass=el('liPass').value;
-  const remember=el('rememberMe').checked;
-  if(!email||!pass){
-    el('loginErrMsg').textContent='Email and password are required.';
-    el('loginErr').classList.add('show'); return;
-  }
-  const btn=el('loginBtn'),txt=el('loginBtnTxt');
-  btn.disabled=true; txt.innerHTML='<div class="spin-sm"></div> Signing in…';
-  try{
-    // Set persistence based on remember me
-    const persistence = remember
-      ? firebase.auth.Auth.Persistence.LOCAL    // survives browser close
-      : firebase.auth.Auth.Persistence.SESSION; // clears on browser close
-    await auth.setPersistence(persistence);
-    await auth.signInWithEmailAndPassword(email, pass);
-    // Save email for future visits
-    localStorage.setItem('cbe_reg_email', email);
-    // onAuthStateChanged will handle redirect
-  }catch(e){
-    btn.disabled=false; txt.textContent='Sign In →';
-    const msg = e.code==='auth/user-not-found'||e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'
-      ? 'Incorrect email or password.'
-      : e.code==='auth/too-many-requests' ? 'Too many attempts. Try again later.'
-      : e.message;
-    el('loginErrMsg').textContent=msg;
-    el('loginErr').classList.add('show');
-    log('warn','Login failed',e.code);
-  }
-}
-// Enter key on password
-document.addEventListener('DOMContentLoaded',()=>{
-  const lp=el('liPass');
-  if(lp) lp.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
-});
-
-// ── Step 1 agree — just move to account creation ──
-// ownerLog write moved to AFTER account creation (requires auth)
-function agreeAndProceed(){
-  log('info','User agreed to pricing');
-  goToStep(2);
-}
-
-// ── Step navigation ──
-function goToStep(n){
-  // Hide loader
-  const loader = el('pageInitLoader');
-  if(loader) loader.style.display='none';
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  el('screen'+n).classList.add('active');
-  currentStep=n;
-  // Show step bar only for steps 1-3
-  const stepsBar = el('stepsBar');
-  if(stepsBar) stepsBar.style.display = (n>=1&&n<=3) ? 'flex' : 'none';
-  updateStepBar(n);
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function updateStepBar(n){
-  [1,2,3].forEach(i=>{
-    const stp=el('stp'+i);
-    stp.className='stp '+(i<n?'done':i===n?'active':'wait');
-  });
-  [1,2].forEach(i=>{
-    const line=el('line'+i);
-    line.className='stp-line'+(i<n?' done-line':'');
-  });
-}
-
-// ── Eye toggle ──
-function toggleEye(id,btn){
-  const inp=el(id);
-  inp.type=inp.type==='password'?'text':'password';
-  btn.textContent=inp.type==='password'?'👁️':'🙈';
-}
-
-// ── Password strength ──
-function checkPwStrength(val){
-  const bar=el('pwStrength'),hint=el('pwHint');
-  if(!val){bar.className='pw-strength';return;}
-  const strong=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(val);
-  const fair=/^(?=.*[a-zA-Z])(?=.*\d).{8,}$/.test(val);
-  if(strong){bar.className='pw-strength strong';hint.textContent='Strong password ✅';}
-  else if(fair){bar.className='pw-strength fair';hint.textContent='Fair — add symbols for stronger';}
-  else{bar.className='pw-strength weak';hint.textContent='Weak — add numbers and symbols';}
-}
-
-// ── Create account ──
-async function createAccount(){
-  el('acctErr').classList.remove('show');
-  const name=el('aName').value.trim();
-  const email=el('aEmail').value.trim();
-  const pass=el('aPass').value;
-  const pass2=el('aPass2').value;
-
-  if(!name||!email||!pass){el('acctErrMsg').textContent='All fields are required.';el('acctErr').classList.add('show');return;}
-  if(pass.length<8){el('acctErrMsg').textContent='Password must be at least 8 characters.';el('acctErr').classList.add('show');return;}
-  if(pass!==pass2){el('acctErrMsg').textContent='Passwords do not match.';el('acctErr').classList.add('show');return;}
-
-  const btn=el('acctBtn'),txt=el('acctBtnTxt');
-  btn.disabled=true; txt.innerHTML='<div class="spin-sm"></div> Creating account…';
-  log('info','Creating account',email);
-
-  try{
-    const cred = await auth.createUserWithEmailAndPassword(email,pass);
-    _createdUid = cred.user.uid;
-
-    // Save returning user marker — next visit will show login directly
-    localStorage.setItem('cbe_reg_uid',   cred.user.uid);
-    localStorage.setItem('cbe_reg_email', email);
-
-    // Create user doc in Firestore immediately
-    await db.collection('users').doc(_createdUid).set({
-      fullName:name, email,
-      role:'admin', status:'pending',
-      schoolId:_createdUid,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    // Log to ownerLog now that user is authenticated
-    db.collection('ownerLog').add({
-      type:'pricing_agreed',
-      message:'New admin account created — awaiting school details',
-      color:'blue',
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(()=>{});
-
-    log('info','Account created',_createdUid);
-    toast('Account created! Now fill in your school details.');
-    goToStep(3);
-    restoreSchoolDetails();
-
-  }catch(e){
-    log('error','Account creation failed',e.message);
-    btn.disabled=false;
-    txt.textContent='Create Account →';
-    const msg=e.code==='auth/email-already-in-use'
-      ?'This email is already registered. <a href="admin1.html" style="color:var(--red-tx);font-weight:700">Sign in instead →</a>'
-      :e.code==='auth/invalid-email'?'Invalid email address.'
-      :e.message;
-    el('acctErrMsg').innerHTML=msg;
-    el('acctErr').classList.add('show');
-  }
-}
-
-// ── Auto-save school details to localStorage ──
-function autoSave(){
-  try{
-    localStorage.setItem(SAVE_KEY,JSON.stringify(readDetails()));
-    el('savebar').classList.add('show');
-  }catch(_){}
-}
-
-function readDetails(){
-  return{
-    name:el('sName').value.trim(),
-    shortName:el('sShort').value.trim(),
-    motto:el('sMotto').value.trim(),
-    county:el('sCounty').value,
-    subCounty:el('sSubCounty').value,
-    principal:el('sPrincipal').value.trim(),
-    phone:el('sPhone').value.trim(),
-    streams:el('sStreams').value,
-    students:el('sStudents').value,
-  };
-}
-
-function restoreSchoolDetails(){
-  try{
-    const raw=localStorage.getItem(SAVE_KEY);
-    if(!raw) return;
-    const d=JSON.parse(raw);
-    if(d.name)      el('sName').value=d.name;
-    if(d.shortName) el('sShort').value=d.shortName;
-    if(d.motto)     el('sMotto').value=d.motto;
-    if(d.principal) el('sPrincipal').value=d.principal;
-    if(d.phone)     el('sPhone').value=d.phone;
-    if(d.streams)   el('sStreams').value=d.streams;
-    if(d.students)  el('sStudents').value=d.students;
-    if(d.county){
-      el('sCounty').value=d.county;
-      onCountyChange();
-      setTimeout(()=>{ if(d.subCounty) el('sSubCounty').value=d.subCounty; },60);
-    }
-    if(Object.values(d).some(v=>v)) el('savebar').classList.add('show');
-    log('info','School details restored from localStorage');
-  }catch(_){}
-}
-
-// ── Submit school details ──
-async function submitDetails(){
-  const d=readDetails();
-  if(!d.name){toast('School name is required','err');el('sName').focus();return;}
-  if(!d.county){toast('Please select your county','err');return;}
-  if(!d.principal){toast('Principal name is required','err');el('sPrincipal').focus();return;}
-  if(!d.phone){toast('Phone number is required','err');el('sPhone').focus();return;}
-
-  // Get uid — must be authenticated to write settings and approvedSchools
-  const uid = _createdUid || auth.currentUser?.uid;
-  if(!uid){toast('Session expired — please create account again','err');goToStep(2);return;}
-  if(!auth.currentUser){
-    toast('Not authenticated — please create your account first','err');
-    goToStep(2); return;
-  }
-
-  const btn=el('submitBtn'),txt=el('submitTxt');
-  btn.disabled=true; txt.innerHTML='<div class="spin-sm"></div> Submitting…';
-  log('info','Submitting school details',d.name);
-
-  try{
-    // Save school settings
-    await db.collection('settings').doc(uid).set({
-      ...d, schoolId:uid,
-      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-    },{merge:true});
-
-    // Create approvedSchools doc — owner sees this as a new registration
-    // Check if it already exists to avoid overwriting status set by owner
-    const existingSnap = await db.collection('approvedSchools').doc(uid).get();
-    if(!existingSnap.exists){
-      // First time — create the full doc
-      await db.collection('approvedSchools').doc(uid).set({
-        uid, schoolName:d.name,
-        county:d.county, subCounty:d.subCounty||'',
-        principal:d.principal, phone:d.phone,
-        status:'pending',
-        detectedAt:firebase.firestore.FieldValue.serverTimestamp()
-      });
-    } else {
-      // Already exists — only update non-status fields (owner controls status)
-      await db.collection('approvedSchools').doc(uid).update({
-        schoolName:d.name,
-        county:d.county, subCounty:d.subCounty||'',
-        principal:d.principal, phone:d.phone,
-        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
-
-    // Notify owner with full details
-    await db.collection('ownerLog').add({
-      type:'new_registration',
-      message:'New school registration awaiting approval: '+d.name+' ('+d.county+')',
-      school:d.name, county:d.county||'',
-      principal:d.principal||'', phone:d.phone||'',
-      color:'amber',
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    localStorage.removeItem(SAVE_KEY);
-    el('subRef').textContent=uid.slice(0,16).toUpperCase();
-    log('info','Registration submitted successfully');
-
-    // Listen for owner response
-    listenForOwnerResponse(uid);
-    goToStep(4);
-    el('stepsBar').style.display='none';
-
-  }catch(e){
-    log('error','Submit failed',e.message);
-    toast('Submit failed: '+e.message,'err');
-    btn.disabled=false;
-    txt.textContent='📤 Submit for Approval';
-  }
-}
-
-// ── Listen for owner to approve/message ──
-function listenForOwnerResponse(uid){
-  if(_regUnsub) _regUnsub();
-  log('info','Starting approval listener for',uid);
-
-  _regUnsub=db.collection('approvedSchools').doc(uid)
-    .onSnapshot(snap=>{
-      if(!snap.exists) return;
-      const d=snap.data();
-      log('info','Approval status update received',d.status);
-
-      if(d.status==='approved'){
-        // ✅ AUTO-REDIRECT immediately when owner approves
-        log('info','APPROVED — redirecting to admin1.html');
-
-        // Show a brief success message then redirect
-        showOwnerBanner('approved',
-          '🎉 Your school has been approved!',
-          'Redirecting you to your dashboard now…',
-          null
-        );
-
-        // Update the step icon
-        const icon=el('screen4')?.querySelector('.sub-icon');
-        if(icon) icon.textContent='🎉';
-        const title=el('screen4')?.querySelector('.sub-title');
-        if(title) title.textContent='Approved!';
-
-        // Redirect after 1.5 seconds so they can see the success message
-        setTimeout(()=>{ window.location.href='admin1.html'; }, 1500);
-        return;
-      }
-
-      if(d.status==='suspended'){
-        showOwnerBanner('rejected',
-          '🚫 Registration Not Approved',
-          d.message||'Your registration was not approved. Please contact us on WhatsApp if you believe this is an error.',
-          'https://wa.me/254704518130'
-        );
-        return;
-      }
-
-      // Pending with a new message from owner
-      if(d.message && d.message.trim()){
-        showOwnerBanner('pending','📩 Message from Administrator',d.message,d.contact||'https://wa.me/254704518130');
-      }
-    }, e=>log('error','Approval listener error',e.message));
-}
-
-function showOwnerBanner(type,title,msg,contact){
-  el('obIcon').textContent=type==='approved'?'✅':'📩';
-  el('obTitle').textContent=title;
-  el('obMsg').textContent=msg;
-  const banner=el('ownerBanner');
-  banner.className=`owner-banner show ${type}`;
-  if(contact){
-    const wa=banner.querySelector('.ob-wa');
-    if(wa) wa.href=contact;
-  }
-}
-
-// ── Auth state — handle all scenarios for returning and new users ──
-// ── On page load: check if this is a returning user or brand new ──
-// We check localStorage for a saved registration marker first (fast, no Firestore)
-// then confirm with Firestore if needed
-async function checkReturningUser(){
-  // Marker set when user successfully created account
-  const savedEmail = localStorage.getItem('cbe_reg_email');
-  const savedUid   = localStorage.getItem('cbe_reg_uid');
-
-  if(savedEmail || savedUid){
-    // Returning user — show login screen directly
-    log('info','Returning user detected — showing login screen');
-    goToStep(0);
-    // Pre-fill email
-    const emailEl = el('liEmail');
-    if(emailEl && savedEmail) emailEl.value = savedEmail;
-    return;
-  }
-
-  // Brand new visitor — show pricing
-  log('info','New visitor — showing pricing screen');
-  goToStep(1);
-}
-
-// Run immediately on load
-checkReturningUser();
-
-auth.onAuthStateChanged(async u=>{
   if(!u){
-    // Not logged in
-    if(currentStep===0) return; // stay on login screen
+    log('info','No authenticated user — going to register');
+    show('Login');
     return;
   }
 
-  log('info','User authenticated on register page',u.email);
-  _createdUid=u.uid;
+  log('info','User authenticated', u.email);
 
   try{
-    const snap=await db.collection('approvedSchools').doc(u.uid).get();
+    // 1. Load user profile from Firestore
+    const snap = await db.collection('users').doc(u.uid).get();
 
-    if(snap.exists){
-      const d=snap.data();
-
-      if(d.status==='approved'){
-        // ✅ APPROVED — redirect immediately, no clicks needed
-        log('info','User is approved — redirecting to admin',u.email);
-        window.location.href='admin1.html';
-        return;
-      }
-
-      if(d.status==='suspended'){
-        // Blocked — show message
-        el('subRef').textContent=u.uid.slice(0,16).toUpperCase();
-        goToStep(4); el('stepsBar').style.display='none';
-        listenForOwnerResponse(u.uid);
-        showOwnerBanner('rejected','🚫 Registration Not Approved',
-          d.message||'Your registration was not approved. Contact us on WhatsApp.',
-          'https://wa.me/254704518130');
-        return;
-      }
-
-      // Pending — show waiting screen, listen for approval
-      log('info','User is pending — showing waiting screen');
-      el('subRef').textContent=u.uid.slice(0,16).toUpperCase();
-      goToStep(4); el('stepsBar').style.display='none';
-      listenForOwnerResponse(u.uid); // starts listening — will auto-redirect when approved
-      if(d.message&&d.message.trim()){
-        showOwnerBanner('pending','📩 Message from Administrator',d.message,d.contact||'https://wa.me/254704518130');
-      }
-      return;
+    if(!snap.exists){
+      // New user — no profile yet, must complete registration
+      log('warn','No user profile found', u.uid);
+      show('Login'); return;
     }
 
-    // No approvedSchools doc — check if they have settings
-    const settSnap=await db.collection('settings').doc(u.uid).get();
-    if(!settSnap.exists||!settSnap.data().name){
-      // Has account but no school details yet
-      goToStep(3); restoreSchoolDetails();
-    } else {
-      // Has settings but never submitted — go to step 3 to submit
-      goToStep(3);
+    const profile = snap.data();
+
+    // 2. Teachers cannot access admin
+    if(profile.role === 'teacher'){
+      log('warn','Teacher attempted admin access', u.email);
+      await auth.signOut();
+      show('Login'); return;
     }
 
-  }catch(e){ log('error','Auth state check failed',e.message); }
+    // 3. Set school ID — stored in sessionStorage so other pages can read it
+    _schoolId = u.uid;
+    window._schoolId = u.uid;
+    sessionStorage.setItem('cbe_school_id', u.uid); // persists across tabs in same session
+    el('adminName').textContent = '👤 ' + (profile.fullName || profile.email || '');
+
+    // 4. Show dashboard IMMEDIATELY — don't wait for settings
+    show('Dash');
+
+    // 5. Load data in parallel — non-blocking
+    loadTeachers();
+    loadResultsCount();
+    applySchoolSettings(db).catch(()=>{});
+
+    // 6. One-time patch — fix any teachers who registered before schoolId was required
+    _patchTeachersSchoolId(_schoolId).catch(()=>{});
+
+    // 6. Start payment gate listener
+    _listenPayment(_schoolId);
+
+    // 7. Session tracking — fully non-blocking
+    _trackSession(u, profile).catch(()=>{});
+
+    log('info','Dashboard loaded', {uid:u.uid, role:profile.role});
+
+  }catch(e){
+    log('error','Auth error — staying on load screen', e.message);
+    // On Firestore error, don't redirect — just show error toast
+    // User can retry by refreshing
+    show('Load');
+    toast('Connection error. Please refresh the page.', 'err');
+  }
 });
 
-// ── Kenya Counties ──
-const COUNTIES={
-  "Baringo":["Baringo Central","Baringo North","Baringo South","Eldama Ravine","Mogotio","Tiaty"],
-  "Bomet":["Bomet Central","Bomet East","Chepalungu","Konoin","Sotik"],
-  "Bungoma":["Bumula","Kabuchai","Kanduyi","Kimilili","Mt. Elgon","Sirisia","Tongaren","Webuye East","Webuye West"],
-  "Busia":["Budalangi","Butula","Funyula","Nambale","Teso North","Teso South"],
-  "Elgeyo-Marakwet":["Keiyo North","Keiyo South","Marakwet East","Marakwet West"],
-  "Embu":["Manyatta","Mbeere North","Mbeere South","Runyenjes"],
-  "Garissa":["Dadaab","Fafi","Garissa Township","Hulugho","Ijara","Lagdera"],
-  "Homa Bay":["Kabondo Kasipul","Karachuonyo","Kasipul","Mbita","Ndhiwa","Rangwe","Suba North","Suba South"],
-  "Isiolo":["Garbatulla","Isiolo","Merti"],
-  "Kajiado":["Isinya","Kajiado Central","Kajiado East","Kajiado North","Loitokitok","Mashuuru"],
-  "Kakamega":["Butere","Ikolomani","Khwisero","Likuyani","Lugari","Lurambi","Malava","Matungu","Mumias East","Mumias West","Navakholo","Shinyalu"],
-  "Kericho":["Ainamoi","Belgut","Bureti","Kipkelion East","Kipkelion West","Soin Sigowet"],
-  "Kiambu":["Gatundu North","Gatundu South","Githunguri","Juja","Kabete","Kiambaa","Kiambu","Kikuyu","Limuru","Ruiru","Thika Town","Lari"],
-  "Kilifi":["Ganze","Kaloleni","Kilifi North","Kilifi South","Magarini","Malindi","Rabai"],
-  "Kirinyaga":["Gichugu","Kirinyaga Central","Mwea","Ndia"],
-  "Kisii":["Bobasi","Bomachoge Borabu","Bomachoge Chache","Bonchari","Kitutu Chache North","Kitutu Chache South","Nyaribari Chache","Nyaribari Masaba","South Mugirango"],
-  "Kisumu":["Kisumu Central","Kisumu East","Kisumu West","Muhoroni","Nyakach","Nyando","Seme"],
-  "Kitui":["Kitui Central","Kitui East","Kitui Rural","Kitui South","Kitui West","Mwingi Central","Mwingi North","Mwingi West"],
-  "Kwale":["Kinango","Lunga Lunga","Msambweni","Matuga"],
-  "Laikipia":["Laikipia East","Laikipia North","Laikipia West","Nyahururu","Ol Jorok","Ol Kalou"],
-  "Lamu":["Lamu East","Lamu West"],
-  "Machakos":["Kathiani","Machakos Town","Masinga","Matungulu","Mavoko","Mwala","Yatta"],
-  "Makueni":["Kaiti","Kibwezi East","Kibwezi West","Kilome","Makueni","Mbooni"],
-  "Mandera":["Banissa","Lafey","Mandera East","Mandera North","Mandera South","Mandera West"],
-  "Marsabit":["Laisamis","Moyale","North Horr","Saku"],
-  "Meru":["Buuri","Igembe Central","Igembe North","Igembe South","Imenti North","Imenti South","Tigania East","Tigania West"],
-  "Migori":["Awendo","Kuria East","Kuria West","Mabera","Ntimaru","Nyatike","Rongo","Suna East","Suna West","Uriri"],
-  "Mombasa":["Changamwe","Jomvu","Kisauni","Likoni","Mvita","Nyali"],
-  "Murang'a":["Gatanga","Kahuro","Kandara","Kangema","Kigumo","Kiharu","Mathioya","Murang'a South"],
-  "Nairobi":["Dagoretti North","Dagoretti South","Embakasi Central","Embakasi East","Embakasi North","Embakasi South","Embakasi West","Githurai","Kamukunji","Kasarani","Kibra","Lang'ata","Makadara","Mathare","Roysambu","Ruaraka","Starehe","Westlands"],
-  "Nakuru":["Bahati","Gilgil","Kuresoi North","Kuresoi South","Molo","Nakuru Town East","Nakuru Town West","Naivasha","Njoro","Rongai","Subukia"],
-  "Nandi":["Aldai","Chesumei","Emgwen","Mosop","Nandi Hills","Tindiret"],
-  "Narok":["Kilgoris","Narok East","Narok North","Narok South","Narok West","Transmara East","Transmara West"],
-  "Nyamira":["Borabu","Manga","Masaba North","Nyamira North","Nyamira South"],
-  "Nyandarua":["Kinangop","Kipipiri","Ndaragwa","Ol Kalou","Ol Joro Orok"],
-  "Nyeri":["Kieni","Mathira","Mukurweini","Nyeri Town","Othaya","Tetu"],
-  "Samburu":["Samburu East","Samburu North","Samburu West"],
-  "Siaya":["Alego Usonga","Bondo","Gem","Rarieda","Ugenya","Ugunja"],
-  "Taita-Taveta":["Mwatate","Taveta","Voi","Wundanyi"],
-  "Tana River":["Bura","Galole","Garsen"],
-  "Tharaka-Nithi":["Chuka","Igambang'ombe","Maara","Tharaka North","Tharaka South"],
-  "Trans Nzoia":["Cherangany","Endebess","Kiminini","Kwanza","Saboti"],
-  "Turkana":["Kibish","Loima","Turkana Central","Turkana East","Turkana North","Turkana South","Turkana West"],
-  "Uasin Gishu":["Ainabkoi","Kapseret","Kesses","Moiben","Soy","Turbo"],
-  "Vihiga":["Emuhaya","Hamisi","Luanda","Sabatia","Vihiga"],
-  "Wajir":["Eldas","Tarbaj","Wajir East","Wajir North","Wajir South","Wajir West"],
-  "West Pokot":["Central Pokot","North Pokot","Pokot South","West Pokot"]
+// Login handled by registration.ht — no login screen in admin.html
+
+// ── LOGOUT ──
+async function doLogout(){
+  if(_ownerMsgUnsub){ _ownerMsgUnsub(); _ownerMsgUnsub=null; }
+  await _endSession().catch(()=>{});
+  _schoolId=null; window._schoolId=null;
+  sessionStorage.removeItem('cbe_school_id');
+  _redirecting = false; // reset flag so redirect works
+  await auth.signOut();
+  // onAuthStateChanged will fire with null user → redirects to registration.ht
+}
+
+// ══════════════════════════════════════════════
+// SHARED COMPUTER SECURITY
+// ══════════════════════════════════════════════
+
+const SESSION_TIMEOUT_MS  = 30 * 60 * 1000; // 30 minutes idle
+const SESSION_WARNING_MS  = 2  * 60 * 1000; // warn 2 minutes before
+let   _idleTimer = null, _warnTimer = null, _warnEl = null;
+
+// ── Clear only user-session data on logout ──
+// Keeps: cbe_theme, cbe_school_settings (non-sensitive)
+// Clears: streams cache, any user-specific state
+function clearSessionCache(){
+  ['cbe_streams','cbe_streams_ts'].forEach(k=>localStorage.removeItem(k));
+}
+
+// ── Create warning banner (injected into DOM) ──
+function createWarnBanner(){
+  if(document.getElementById('_sessionWarn')) return;
+  const d = document.createElement('div');
+  d.id = '_sessionWarn';
+  d.style.cssText = `
+    display:none;position:fixed;top:0;left:0;right:0;z-index:9999;
+    background:#7f1d1d;color:#fef2f2;font-family:inherit;
+    padding:10px 20px;font-size:13px;font-weight:600;
+    display:none;align-items:center;justify-content:space-between;gap:12px;
+    border-bottom:2px solid #ef4444;
+  `;
+  d.innerHTML = `
+    <span>⚠️ Your session will expire in <span id="_sessionCountdown">2:00</span> due to inactivity.</span>
+    <div style="display:flex;gap:8px">
+      <button onclick="_keepAlive()" style="padding:4px 12px;background:#059669;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;font-size:12px">Stay Logged In</button>
+      <button onclick="doLogout()" style="padding:4px 12px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:4px;cursor:pointer;font-size:12px">Sign Out Now</button>
+    </div>`;
+  document.body.prepend(d);
+  _warnEl = d;
+}
+
+// ── Reset idle timer on any user activity ──
+function _resetIdleTimer(){
+  clearTimeout(_idleTimer);
+  clearTimeout(_warnTimer);
+  if(_warnEl) _warnEl.style.display = 'none';
+
+  // Warn 2 min before timeout
+  _warnTimer = setTimeout(()=>{
+    createWarnBanner();
+    _warnEl.style.display = 'flex';
+    // Countdown tick
+    let secs = SESSION_WARNING_MS / 1000;
+    const tick = setInterval(()=>{
+      secs--;
+      const el = document.getElementById('_sessionCountdown');
+      if(el) el.textContent = Math.floor(secs/60)+':'+(secs%60).toString().padStart(2,'0');
+      if(secs <= 0) clearInterval(tick);
+    }, 1000);
+  }, SESSION_TIMEOUT_MS - SESSION_WARNING_MS);
+
+  // Auto-logout after full timeout
+  _idleTimer = setTimeout(()=>{
+    doLogout();
+  }, SESSION_TIMEOUT_MS);
+}
+
+window._keepAlive = function(){
+  _resetIdleTimer();
 };
 
-(function buildCounties(){
-  const sel=el('sCounty');
-  Object.keys(COUNTIES).sort().forEach(c=>{
-    const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);
-  });
-})();
+// ── Listen for activity ──
+['mousemove','keydown','click','touchstart','scroll'].forEach(evt=>{
+  document.addEventListener(evt, _resetIdleTimer, {passive:true});
+});
 
-function onCountyChange(){
-  const subs=COUNTIES[el('sCounty').value]||[];
-  const sel=el('sSubCounty');
-  sel.innerHTML='<option value="">-- Select Sub-County --</option>';
-  subs.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});
+// ── Start timer immediately ──
+_resetIdleTimer();
+
+
+// ── LOAD RESULTS COUNT ──
+async function loadResultsCount(){
+  try{
+    const snap = await db.collection('results').where('schoolId','==',_schoolId).get();
+    el('statResults').textContent = snap.size;
+  }catch(e){ el('statResults').textContent = '?'; }
+}
+
+// ── QR: Grade change → load streams ──
+async function onQrGradeChange(){
+  const grade = el('qrGrade').value;
+  const ss = el('qrStream');
+  ss.disabled = true;
+  ss.innerHTML = '<option value="">Loading…</option>';
+  if(!grade){ ss.innerHTML='<option value="">-- Stream --</option>'; return; }
+
+  let streams = [];
+  try{
+    const raw = localStorage.getItem('cbe_streams');
+    if(raw){ const map=JSON.parse(raw); if(map[grade]?.length) streams=map[grade]; }
+  }catch(_){}
+  try{
+    if(_schoolId){
+      const snap = await db.collection('students').where('grade','==',grade).where('schoolId','==',_schoolId).get();
+      const set = new Set(streams);
+      snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
+      streams = [...set].sort();
+    }
+  }catch(_){}
+
+  ss.innerHTML = '<option value="">-- Stream --</option>' +
+    streams.map(s=>`<option>${s}</option>`).join('');
+  ss.disabled = false;
+}
+
+// ── Open analysis page for selected grade/stream/term/year ──
+function openAnalysis(){
+  const grade  = el('qrGrade').value;
+  const stream = el('qrStream').value;
+  const term   = el('qrTerm').value;
+  const year   = el('qrYear').value;
+  if(!grade||!stream){ toast('Select Grade and Stream first','err'); return; }
+  const params = new URLSearchParams({grade,stream,term,year});
+  window.open(`analysis.html?${params}`, '_blank');
+}
+
+// ── Open mark sheet for selected class ──
+function openMarkSheet(){
+  const grade  = el('qrGrade').value;
+  const stream = el('qrStream').value;
+  if(!grade||!stream){ toast('Select Grade and Stream first','err'); return; }
+  const params = new URLSearchParams({grade,stream});
+  window.open(`marksheet.html?${params}`, '_blank');
+}
+
+// ── Open analysis for a specific teacher's class ──
+function openAnalysisFor(grade, stream){
+  const term = new Date().getMonth() < 4 ? 'Term 1' : new Date().getMonth() < 8 ? 'Term 2' : 'Term 3';
+  const year = new Date().getFullYear();
+  const params = new URLSearchParams({grade,stream,term,year});
+  window.open(`analysis.html?${params}`, '_blank');
+}
+
+// ── Pending Teacher Approvals Banner ──
+function renderPendingBanner(){
+  const pending = allTeachers.filter(t => t.status === 'pending');
+  const banner = el('pendingBanner');
+  if(!banner) return;
+  if(!pending.length){ banner.style.display='none'; return; }
+
+  el('pendingCount').textContent = pending.length;
+  banner.style.display = 'block';
+
+  el('pendingCards').innerHTML = pending.map(t => {
+    const when = t.createdAt?.toDate
+      ? t.createdAt.toDate().toLocaleString('en-KE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})
+      : '—';
+    return `<div class="pb-card">
+      <div class="pb-avatar">👤</div>
+      <div class="pb-info">
+        <div class="pb-name">${t.fullName||'—'}</div>
+        <div class="pb-meta">
+          ${t.email||''}
+          ${t.phone ? ` · 📞 ${t.phone}` : ''}
+          ${t.tscNumber ? ` · TSC: ${t.tscNumber}` : ''}
+          ${t.grade&&t.stream ? ` · <strong>${t.grade} ${t.stream}</strong>` : ' · <span style="color:var(--amber-tx);font-size:11px">awaiting class assignment</span>'}
+        </div>
+      </div>
+      <div class="pb-time">${when}</div>
+      <div class="pb-actions">
+        <button class="pb-approve" onclick="quickApprove('${t.uid}')">✅ Approve</button>
+        <button class="pb-reject"  onclick="quickReject('${t.uid}')">✗ Reject</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function quickApprove(uid){
+  const t = allTeachers.find(x=>x.uid===uid); if(!t) return;
+  try{
+    // Approve — schoolId already set at signup via school code
+    // Confirm it matches this admin's school (safety check)
+    if(t.schoolId && t.schoolId !== _schoolId){
+      toast('⚠️ This teacher belongs to a different school','err'); return;
+    }
+    await db.collection('users').doc(uid).update({
+      status:     'active',
+      schoolId:   _schoolId,   // confirm/set schoolId
+      schoolName: _schoolName || window.schoolSettings?.name || '',
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    db.collection('teacherRequests').doc(uid).update({
+      status: 'approved',
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(()=>{});
+    t.status='active'; t.schoolId=_schoolId;
+    updateStats(); renderTable(); renderPendingBanner();
+    toast(`✅ ${t.fullName} approved — they can now select their class and sign in`);
+  }catch(e){ toast('Failed: '+e.message,'err'); }
+}
+
+async function quickReject(uid){
+  const t = allTeachers.find(x=>x.uid===uid); if(!t) return;
+  if(!confirm('Reject and suspend '+t.fullName+'?')) return;
+  try{
+    await db.collection('users').doc(uid).update({status:'suspended'});
+    t.status='suspended';
+    updateStats(); renderTable(); renderPendingBanner();
+    toast(`${t.fullName} rejected`,'info');
+  }catch(e){ toast('Failed: '+e.message,'err'); }
+}
+
+// ── Reassign class modal ──
+let _reassignUid = null;
+
+function openReassign(uid){
+  const t = allTeachers.find(x=>x.uid===uid); if(!t) return;
+  _reassignUid = uid;
+  el('reassignTeacherName').textContent = t.fullName||t.email||'—';
+  el('reassignCurrentClass').textContent = 'Currently: '+(t.grade&&t.stream ? t.grade+' '+t.stream : 'No class assigned');
+  el('reassignGrade').value = t.grade||'';
+  el('reassignStatus').value = t.status||'active';
+  el('reassignStream').innerHTML = '<option value="">-- Select Grade first --</option>';
+  if(t.grade){
+    el('reassignGrade').dispatchEvent(new Event('change'));
+    setTimeout(()=>{ el('reassignStream').value = t.stream||''; }, 200);
+  }
+  el('reassignOverlay').classList.add('open');
+}
+
+function closeReassign(){
+  el('reassignOverlay').classList.remove('open');
+  _reassignUid = null;
+}
+
+async function onReassignGradeChange(){
+  const grade = el('reassignGrade').value;
+  const ss = el('reassignStream');
+  const hint = el('reassignStreamHint');
+  ss.innerHTML = '<option value="">Loading…</option>';
+  if(!grade){ ss.innerHTML='<option value="">-- Select Grade first --</option>'; hint.textContent=''; return; }
+  try{
+    const snap = await db.collection('students')
+      .where('grade','==',grade)
+      .where('schoolId','==',_schoolId)
+      .get();
+    const set = new Set();
+    snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
+    const streams = [...set].sort();
+    if(!streams.length){
+      ss.innerHTML='<option value="">No streams found</option>';
+      hint.textContent='No streams for this grade. Add students in Admission first.';
+      hint.style.color='var(--red)';
+    } else {
+      ss.innerHTML='<option value="">-- Select Stream --</option>'+streams.map(s=>`<option value="${s}">${s}</option>`).join('');
+      hint.textContent=streams.length+' stream'+(streams.length>1?'s':'')+' available';
+      hint.style.color='var(--green)';
+    }
+  }catch(e){ ss.innerHTML='<option value="">Error loading</option>'; }
+}
+
+async function saveReassign(){
+  if(!_reassignUid) return;
+  const grade  = el('reassignGrade').value;
+  const stream = el('reassignStream').value;
+  const status = el('reassignStatus').value;
+  const t = allTeachers.find(x=>x.uid===_reassignUid);
+  if(!t) return;
+  if(grade && !stream){ toast('Please select a stream','err'); return; }
+  const btn = el('reassignOverlay').querySelector('.btn-primary');
+  btn.disabled=true; btn.textContent='Saving…';
+  try{
+    const upd = { status };
+    if(grade)  upd.grade  = grade;
+    if(stream) upd.stream = stream;
+    if(!grade){ upd.grade=null; upd.stream=null; }
+    await db.collection('users').doc(_reassignUid).update(upd);
+    Object.assign(t, upd);
+    updateStats(); renderTable(); renderPendingBanner();
+    closeReassign();
+    const statusMsg = status==='active'?'activated ✅':status==='suspended'?'suspended 🚫':'set to pending';
+    toast(`${t.fullName} — ${grade?grade+' '+stream:'no class'} · ${statusMsg}`);
+  }catch(e){ toast('Save failed: '+e.message,'err'); }
+  btn.disabled=false; btn.textContent='💾 Save Changes';
+}
+
+// ── Patch teachers missing schoolId (one-time fix for existing data) ──
+async function _patchTeachersSchoolId(schoolId){
+  if(!schoolId) return;
+  try{
+    // Only check teachers already in this school or with no school assigned
+    const snap = await db.collection('users')
+      .where('role','==','teacher')
+      .where('schoolId','==',schoolId)
+      .get();
+    const batch = db.batch();
+    let count = 0;
+    snap.forEach(doc=>{
+      const d = doc.data();
+      // Patch if no schoolId OR if it has a placeholder
+      if(!d.schoolId || d.schoolId === '__none__'){
+        batch.update(doc.ref, {schoolId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
+        count++;
+      }
+    });
+    if(count > 0){
+      await batch.commit();
+      log('info', `Patched ${count} teachers with schoolId`);
+      // Reload to pick up the newly patched teachers
+      if(_teachersUnsub){ _teachersUnsub(); _teachersUnsub = null; }
+      loadTeachers();
+    }
+  }catch(e){ log('warn','Patch teachers failed', e.message); }
+}
+
+// ── LOAD TEACHERS — real-time, no composite index needed ──
+let _teachersUnsub = null;
+function loadTeachers(){
+  if(!_schoolId){ log('warn','loadTeachers: no schoolId'); return; }
+  if(_teachersUnsub){ _teachersUnsub(); _teachersUnsub = null; }
+
+  el('teacherTbody').innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-icon">⏳</div><div>Loading…</div></td></tr>`;
+  log('info','Listening for teachers', _schoolId);
+
+  // Query by role + schoolId — filtered at Firestore level (rules require this)
+  _teachersUnsub = db.collection('users')
+    .where('role','==','teacher')
+    .where('schoolId','==',_schoolId)
+    .onSnapshot(snap=>{
+      allTeachers = [];
+      snap.forEach(d=>{
+        allTeachers.push({uid:d.id, ...d.data()});
+      });
+      // Sort newest first client-side — no orderBy needed
+      allTeachers.sort((a,b)=>{
+        const ta = a.createdAt?.toDate?.()?.getTime() || 0;
+        const tb = b.createdAt?.toDate?.()?.getTime() || 0;
+        return tb - ta;
+      });
+      log('info','Teachers loaded', allTeachers.length);
+      updateStats(); renderTable();
+      // Update tab title if pending
+      const pending = allTeachers.filter(t=>t.status==='pending').length;
+      document.title = pending > 0 ? `(${pending}) Admin — CBE` : 'Admin — CBE Mark Sheet';
+    }, e=>{
+      log('error','Teachers listener error', e.message);
+      el('teacherTbody').innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-icon">❌</div><div>${e.message}</div></td></tr>`;
+    });
+}
+
+// ── STATS ──
+function updateStats(){
+  el('statTotal').textContent     = allTeachers.length;
+  el('statActive').textContent    = allTeachers.filter(t=>t.status==='active').length;
+  el('statPending').textContent   = allTeachers.filter(t=>t.status==='pending').length;
+  el('statSuspended').textContent = allTeachers.filter(t=>t.status==='suspended').length;
+  renderPendingBanner();
+}
+
+// ── RENDER TABLE ──
+function renderTable(){
+  const q  = el('searchInp').value.trim().toLowerCase();
+  const fs = el('filterStatus').value;
+  const fg = el('filterGrade').value;
+  const list = allTeachers.filter(t=>{
+    const mq = !q||[t.fullName,t.email,t.grade,t.stream,t.tscNumber].some(v=>(v||'').toLowerCase().includes(q));
+    return mq && (!fs||t.status===fs) && (!fg||t.grade===fg);
+  });
+  if(!list.length){
+    el('teacherTbody').innerHTML=`<tr class="empty-row"><td colspan="7"><div class="empty-icon">👤</div><div>No teachers found</div></td></tr>`;
+    return;
+  }
+  el('teacherTbody').innerHTML = list.map((t,i)=>{
+    const date = t.createdAt?.toDate ? t.createdAt.toDate().toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    const sc = t.status||'pending';
+    const sl = sc.charAt(0).toUpperCase()+sc.slice(1);
+    let actions='';
+    if(sc==='pending'){
+      actions+=`<button class="act-btn act-approve" onclick="setStatus('${t.uid}','active')">✅ Approve</button>`;
+      actions+=`<button class="act-btn act-suspend" onclick="setStatus('${t.uid}','suspended')">🚫 Reject</button>`;
+    } else if(sc==='active'){
+      actions+=`<button class="act-btn act-suspend" onclick="setStatus('${t.uid}','suspended')">🚫 Suspend</button>`;
+    } else {
+      actions+=`<button class="act-btn act-activate" onclick="setStatus('${t.uid}','active')">✅ Reinstate</button>`;
+    }
+    actions+=`<button class="act-btn act-edit" onclick="openEdit('${t.uid}')">✏️ Edit</button>`;
+    actions+=`<button class="act-btn" style="background:var(--alight);color:var(--accent)" onclick="openReassign('${t.uid}')">🔄 Class</button>`;
+    if(t.grade && t.stream){
+      actions+=`<button class="act-btn" style="background:var(--alight);color:var(--accent)" onclick="openAnalysisFor('${t.grade}','${t.stream}')">📈</button>`;
+    }
+    actions+=`<button class="act-btn act-delete" onclick="openDel('${t.uid}')" title="Delete">🗑️</button>`;
+    return `<tr>
+      <td style="color:var(--text3);font-size:11px;font-weight:700">${i+1}</td>
+      <td><div class="t-name">${t.fullName||'—'}</div><div class="t-email">${t.email||''}</div></td>
+      <td class="t-meta">${t.tscNumber||'—'}</td>
+      <td class="t-meta"><strong>${t.grade||'—'}</strong> · ${t.stream||'—'}</td>
+      <td class="tc"><span class="sbadge ${sc}">${sl}</span></td>
+      <td class="t-meta">${date}</td>
+      <td><div class="act-wrap">${actions}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── SET STATUS ──
+async function setStatus(uid, newStatus){
+  const t = allTeachers.find(x=>x.uid===uid);
+  if(!t) return;
+  try{
+    await db.collection('users').doc(uid).update({status:newStatus});
+    t.status = newStatus;
+    updateStats();
+    renderTable();
+    const labels={active:'activated ✅',suspended:'suspended 🚫',pending:'set to pending'};
+    toast(`${t.fullName} ${labels[newStatus]||newStatus}`);
+  }catch(e){ toast('Update failed: '+e.message,'err'); }
+}
+
+// ── EDIT MODAL ──
+async function openEdit(uid){
+  const t = allTeachers.find(x=>x.uid===uid);
+  if(!t) return;
+  editingUid=uid;
+  el('eFirst').value=t.firstName||'';
+  el('eLast').value=t.lastName||'';
+  el('eTSC').value=t.tscNumber||'';
+  el('eGrade').value=t.grade||'';
+  el('eStatus').value=t.status||'pending';
+  el('editOverlay').classList.add('open');
+  // Load streams for this grade, then set current stream
+  await onEditGradeChange(t.stream||'');
+}
+
+// ── Load streams dynamically for edit modal ──
+async function onEditGradeChange(preselect=''){
+  const grade = el('eGrade').value;
+  const ss    = el('eStream');
+  const hint  = el('eStreamHint');
+  ss.innerHTML = '<option value="">Loading…</option>';
+  if(!grade){
+    ss.innerHTML='<option value="">-- Select Grade first --</option>';
+    if(hint) hint.textContent='';
+    return;
+  }
+
+  let streams = [];
+
+  // 1. Check localStorage cache
+  try{
+    const raw = localStorage.getItem('cbe_streams');
+    if(raw){ const map=JSON.parse(raw); if(map[grade]?.length) streams=map[grade]; }
+  }catch(_){}
+
+  // 2. Always fetch live from Firestore
+  try{
+    const snap = await db.collection('students').where('grade','==',grade).get();
+    const set  = new Set(streams);
+    snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
+    streams = [...set].sort();
+    // Update cache
+    try{
+      const raw=localStorage.getItem('cbe_streams');
+      const map=raw?JSON.parse(raw):{};
+      map[grade]=streams;
+      localStorage.setItem('cbe_streams',JSON.stringify(map));
+      localStorage.setItem('cbe_streams_ts',Date.now().toString());
+    }catch(_){}
+  }catch(_){}
+
+  if(!streams.length){
+    ss.innerHTML='<option value="">No streams found</option>';
+    if(hint){ hint.textContent='No streams for this grade yet.'; hint.style.color='var(--red)'; }
+  } else {
+    ss.innerHTML='<option value="">-- Select Stream --</option>'+
+      streams.map(s=>`<option value="${s}"${s===preselect?' selected':''}>${s}</option>`).join('');
+    if(hint){ hint.textContent=`${streams.length} stream${streams.length>1?'s':''} available`; hint.style.color='var(--green)'; }
+    // If preselect not found (e.g. teacher had a stream that was removed), keep blank
+    if(preselect && !streams.includes(preselect)){
+      ss.innerHTML='<option value="'+preselect+'">'+preselect+' (current)</option>'+
+        streams.map(s=>`<option value="${s}">${s}</option>`).join('');
+    }
+  }
+}
+function closeEdit(){ el('editOverlay').classList.remove('open'); editingUid=null; }
+
+async function saveEdit(){
+  if(!editingUid) return;
+  const first=el('eFirst').value.trim(), last=el('eLast').value.trim();
+  const grade=el('eGrade').value, stream=el('eStream').value;
+  const status=el('eStatus').value, tsc=el('eTSC').value.trim();
+  if(!first||!last){toast('Name required','err');return;}
+  if(!grade||!stream){toast('Grade and stream required','err');return;}
+  const btn=el('editSaveBtn');
+  btn.disabled=true; btn.textContent='Saving…';
+  try{
+    const upd={firstName:first,lastName:last,fullName:`${first} ${last}`,grade,stream,status,tscNumber:tsc||null};
+    await db.collection('users').doc(editingUid).update(upd);
+    Object.assign(allTeachers.find(x=>x.uid===editingUid), upd);
+    updateStats(); renderTable(); closeEdit();
+    toast(`${first} ${last} updated`);
+  }catch(e){ toast('Save failed: '+e.message,'err'); }
+  btn.disabled=false; btn.textContent='Save Changes';
+}
+
+// ── DELETE MODAL ──
+function openDel(uid){
+  const t=allTeachers.find(x=>x.uid===uid);
+  if(!t) return;
+  deletingUid=uid;
+  el('delName').textContent=t.fullName||t.email||uid;
+  el('delOverlay').classList.add('open');
+}
+function closeDel(){ el('delOverlay').classList.remove('open'); deletingUid=null; }
+
+async function confirmDelete(){
+  if(!deletingUid) return;
+  const btn=el('delConfirmBtn');
+  btn.disabled=true; btn.textContent='Deleting…';
+  try{
+    await db.collection('users').doc(deletingUid).delete();
+    allTeachers=allTeachers.filter(x=>x.uid!==deletingUid);
+    updateStats(); renderTable(); closeDel();
+    toast('Teacher profile deleted');
+  }catch(e){ toast('Delete failed: '+e.message,'err'); }
+  btn.disabled=false; btn.textContent='Delete Profile';
+}
+
+// ── CLOSE ON BACKDROP / ESC ──
+el('editOverlay').addEventListener('click',e=>{ if(e.target===el('editOverlay')) closeEdit(); });
+el('delOverlay').addEventListener('click', e=>{ if(e.target===el('delOverlay'))  closeDel();  });
+el('reassignOverlay').addEventListener('click',e=>{ if(e.target===el('reassignOverlay')) closeReassign(); });
+el('addTeacherOverlay').addEventListener('click',e=>{ if(e.target===el('addTeacherOverlay')) closeAddTeacher(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeEdit();closeDel();closeReassign();closeAddTeacher();} });
+
+// ── ADD TEACHER ──
+function openAddTeacher(){
+  el('addTeacherErr').classList.remove('show');
+  ['atFirst','atLast','atEmail','atTSC'].forEach(id=>el(id).value='');
+  el('atGrade').value=''; el('atStream').innerHTML='<option value="">-- Select Grade --</option>';
+  el('atPass').value='Teacher@2026';
+  el('addTeacherOverlay').classList.add('open');
+}
+function closeAddTeacher(){ el('addTeacherOverlay').classList.remove('open'); }
+
+async function onAddTeacherGradeChange(){
+  const grade=el('atGrade').value, ss=el('atStream');
+  ss.innerHTML='<option value="">Loading…</option>';
+  if(!grade){ss.innerHTML='<option value="">-- Select Grade --</option>';return;}
+  try{
+    const snap=await db.collection('students')
+      .where('grade','==',grade).where('schoolId','==',_schoolId).get();
+    const set=new Set();
+    snap.forEach(d=>{const s=d.data();if(s.stream?.trim())set.add(s.stream.trim());});
+    const streams=[...set].sort();
+    ss.innerHTML=streams.length
+      ?'<option value="">-- Stream --</option>'+streams.map(s=>`<option>${s}</option>`).join('')
+      :'<option value="">No streams — add students first</option>';
+  }catch(_){ ss.innerHTML='<option value="">Error loading</option>'; }
+}
+
+function generatePassword(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#';
+  let p=''; for(let i=0;i<10;i++) p+=chars[Math.floor(Math.random()*chars.length)];
+  el('atPass').value=p;
+}
+
+async function saveAddTeacher(){
+  const first=el('atFirst').value.trim(), last=el('atLast').value.trim();
+  const email=el('atEmail').value.trim(), tsc=el('atTSC').value.trim();
+  const grade=el('atGrade').value, stream=el('atStream').value;
+  const pass=el('atPass').value.trim();
+
+  el('addTeacherErr').classList.remove('show');
+  if(!first||!last){el('addTeacherErrMsg').textContent='First and last name required.';el('addTeacherErr').classList.add('show');return;}
+  if(!email){el('addTeacherErrMsg').textContent='Email required.';el('addTeacherErr').classList.add('show');return;}
+  if(!grade||!stream){el('addTeacherErrMsg').textContent='Grade and stream required.';el('addTeacherErr').classList.add('show');return;}
+  if(!pass||pass.length<6){el('addTeacherErrMsg').textContent='Password must be at least 6 characters.';el('addTeacherErr').classList.add('show');return;}
+
+  const btn=el('addTeacherBtn');
+  btn.disabled=true; btn.textContent='Creating…';
+
+  // Use Firebase Auth REST API to create user without signing out current admin
+  // We use the secondary auth approach via Firestore doc + a flag
+  // Then teacher logs in — their account is pre-created and active
+  try{
+    // Create Firebase Auth user via REST (doesn't affect current session)
+    const apiKey='AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24';
+    const res=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password:pass,returnSecureToken:true})
+    });
+    const data=await res.json();
+    if(data.error){
+      el('addTeacherErrMsg').textContent=data.error.message==='EMAIL_EXISTS'
+        ?'This email is already registered.'
+        :data.error.message;
+      el('addTeacherErr').classList.add('show');
+      btn.disabled=false; btn.textContent='➕ Add Teacher'; return;
+    }
+    const uid=data.localId;
+
+    // Save Firestore profile — active immediately, no approval needed
+    await db.collection('users').doc(uid).set({
+      firstName:first, lastName:last, fullName:`${first} ${last}`,
+      email, tscNumber:tsc||null,
+      grade, stream,
+      role:'teacher', status:'active',
+      schoolId:_schoolId,
+      schoolName:_schoolName||window.schoolSettings?.name||'',
+      addedByAdmin:true,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    log('info','Teacher added manually',{name:`${first} ${last}`,email,grade,stream});
+    toast(`✅ ${first} ${last} added — ${grade} ${stream} · Share password: ${pass}`);
+    closeAddTeacher();
+
+  }catch(e){
+    log('error','Add teacher failed',e.message);
+    el('addTeacherErrMsg').textContent=e.message;
+    el('addTeacherErr').classList.add('show');
+  }
+  btn.disabled=false; btn.textContent='➕ Add Teacher';
+}
+
+// ── REGISTRATION LINK ──
+function copyRegLink(){
+  if(!_schoolId){ toast('Not logged in','err'); return; }
+  // Strip current filename — works for admin.html, admin1.html, any name
+  const href = window.location.href.split('?')[0].split('#')[0];
+  const base = href.substring(0, href.lastIndexOf('/') + 1);
+  el('regBaseUrl').value = base;
+  updateRegLink();
+  el('regLinkOverlay').classList.add('open');
+}
+
+function updateRegLink(){
+  let base = el('regBaseUrl').value.trim();
+  if(!base) return;
+  if(!base.endsWith('/')) base += '/';
+  const link = base + 'login.html?sid=' + _schoolId;
+  el('regLinkText').value = link;
+}
+
+function doCopyLink(){
+  const link = el('regLinkText').value || el('regLinkText').textContent;
+  navigator.clipboard.writeText(link)
+    .then(()=>{ toast('✅ Link copied to clipboard'); })
+    .catch(()=>{ el('regLinkText').select?.(); document.execCommand('copy'); toast('✅ Copied'); });
+}
+
+function doShareWhatsApp(){
+  const link = el('regLinkText').textContent;
+  const msg  = encodeURIComponent(`Hello! Please use this link to register as a teacher on our CBE Mark Sheet System:
+
+${link}
+
+Fill in your details and submit. I will approve your account.`);
+  window.open(`https://wa.me/?text=${msg}`,'_blank');
+}
+
+// ── Submit renewal request from inside the overlay ──
+async function submitRenewalRequest(){
+  const phone       = (el('povPhone')?.value||'').trim();
+  const paymentName = (el('povPayName')?.value||'').trim().toUpperCase();
+  if(!phone){       toast('Enter your phone number','err'); el('povPhone')?.focus(); return; }
+  if(!paymentName){ toast('Enter the M-Pesa payment name','err'); el('povPayName')?.focus(); return; }
+
+  const btn = el('povSubmitBtn'), txt = el('povSubmitTxt');
+  btn.disabled = true;
+  txt.innerHTML = '<div class="spin-sm"></div> Sending…';
+  log('info','Renewal request submitted', {phone, paymentName});
+
+  try{
+    // Write renewal request to approvedSchools — owner sees it in their panel
+    await db.collection('approvedSchools').doc(_schoolId).set({
+      renewalRequest: {
+        phone, paymentName,
+        submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        schoolName:  window.schoolSettings?.name || _schoolId
+      },
+      status: 'pending',
+    }, {merge: true});
+
+    // Log to owner activity
+    db.collection('ownerLog').add({
+      type:    'renewal_request',
+      message: 'Renewal request from: ' + (window.schoolSettings?.name || _schoolId),
+      school:  window.schoolSettings?.name || '—',
+      phone, paymentName, color: 'amber',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(()=>{});
+
+    // Switch to submitted state inside the modal
+    el('povForm').style.display       = 'none';
+    el('povSubmitted').classList.add('show');
+    toast('✅ Approval request sent — waiting for administrator');
+
+  }catch(e){
+    log('error','Renewal request failed', e.message);
+    toast('Failed: '+e.message, 'err');
+    btn.disabled = false;
+    txt.textContent = '📤 Send Approval Request';
+  }
+}
+
+// ── Payment gate listener — continuous real-time ──
+// Shows overlay whenever owner sends a message OR suspends the school.
+// Disappears ONLY when owner sets status:'approved' and clears the message.
+function _listenPayment(schoolId){
+  if(_ownerMsgUnsub){ _ownerMsgUnsub(); _ownerMsgUnsub=null; }
+  log('info','Payment gate listener started', schoolId);
+
+  _ownerMsgUnsub = db.collection('approvedSchools').doc(schoolId)
+    .onSnapshot(snap=>{
+      if(!snap.exists){
+        log('info','No approvedSchools doc — hiding overlay');
+        _hidePayment(); return;
+      }
+
+      const d = snap.data();
+      log('info','Payment gate update', {status:d.status, hasMsg:!!(d.message?.trim())});
+
+      // ── APPROVED + no message → hide gate, allow full access ──
+      if(d.status === 'approved' && !d.message?.trim()){
+        _hidePayment(); return;
+      }
+
+      // ── SUSPENDED or has a message → show gate ──
+      if(d.status === 'suspended' || (d.message && d.message.trim())){
+        // Update school name tag
+        const nameEl = el('povSchoolName');
+        if(nameEl) nameEl.textContent = d.schoolName || window.schoolSettings?.name || '—';
+
+        // Update message — use owner message or a default
+        const msgEl = el('povMsgText');
+        if(msgEl){
+          msgEl.textContent = d.message?.trim()
+            ? d.message
+            : d.status === 'suspended'
+              ? 'Your account has been suspended. Please contact the administrator to resolve this.'
+              : 'Your subscription payment is due. Please renew to continue using the system.';
+        }
+
+        // Show overlay — reset form state so they can re-submit if needed
+        const ov = el('paymentOverlay');
+        if(ov && !ov.classList.contains('show')){
+          // Reset form to initial state
+          const form = el('povForm'), sub = el('povSubmitted');
+          if(form){ form.style.display=''; }
+          if(sub)  { sub.classList.remove('show'); }
+          const sBtn = el('povSubmitBtn'), sTxt = el('povSubmitTxt');
+          if(sBtn){ sBtn.disabled=false; }
+          if(sTxt){ sTxt.textContent='📤 Send Approval Request'; }
+
+          // Pre-fill phone from Firestore if available
+          const phoneInp = el('povPhone');
+          if(phoneInp && d.phone && !phoneInp.value){
+            phoneInp.value = d.phone;
+          }
+
+          ov.classList.add('show');
+          log('info','Payment gate overlay shown');
+        }
+        return;
+      }
+
+      // Default — hide (e.g. approved with cleared message)
+      _hidePayment();
+
+    }, e=>{
+      log('warn','Payment gate listener error', e.message);
+      // On error — don't block the user, just hide
+      _hidePayment();
+    });
+}
+
+function _hidePayment(){
+  const ov = el('paymentOverlay');
+  if(ov && ov.classList.contains('show')){
+    ov.classList.remove('show');
+    log('info','Payment gate hidden — access restored');
+  }
+}
+
+// ── Session tracking ──
+async function _trackSession(user, profile){
+  let ip='—';
+  try{ const ctrl=new AbortController(); setTimeout(()=>ctrl.abort(),3000); const r=await fetch('https://api.ipify.org?format=json',{signal:ctrl.signal}); ip=(await r.json()).ip||'—'; }catch(_){}
+  const ua=navigator.userAgent;
+  function gd(u){return /iPhone/.test(u)?'iPhone':/iPad/.test(u)?'iPad':/Android/.test(u)?'Android':/Chrome/.test(u)?'Chrome':/Firefox/.test(u)?'Firefox':'Desktop';}
+  function go(u){return /Windows/.test(u)?'Windows':/Mac/.test(u)?'macOS':/Linux/.test(u)?'Linux':/Android/.test(u)?'Android':'Unknown';}
+  const ref=await db.collection('adminSessions').add({
+    schoolId:user.uid, adminId:user.uid,
+    adminName:profile.fullName||profile.email||'',
+    adminEmail:user.email||'', schoolName:window.schoolSettings?.name||'',
+    role:profile.role||'admin', ip, device:gd(ua), os:go(ua),
+    active:true, forcedLogout:false,
+    loginAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  _sessionId=ref.id;
+  db.collection('users').doc(user.uid).update({lastLogin:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});
+  window.addEventListener('beforeunload',_endSession);
+  _listenSessionControl();
+}
+function _listenSessionControl(){
+  if(!_sessionId) return;
+  db.collection('adminSessions').doc(_sessionId).onSnapshot(doc=>{
+    if(!doc.exists) return;
+    const d=doc.data();
+    if(d && d.forcedLogout){
+      toast('⚠️ Session ended — another login detected','err');
+      setTimeout(()=>doLogout(),2000);
+    }
+  });
+}
+async function _endSession(){
+  if(!_sessionId) return;
+  await db.collection('adminSessions').doc(_sessionId).update({active:false,logoutAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});
+  _sessionId=null;
 }
 </script>
+<script src="school-settings.js"></script>
 </body>
 </html>

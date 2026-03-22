@@ -679,6 +679,8 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
           <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
         </select>
         <button class="btn btn-outline btn-sm" onclick="loadTeachers()">🔄 Refresh</button>
+        <button class="btn btn-outline btn-sm" onclick="copyRegLink()" title="Copy self-registration link for teachers">🔗 Reg Link</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddTeacher()">➕ Add Teacher</button>
       </div>
     </div>
 
@@ -704,6 +706,83 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
     </div>
 
   </div>
+  <!-- ADD TEACHER MODAL -->
+  <div class="overlay" id="addTeacherOverlay">
+    <div class="modal" style="max-width:460px">
+      <div class="modal-head">
+        <div class="modal-title">➕ Add Teacher</div>
+        <button class="modal-close" onclick="closeAddTeacher()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert err" id="addTeacherErr"><span>⚠️</span><span id="addTeacherErrMsg"></span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="mfield"><label>First Name *</label><input class="minp" id="atFirst" placeholder="Mary"></div>
+          <div class="mfield"><label>Last Name *</label><input class="minp" id="atLast" placeholder="Wanjiku"></div>
+        </div>
+        <div class="mfield"><label>Email Address *</label><input class="minp" type="email" id="atEmail" placeholder="teacher@school.ac.ke"></div>
+        <div class="mfield"><label>TSC Number</label><input class="minp" id="atTSC" placeholder="Optional"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="mfield">
+            <label>Grade *</label>
+            <select class="minp" id="atGrade" onchange="onAddTeacherGradeChange()">
+              <option value="">-- Grade --</option>
+              <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+            </select>
+          </div>
+          <div class="mfield">
+            <label>Stream *</label>
+            <select class="minp" id="atStream"><option value="">-- Select Grade --</option></select>
+          </div>
+        </div>
+        <div class="mfield">
+          <label>Temporary Password *</label>
+          <div style="position:relative">
+            <input class="minp" id="atPass" type="text" value="Teacher@2026" style="padding-right:90px">
+            <button onclick="generatePassword()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer;background:var(--surf2);border:1px solid var(--border);color:var(--text2)">🔄 Generate</button>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">Teacher uses this to sign in. Share it with them securely.</div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeAddTeacher()">Cancel</button>
+        <button class="btn btn-primary" id="addTeacherBtn" onclick="saveAddTeacher()">➕ Add Teacher</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REG LINK MODAL -->
+  <div class="overlay" id="regLinkOverlay">
+    <div class="modal" style="max-width:460px">
+      <div class="modal-head">
+        <div class="modal-title">🔗 Teacher Registration Link</div>
+        <button class="modal-close" onclick="el('regLinkOverlay').classList.remove('open')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">
+          Share this link with teachers. They open it, fill their details and submit — the school is identified automatically.
+        </div>
+
+        <div class="mfield">
+          <label>Base URL of your site</label>
+          <input class="minp" id="regBaseUrl" placeholder="e.g. https://yoursite.com/" oninput="updateRegLink()">
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">
+            The folder/domain where login.html is hosted. Edit if the auto-detected URL is wrong.
+          </div>
+        </div>
+
+        <div class="mfield">
+          <label>Full Registration Link</label>
+          <div style="background:var(--surf2);border:1.5px solid var(--border);border-radius:var(--r2);padding:10px 14px;font-family:monospace;font-size:12px;color:var(--accent);word-break:break-all;user-select:all;cursor:text" id="regLinkText">—</div>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1" onclick="doCopyLink()">📋 Copy Link</button>
+          <button class="btn btn-outline" style="flex:1" onclick="doShareWhatsApp()">💬 WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /screenDash -->
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -930,7 +1009,7 @@ _resetIdleTimer();
 // ── LOAD RESULTS COUNT ──
 async function loadResultsCount(){
   try{
-    const snap = await db.collection('results').get();
+    const snap = await db.collection('results').where('schoolId','==',_schoolId).get();
     el('statResults').textContent = snap.size;
   }catch(e){ el('statResults').textContent = '?'; }
 }
@@ -949,10 +1028,12 @@ async function onQrGradeChange(){
     if(raw){ const map=JSON.parse(raw); if(map[grade]?.length) streams=map[grade]; }
   }catch(_){}
   try{
-    const snap = await db.collection('students').where('grade','==',grade).get();
-    const set = new Set(streams);
-    snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
-    streams = [...set].sort();
+    if(_schoolId){
+      const snap = await db.collection('students').where('grade','==',grade).where('schoolId','==',_schoolId).get();
+      const set = new Set(streams);
+      snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
+      streams = [...set].sort();
+    }
   }catch(_){}
 
   ss.innerHTML = '<option value="">-- Stream --</option>' +
@@ -1008,8 +1089,9 @@ function renderPendingBanner(){
         <div class="pb-name">${t.fullName||'—'}</div>
         <div class="pb-meta">
           ${t.email||''}
-          ${t.grade&&t.stream ? ` · <strong>${t.grade} ${t.stream}</strong>` : ''}
+          ${t.phone ? ` · 📞 ${t.phone}` : ''}
           ${t.tscNumber ? ` · TSC: ${t.tscNumber}` : ''}
+          ${t.grade&&t.stream ? ` · <strong>${t.grade} ${t.stream}</strong>` : ' · <span style="color:var(--amber-tx);font-size:11px">awaiting class assignment</span>'}
         </div>
       </div>
       <div class="pb-time">${when}</div>
@@ -1024,10 +1106,24 @@ function renderPendingBanner(){
 async function quickApprove(uid){
   const t = allTeachers.find(x=>x.uid===uid); if(!t) return;
   try{
-    await db.collection('users').doc(uid).update({status:'active'});
-    t.status='active';
+    // Approve — schoolId already set at signup via school code
+    // Confirm it matches this admin's school (safety check)
+    if(t.schoolId && t.schoolId !== _schoolId){
+      toast('⚠️ This teacher belongs to a different school','err'); return;
+    }
+    await db.collection('users').doc(uid).update({
+      status:     'active',
+      schoolId:   _schoolId,   // confirm/set schoolId
+      schoolName: _schoolName || window.schoolSettings?.name || '',
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    db.collection('teacherRequests').doc(uid).update({
+      status: 'approved',
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(()=>{});
+    t.status='active'; t.schoolId=_schoolId;
     updateStats(); renderTable(); renderPendingBanner();
-    toast(`✅ ${t.fullName} approved — they can now login`);
+    toast(`✅ ${t.fullName} approved — they can now select their class and sign in`);
   }catch(e){ toast('Failed: '+e.message,'err'); }
 }
 
@@ -1120,7 +1216,11 @@ async function saveReassign(){
 async function _patchTeachersSchoolId(schoolId){
   if(!schoolId) return;
   try{
-    const snap = await db.collection('users').where('role','==','teacher').get();
+    // Only check teachers already in this school or with no school assigned
+    const snap = await db.collection('users')
+      .where('role','==','teacher')
+      .where('schoolId','==',schoolId)
+      .get();
     const batch = db.batch();
     let count = 0;
     snap.forEach(doc=>{
@@ -1150,19 +1250,14 @@ function loadTeachers(){
   el('teacherTbody').innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-icon">⏳</div><div>Loading…</div></td></tr>`;
   log('info','Listening for teachers', _schoolId);
 
-  // Query by role only — no composite index required
-  // Then filter by schoolId client-side — also catches teachers
-  // whose schoolId was not yet set (registered before the fix)
+  // Query by role + schoolId — filtered at Firestore level (rules require this)
   _teachersUnsub = db.collection('users')
     .where('role','==','teacher')
+    .where('schoolId','==',_schoolId)
     .onSnapshot(snap=>{
       allTeachers = [];
       snap.forEach(d=>{
-        const data = d.data();
-        // Include teacher if schoolId matches OR if no schoolId set yet
-        if(!data.schoolId || data.schoolId === _schoolId){
-          allTeachers.push({uid:d.id, ...data});
-        }
+        allTeachers.push({uid:d.id, ...d.data()});
       });
       // Sort newest first client-side — no orderBy needed
       allTeachers.sort((a,b)=>{
@@ -1285,10 +1380,12 @@ async function onEditGradeChange(preselect=''){
 
   // 2. Always fetch live from Firestore
   try{
-    const snap = await db.collection('students').where('grade','==',grade).get();
-    const set  = new Set(streams);
-    snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
-    streams = [...set].sort();
+    if(_schoolId){
+      const snap = await db.collection('students').where('grade','==',grade).where('schoolId','==',_schoolId).get();
+      const set  = new Set(streams);
+      snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
+      streams = [...set].sort();
+    }
     // Update cache
     try{
       const raw=localStorage.getItem('cbe_streams');
@@ -1361,7 +1458,136 @@ async function confirmDelete(){
 el('editOverlay').addEventListener('click',e=>{ if(e.target===el('editOverlay')) closeEdit(); });
 el('delOverlay').addEventListener('click', e=>{ if(e.target===el('delOverlay'))  closeDel();  });
 el('reassignOverlay').addEventListener('click',e=>{ if(e.target===el('reassignOverlay')) closeReassign(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeEdit();closeDel();closeReassign();} });
+el('addTeacherOverlay').addEventListener('click',e=>{ if(e.target===el('addTeacherOverlay')) closeAddTeacher(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeEdit();closeDel();closeReassign();closeAddTeacher();} });
+
+// ── ADD TEACHER ──
+function openAddTeacher(){
+  el('addTeacherErr').classList.remove('show');
+  ['atFirst','atLast','atEmail','atTSC'].forEach(id=>el(id).value='');
+  el('atGrade').value=''; el('atStream').innerHTML='<option value="">-- Select Grade --</option>';
+  el('atPass').value='Teacher@2026';
+  el('addTeacherOverlay').classList.add('open');
+}
+function closeAddTeacher(){ el('addTeacherOverlay').classList.remove('open'); }
+
+async function onAddTeacherGradeChange(){
+  const grade=el('atGrade').value, ss=el('atStream');
+  ss.innerHTML='<option value="">Loading…</option>';
+  if(!grade){ss.innerHTML='<option value="">-- Select Grade --</option>';return;}
+  try{
+    const snap=await db.collection('students')
+      .where('grade','==',grade).where('schoolId','==',_schoolId).get();
+    const set=new Set();
+    snap.forEach(d=>{const s=d.data();if(s.stream?.trim())set.add(s.stream.trim());});
+    const streams=[...set].sort();
+    ss.innerHTML=streams.length
+      ?'<option value="">-- Stream --</option>'+streams.map(s=>`<option>${s}</option>`).join('')
+      :'<option value="">No streams — add students first</option>';
+  }catch(_){ ss.innerHTML='<option value="">Error loading</option>'; }
+}
+
+function generatePassword(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#';
+  let p=''; for(let i=0;i<10;i++) p+=chars[Math.floor(Math.random()*chars.length)];
+  el('atPass').value=p;
+}
+
+async function saveAddTeacher(){
+  const first=el('atFirst').value.trim(), last=el('atLast').value.trim();
+  const email=el('atEmail').value.trim(), tsc=el('atTSC').value.trim();
+  const grade=el('atGrade').value, stream=el('atStream').value;
+  const pass=el('atPass').value.trim();
+
+  el('addTeacherErr').classList.remove('show');
+  if(!first||!last){el('addTeacherErrMsg').textContent='First and last name required.';el('addTeacherErr').classList.add('show');return;}
+  if(!email){el('addTeacherErrMsg').textContent='Email required.';el('addTeacherErr').classList.add('show');return;}
+  if(!grade||!stream){el('addTeacherErrMsg').textContent='Grade and stream required.';el('addTeacherErr').classList.add('show');return;}
+  if(!pass||pass.length<6){el('addTeacherErrMsg').textContent='Password must be at least 6 characters.';el('addTeacherErr').classList.add('show');return;}
+
+  const btn=el('addTeacherBtn');
+  btn.disabled=true; btn.textContent='Creating…';
+
+  // Use Firebase Auth REST API to create user without signing out current admin
+  // We use the secondary auth approach via Firestore doc + a flag
+  // Then teacher logs in — their account is pre-created and active
+  try{
+    // Create Firebase Auth user via REST (doesn't affect current session)
+    const apiKey='AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24';
+    const res=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password:pass,returnSecureToken:true})
+    });
+    const data=await res.json();
+    if(data.error){
+      el('addTeacherErrMsg').textContent=data.error.message==='EMAIL_EXISTS'
+        ?'This email is already registered.'
+        :data.error.message;
+      el('addTeacherErr').classList.add('show');
+      btn.disabled=false; btn.textContent='➕ Add Teacher'; return;
+    }
+    const uid=data.localId;
+
+    // Save Firestore profile — active immediately, no approval needed
+    await db.collection('users').doc(uid).set({
+      firstName:first, lastName:last, fullName:`${first} ${last}`,
+      email, tscNumber:tsc||null,
+      grade, stream,
+      role:'teacher', status:'active',
+      schoolId:_schoolId,
+      schoolName:_schoolName||window.schoolSettings?.name||'',
+      addedByAdmin:true,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    log('info','Teacher added manually',{name:`${first} ${last}`,email,grade,stream});
+    toast(`✅ ${first} ${last} added — ${grade} ${stream} · Share password: ${pass}`);
+    closeAddTeacher();
+
+  }catch(e){
+    log('error','Add teacher failed',e.message);
+    el('addTeacherErrMsg').textContent=e.message;
+    el('addTeacherErr').classList.add('show');
+  }
+  btn.disabled=false; btn.textContent='➕ Add Teacher';
+}
+
+// ── REGISTRATION LINK ──
+function copyRegLink(){
+  if(!_schoolId){ toast('Not logged in','err'); return; }
+  // Strip current filename — works for admin.html, admin1.html, any name
+  const href = window.location.href.split('?')[0].split('#')[0];
+  const base = href.substring(0, href.lastIndexOf('/') + 1);
+  el('regBaseUrl').value = base;
+  updateRegLink();
+  el('regLinkOverlay').classList.add('open');
+}
+
+function updateRegLink(){
+  let base = el('regBaseUrl').value.trim();
+  if(!base) return;
+  if(!base.endsWith('/')) base += '/';
+  const link = base + 'login.html?sid=' + _schoolId;
+  el('regLinkText').value = link;
+}
+
+function doCopyLink(){
+  const link = el('regLinkText').value || el('regLinkText').textContent;
+  navigator.clipboard.writeText(link)
+    .then(()=>{ toast('✅ Link copied to clipboard'); })
+    .catch(()=>{ el('regLinkText').select?.(); document.execCommand('copy'); toast('✅ Copied'); });
+}
+
+function doShareWhatsApp(){
+  const link = el('regLinkText').textContent;
+  const msg  = encodeURIComponent(`Hello! Please use this link to register as a teacher on our CBE Mark Sheet System:
+
+${link}
+
+Fill in your details and submit. I will approve your account.`);
+  window.open(`https://wa.me/?text=${msg}`,'_blank');
+}
 
 // ── Submit renewal request from inside the overlay ──
 async function submitRenewalRequest(){
@@ -1377,14 +1603,13 @@ async function submitRenewalRequest(){
 
   try{
     // Write renewal request to approvedSchools — owner sees it in their panel
-    await db.collection('approvedSchools').doc(_schoolId).set({
+    await db.collection('approvedSchools').doc(_schoolId).update({
       renewalRequest: {
         phone, paymentName,
         submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
         schoolName:  window.schoolSettings?.name || _schoolId
-      },
-      status: 'pending',
-    }, {merge: true});
+      }
+    });
 
     // Log to owner activity
     db.collection('ownerLog').add({

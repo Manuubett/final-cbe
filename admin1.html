@@ -898,10 +898,7 @@ auth.onAuthStateChanged(async u => {
     loadResultsCount();
     applySchoolSettings(db).catch(()=>{});
 
-    // 6. Debug — log what teacher docs exist and their schoolId values
-    _debugTeacherDocs(_schoolId);
-
-    // 7. One-time patch — fix any teachers who registered before schoolId was required
+    // 6. One-time patch — fix any teachers who registered before schoolId was required
     _patchTeachersSchoolId(_schoolId).catch(()=>{});
 
     // 6. Start payment gate listener
@@ -1198,7 +1195,7 @@ async function saveReassign(){
   const status = el('reassignStatus').value;
   const t = allTeachers.find(x=>x.uid===_reassignUid);
   if(!t) return;
-  if(grade && !stream){ toast('Please select a stream','err'); return; }
+  // stream is optional — schools without streams leave it blank
   const btn = el('reassignOverlay').querySelector('.btn-primary');
   btn.disabled=true; btn.textContent='Saving…';
   try{
@@ -1214,44 +1211,6 @@ async function saveReassign(){
     toast(`${t.fullName} — ${grade?grade+' '+stream:'no class'} · ${statusMsg}`);
   }catch(e){ toast('Save failed: '+e.message,'err'); }
   btn.disabled=false; btn.textContent='💾 Save Changes';
-}
-
-// ── Debug: check what teacher docs exist in Firestore ──
-async function _debugTeacherDocs(adminSchoolId){
-  try{
-    // Query ALL users with role=teacher — no schoolId filter
-    const snap = await db.collection('users').where('role','==','teacher').get();
-    if(snap.empty){
-      log('warn','DEBUG: No teacher docs found at all in users collection');
-      toast('⚠️ No teachers found in database at all','info');
-      return;
-    }
-    log('info',`DEBUG: Found ${snap.size} teacher doc(s) total`);
-    snap.forEach(d=>{
-      const data = d.data();
-      const match = data.schoolId === adminSchoolId;
-      log(match ? 'info' : 'warn',
-        `DEBUG teacher: ${data.fullName||data.email} | schoolId="${data.schoolId}" | status="${data.status}" | ${match ? '✅ MATCHES admin' : '❌ MISMATCH — admin is "'+adminSchoolId+'"'}`
-      );
-    });
-    // Show toast if there are teachers but none match
-    const matching = snap.docs.filter(d=>d.data().schoolId === adminSchoolId).length;
-    if(matching === 0 && snap.size > 0){
-      toast(`⚠️ ${snap.size} teacher(s) found but schoolId mismatch — check console`,'err');
-    }
-  }catch(e){
-    log('warn','DEBUG query failed (rules may block full scan):', e.message);
-    // Rules block reading all teachers — try reading teacherRequests instead
-    try{
-      const reqSnap = await db.collection('teacherRequests')
-        .where('schoolId','==',adminSchoolId).get();
-      log('info',`DEBUG teacherRequests for this school: ${reqSnap.size}`);
-      reqSnap.forEach(d=>{
-        const data = d.data();
-        log('info',`  Request: ${data.fullName||data.email} | status="${data.status}"`);
-      });
-    }catch(e2){ log('warn','DEBUG teacherRequests also failed:', e2.message); }
-  }
 }
 
 // ── Patch teachers missing schoolId (one-time fix for existing data) ──
@@ -1294,51 +1253,42 @@ async function _patchTeachersSchoolId(schoolId){
   }catch(e){ log('warn','Patch teachers failed', e.message); }
 }
 
-// ── LOAD TEACHERS — real-time, no composite index needed ──
+// ── LOAD TEACHERS ──
 let _teachersUnsub = null;
+
+// Defined outside loadTeachers so it's stable across re-subscriptions
+function _onTeachersSnap(snap){
+  allTeachers = [];
+  snap.forEach(d=>{
+    const data = d.data();
+    if(data.role === 'teacher' || !data.role) allTeachers.push({uid:d.id, ...data});
+  });
+  allTeachers.sort((a,b)=>(b.createdAt?.toMillis?.()??0)-(a.createdAt?.toMillis?.()??0));
+  log('info','Teachers loaded', allTeachers.length);
+  updateStats();
+  renderTable();
+  const pending = allTeachers.filter(t=>t.status==='pending').length;
+  document.title = pending > 0 ? `(${pending}) Admin — CBE` : 'Admin — CBE Mark Sheet';
+}
+
 function loadTeachers(){
   if(!_schoolId){ log('warn','loadTeachers: no schoolId'); return; }
   if(_teachersUnsub){ _teachersUnsub(); _teachersUnsub = null; }
 
-  el('teacherTbody').innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-icon">⏳</div><div>Loading…</div></td></tr>`;
-  log('info','Listening for teachers', _schoolId);
+  el('teacherTbody').innerHTML =
+    `<tr class="empty-row"><td colspan="7"><div class="empty-icon">⏳</div><div>Loading teachers…</div></td></tr>`;
 
-  // Query teachers for this school
-  // Uses composite index (role + schoolId). If index not yet created,
-  // falls back to schoolId-only query and filters role client-side.
-  function _applySnap(snap){
-    allTeachers = [];
-    snap.forEach(d=>{
-      const data = d.data();
-      // Client-side role filter covers fallback path
-      if(data.role === 'teacher') allTeachers.push({uid:d.id, ...data});
-    });
-    allTeachers.sort((a,b)=>{
-      const ta = a.createdAt?.toDate?.()?.getTime() || 0;
-      const tb = b.createdAt?.toDate?.()?.getTime() || 0;
-      return tb - ta;
-    });
-    log('info','Teachers loaded', allTeachers.length);
-    updateStats(); renderTable();
-    const pending = allTeachers.filter(t=>t.status==='pending').length;
-    document.title = pending > 0 ? `(${pending}) Admin — CBE` : 'Admin — CBE Mark Sheet';
-  }
+  log('info','Subscribing to teachers for school', _schoolId);
 
-  // Try composite query first
   _teachersUnsub = db.collection('users')
-    .where('role','==','teacher')
     .where('schoolId','==',_schoolId)
-    .onSnapshot(_applySnap, e=>{
-      log('warn','Composite query failed (index missing?), trying fallback:', e.message);
-      toast('Index missing — using fallback query. Deploy firestore.indexes.json to fix.','info');
-      // Fallback: query by schoolId only — works without composite index
-      if(_teachersUnsub){ _teachersUnsub(); _teachersUnsub = null; }
-      _teachersUnsub = db.collection('users')
-        .where('schoolId','==',_schoolId)
-        .onSnapshot(_applySnap, e2=>{
-          log('error','Teachers listener error', e2.message);
-          el('teacherTbody').innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-icon">❌</div><div>${e2.message}</div></td></tr>`;
-        });
+    .onSnapshot(_onTeachersSnap, e=>{
+      log('error','Teachers listener error', e.code, e.message);
+      el('teacherTbody').innerHTML =
+        `<tr class="empty-row"><td colspan="7"><div class="empty-icon">❌</div>
+         <div>${e.code === 'permission-denied'
+           ? 'Permission denied — check Firestore rules'
+           : e.message}</div></td></tr>`;
     });
 }
 
@@ -1484,7 +1434,7 @@ async function saveEdit(){
   const grade=el('eGrade').value, stream=el('eStream').value;
   const status=el('eStatus').value, tsc=el('eTSC').value.trim();
   if(!first||!last){toast('Name required','err');return;}
-  if(!grade||!stream){toast('Grade and stream required','err');return;}
+  if(!grade){toast('Grade is required','err');return;}
   const btn=el('editSaveBtn');
   btn.disabled=true; btn.textContent='Saving…';
   try{

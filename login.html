@@ -572,8 +572,6 @@ firebase.initializeApp({apiKey:"AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
   storageBucket:"bett-294a2.appspot.com",
   messagingSenderId:"1055511650032",
   appId:"1:1055511650032:web:7e0f9c28e58515f549ac35"
-
-    
 });
 const db   = firebase.firestore();
 const auth = firebase.auth();
@@ -582,30 +580,31 @@ const auth = firebase.auth();
 let manualRedirect = false;
 
 // ── School ID from URL param ?sid=SCHOOLID ──
-// Admin shares: login.html?sid=abc123uid
-// No codes, no lookups — schoolId is directly in the URL
 let _schoolId = null;
 let _schoolName = '';
+
+// Store approval listeners to prevent duplicates
+let _approvalUnsub = null;
+let _teacherApprovalUnsub = null;
+let _pendingUid = null;
 
 function resolveSchoolId(){
   const params = new URLSearchParams(window.location.search);
   const sid = params.get('sid');
 
   if(!sid){
-    // No school code in URL — block signup
     const warn = document.getElementById('noSchoolWarning');
     if(warn) warn.style.display='block';
     const btn = document.getElementById('signupBtn');
     if(btn){ btn.disabled=true; btn.style.opacity='.5'; btn.title='Use the registration link from your administrator'; }
-    log('warn','No ?sid= in URL — signup blocked');
+    console.warn('No ?sid= in URL — signup blocked');
     return;
   }
 
-  // Set schoolId immediately from URL — button stays enabled
   _schoolId = sid;
-  log('info','School ID set from URL', _schoolId);
+  console.log('School ID set from URL', _schoolId);
 
-  // Auto-switch to signup tab — teacher came via registration link
+  // Auto-switch to signup tab
   const tabLogin  = document.getElementById('tabLogin');
   const tabSignup = document.getElementById('tabSignup');
   const panelLogin  = document.getElementById('panelLogin');
@@ -617,10 +616,10 @@ function resolveSchoolId(){
     panelSignup.classList.add('active');
   }
 
-  // Load school name in background — does not block signup
+  // Load school name
   db.collection('settings').doc(sid).get()
     .then(snap=>{
-      if(!snap.exists) return; // no settings yet — fine, schoolId is still valid
+      if(!snap.exists) return;
       const s = snap.data();
       _schoolName = s.name||'';
       const banner = document.getElementById('schoolBanner');
@@ -628,36 +627,43 @@ function resolveSchoolId(){
         banner.textContent = '🏫 ' + (s.name||'Your School') + (s.county?' · '+s.county:'');
         banner.style.display='block';
       }
-      const nameEl = document.getElementById('schoolNameDisplay');
-      if(nameEl && s.name) nameEl.textContent = s.name;
-      const subEl = document.getElementById('schoolSubDisplay');
-      if(subEl) subEl.textContent = (s.name||'CBE Mark Sheet') + ' · Teacher Portal';
     })
-    .catch(e=>log('warn','Could not load school name', e.message));
+    .catch(e=>console.warn('Could not load school name', e.message));
 }
 
 resolveSchoolId();
 
-// Only redirect on page load if already authenticated (returning user)
+// Helper function to safely show/hide elements
+function safeDisplay(id, displayValue) {
+  const el = document.getElementById(id);
+  if(el) el.style.display = displayValue;
+}
+
+// Helper function to toggle visibility
+function toggleVisibility(id, show) {
+  const el = document.getElementById(id);
+  if(el) el.style.display = show ? 'block' : 'none';
+}
+
+// ── Auth state handler ──
 auth.onAuthStateChanged(async u=>{
   if(manualRedirect) return;
   if(!u){
-    // Not logged in — check if they have a pending request saved locally
     checkLocalPendingRequest();
     return;
   }
-  // Logged in — check their full profile before redirecting
+  
   try{
     const snap = await db.collection('users').doc(u.uid).get();
     if(!snap.exists){
-      // Firebase Auth user but no Firestore profile — sign out cleanly
-      await auth.signOut(); return;
+      await auth.signOut(); 
+      return;
     }
     const profile = snap.data();
 
     if(profile.status === 'pending'){
-      // Approved but waiting — show waiting screen and listen
-      await auth.signOut();
+      // Keep signed in — listener needs auth to watch for approval
+      manualRedirect = true;
       _pendingUid = u.uid;
       localStorage.setItem('cbe_pending_uid', u.uid);
       localStorage.setItem('cbe_pending_email', u.email||'');
@@ -671,11 +677,11 @@ auth.onAuthStateChanged(async u=>{
       return;
     }
 
-    if(profile.status === 'active' && (!profile.grade || !profile.stream)){
-      // Approved but class not set — show class selection
-      _pendingUid  = u.uid;
-      _schoolId    = profile.schoolId||null;
-      await auth.signOut();
+    if(profile.status === 'active' && !profile.grade){
+      // Keep signed in — need auth for saveClassAssignment
+      manualRedirect = true;
+      _pendingUid = u.uid;
+      _schoolId   = profile.schoolId||null;
       showClassSelectionStep(profile);
       return;
     }
@@ -686,7 +692,7 @@ auth.onAuthStateChanged(async u=>{
       return;
     }
 
-    // ✅ Fully set up — go to marksheet
+    // Fully set up
     localStorage.removeItem('cbe_pending_uid');
     localStorage.removeItem('cbe_pending_email');
     window.location.href = 'marksheet.html';
@@ -696,49 +702,50 @@ auth.onAuthStateChanged(async u=>{
   }
 });
 
-// ── Check for locally saved pending request on page load ──
 function checkLocalPendingRequest(){
   const uid   = localStorage.getItem('cbe_pending_uid');
   const email = localStorage.getItem('cbe_pending_email');
-  if(!uid) return; // brand new visitor — stay on login tab
+  if(!uid) return;
 
   _pendingUid = uid;
-
-  // Check if already signed in (kept in session after signup)
   const currentUser = auth.currentUser;
   if(currentUser && currentUser.uid === uid){
-    // Still signed in — go straight to wait screen and listen
     _showWaitAndListen(uid, email);
     return;
   }
 
-  // Signed out (returned tomorrow) — onAuthStateChanged will handle
-  // Pre-fill email and show a note on login tab
   if(email){
     const emailEl = document.getElementById('liEmail');
     if(emailEl) emailEl.value = email;
   }
-  // Show login tab with a banner telling them to sign in to check status
-  document.getElementById('loginOkMsg').textContent =
-    '⏳ Your registration is pending approval. Sign in below to check your status.';
-  document.getElementById('loginOk').classList.add('show');
-  // Stay on login tab — they sign in, onAuthStateChanged detects pending and shows wait screen
+  const loginOk = document.getElementById('loginOk');
+  const loginOkMsg = document.getElementById('loginOkMsg');
+  if(loginOk && loginOkMsg) {
+    loginOkMsg.textContent = '⏳ Your registration is pending approval. Sign in below to check your status.';
+    loginOk.classList.add('show');
+  }
 }
 
 function _showWaitAndListen(uid, email){
-  // Pre-fill email for later
   if(email){
     const emailEl = document.getElementById('liEmail');
     if(emailEl) emailEl.value = email;
   }
-  // Switch to signup panel, show wait screen
-  document.getElementById('panelLogin').classList.remove('active');
-  document.getElementById('panelSignup').classList.add('active');
-  document.getElementById('tabSignup').classList.add('active');
-  document.getElementById('tabLogin').classList.remove('active');
-  document.getElementById('step0').style.display = 'none';
-  document.getElementById('stepWait').style.display = 'block';
-  document.getElementById('step1').style.display = 'none';
+  
+  toggleVisibility('panelLogin', false);
+  toggleVisibility('panelSignup', true);
+  
+  const tabSignup = document.getElementById('tabSignup');
+  const tabLogin = document.getElementById('tabLogin');
+  if(tabSignup && tabLogin) {
+    tabSignup.classList.add('active');
+    tabLogin.classList.remove('active');
+  }
+  
+  toggleVisibility('step0', false);
+  toggleVisibility('stepWait', true);
+  toggleVisibility('step1', false);
+  
   for(let i=0;i<2;i++){
     const d=document.getElementById('dot'+i);
     if(d) d.className='step'+(i===0?'done':'');
@@ -746,36 +753,48 @@ function _showWaitAndListen(uid, email){
   listenForTeacherApproval(uid);
 }
 
-// ── Show waiting screen from local state (called from onAuthStateChanged) ──
 function showSignupWaitFromLocal(uid){
-  document.getElementById('panelLogin').classList.remove('active');
-  document.getElementById('panelSignup').classList.add('active');
-  document.getElementById('tabSignup').classList.add('active');
-  document.getElementById('tabLogin').classList.remove('active');
-  document.getElementById('step0').style.display = 'none';
-  document.getElementById('stepWait').style.display = 'block';
-  document.getElementById('step1').style.display = 'none';
+  toggleVisibility('panelLogin', false);
+  toggleVisibility('panelSignup', true);
+  
+  const tabSignup = document.getElementById('tabSignup');
+  const tabLogin = document.getElementById('tabLogin');
+  if(tabSignup && tabLogin) {
+    tabSignup.classList.add('active');
+    tabLogin.classList.remove('active');
+  }
+  
+  toggleVisibility('step0', false);
+  toggleVisibility('stepWait', true);
+  toggleVisibility('step1', false);
+  
   for(let i=0;i<2;i++){
     const d=document.getElementById('dot'+i);
     if(d) d.className='step'+(i===0?'done':'');
   }
-  // Small delay ensures auth token is ready before starting listener
   setTimeout(()=>listenForTeacherApproval(uid), 500);
 }
 
-// ── Show class selection (called from onAuthStateChanged) ──
 async function showClassSelectionStep(profile){
-  document.getElementById('panelLogin').classList.remove('active');
-  document.getElementById('panelSignup').classList.add('active');
-  document.getElementById('tabSignup').classList.add('active');
-  document.getElementById('tabLogin').classList.remove('active');
-  document.getElementById('step0').style.display = 'none';
-  document.getElementById('stepWait').style.display = 'none';
-  document.getElementById('step1').style.display = 'block';
+  toggleVisibility('panelLogin', false);
+  toggleVisibility('panelSignup', true);
+  
+  const tabSignup = document.getElementById('tabSignup');
+  const tabLogin = document.getElementById('tabLogin');
+  if(tabSignup && tabLogin) {
+    tabSignup.classList.add('active');
+    tabLogin.classList.remove('active');
+  }
+  
+  toggleVisibility('step0', false);
+  toggleVisibility('stepWait', false);
+  toggleVisibility('step1', true);
+  
   for(let i=0;i<2;i++){
     const d=document.getElementById('dot'+i);
     if(d) d.className='step'+(i===0?'done':'active');
   }
+  
   if(profile.schoolId){
     try{
       const settSnap = await db.collection('settings').doc(profile.schoolId).get();
@@ -790,66 +809,81 @@ async function showClassSelectionStep(profile){
   showErr('signupErr','Please select your grade and stream to complete setup.');
 }
 
-// ── URL reason param (e.g. redirected back from marksheet) ──
+// URL reason param handling
 (function(){
   const p = new URLSearchParams(window.location.search);
   const reason = p.get('reason');
   if(reason === 'suspended'){
-    document.getElementById('loginErrMsg').textContent =
-      'Your account has been suspended. Contact the school administrator.';
-    document.getElementById('loginErr').classList.add('show');
+    const loginErrMsg = document.getElementById('loginErrMsg');
+    const loginErr = document.getElementById('loginErr');
+    if(loginErrMsg) loginErrMsg.textContent = 'Your account has been suspended. Contact the school administrator.';
+    if(loginErr) loginErr.classList.add('show');
   } else if(reason === 'pending'){
-    document.getElementById('loginErrMsg').textContent =
-      'Your account is pending admin approval. Please wait for activation.';
-    document.getElementById('loginErr').classList.add('show');
+    const loginErrMsg = document.getElementById('loginErrMsg');
+    const loginErr = document.getElementById('loginErr');
+    if(loginErrMsg) loginErrMsg.textContent = 'Your account is pending admin approval. Please wait for activation.';
+    if(loginErr) loginErr.classList.add('show');
   }
 })();
 
-// ── Tab switch ──
 function switchTab(t){
-  document.getElementById('panelLogin').classList.toggle('active', t==='login');
-  document.getElementById('panelSignup').classList.toggle('active', t==='signup');
-  document.getElementById('tabLogin').classList.toggle('active', t==='login');
-  document.getElementById('tabSignup').classList.toggle('active', t==='signup');
+  const panelLogin = document.getElementById('panelLogin');
+  const panelSignup = document.getElementById('panelSignup');
+  const tabLogin = document.getElementById('tabLogin');
+  const tabSignup = document.getElementById('tabSignup');
+  
+  if(panelLogin) panelLogin.classList.toggle('active', t==='login');
+  if(panelSignup) panelSignup.classList.toggle('active', t==='signup');
+  if(tabLogin) tabLogin.classList.toggle('active', t==='login');
+  if(tabSignup) tabSignup.classList.toggle('active', t==='signup');
   clearAlerts();
 }
 
-// ── Eye toggle ──
 function toggleEye(id, btn){
   const inp = document.getElementById(id);
-  inp.type = inp.type==='password' ? 'text' : 'password';
-  btn.textContent = inp.type==='password' ? '👁️' : '🙈';
+  if(inp) inp.type = inp.type==='password' ? 'text' : 'password';
+  if(btn) btn.textContent = inp.type==='password' ? '👁️' : '🙈';
 }
 
-// ── Toast ──
 function toast(msg, type='ok'){
+  const tc = document.getElementById('tc');
+  if(!tc) return;
   const t=document.createElement('div');
   t.className=`t ${type}`;
   t.innerHTML=`<span>${type==='ok'?'✅':'❌'}</span>${msg}`;
-  document.getElementById('tc').appendChild(t);
-  setTimeout(()=>{t.style.animation='tout .25s ease forwards';setTimeout(()=>t.remove(),280);},2800);
+  tc.appendChild(t);
+  setTimeout(()=>{
+    t.style.animation='tout .25s ease forwards';
+    setTimeout(()=>t.remove(),280);
+  },2800);
 }
 
 function clearAlerts(){
   ['loginErr','loginOk','signupErr'].forEach(id=>{
-    document.getElementById(id).classList.remove('show');
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('show');
   });
 }
 
 function showErr(panelId, msg){
   const el = document.getElementById(panelId);
-  document.getElementById(panelId+'Msg').textContent = msg;
-  el.classList.add('show');
+  const msgEl = document.getElementById(panelId+'Msg');
+  if(msgEl) msgEl.textContent = msg;
+  if(el) el.classList.add('show');
 }
+
 function showOk(panelId, msg){
   const el = document.getElementById(panelId);
-  document.getElementById(panelId+'Msg').textContent = msg;
-  el.classList.add('show');
+  const msgEl = document.getElementById(panelId+'Msg');
+  if(msgEl) msgEl.textContent = msg;
+  if(el) el.classList.add('show');
 }
 
 function setLoading(btnId, txtId, loading, label='Sign In'){
   const btn = document.getElementById(btnId);
   const txt = document.getElementById(txtId);
+  if(!btn || !txt) return;
+  
   btn.disabled = loading;
   txt.innerHTML = loading
     ? `<div class="spin"></div> Please wait…`
@@ -859,23 +893,20 @@ function setLoading(btnId, txtId, loading, label='Sign In'){
 // ── LOGIN ──
 async function doLogin(){
   clearAlerts();
-  const email = document.getElementById('liEmail').value.trim();
-  const pass  = document.getElementById('liPass').value;
+  const email = document.getElementById('liEmail')?.value.trim();
+  const pass  = document.getElementById('liPass')?.value;
   if(!email||!pass){showErr('loginErr','Please fill in all fields.');return;}
 
   setLoading('loginBtn','loginBtnTxt',true,'Sign In');
   try{
     manualRedirect = true;
     const cred = await auth.signInWithEmailAndPassword(email, pass);
-    // Check status in Firestore before allowing entry
     const snap = await db.collection('users').doc(cred.user.uid).get();
     if(snap.exists){
       const profile = snap.data();
       if(profile.status === 'pending'){
         manualRedirect = false;
         setLoading('loginBtn','loginBtnTxt',false,'Sign In');
-        // Keep signed in so the listener works — marksheet blocks pending accounts
-        // Store uid so we know this is a pending teacher
         localStorage.setItem('cbe_pending_uid', cred.user.uid);
         localStorage.setItem('cbe_pending_email', email);
         _pendingUid = cred.user.uid;
@@ -891,33 +922,32 @@ async function doLogin(){
         return;
       }
 
-      // ── Approved but class not yet assigned ──
-      // Admin approved but teacher hasn't selected grade/stream yet
       if(profile.status === 'active' && (!profile.grade || !profile.stream)){
         _pendingUid = cred.user.uid;
         _schoolId   = profile.schoolId || null;
         await auth.signOut();
         manualRedirect = false;
         setLoading('loginBtn','loginBtnTxt',false,'Sign In');
-
-        // Switch to signup tab and show class selection directly
-        document.getElementById('panelLogin').classList.remove('active');
-        document.getElementById('panelSignup').classList.add('active');
-        document.getElementById('tabSignup').classList.add('active');
-        document.getElementById('tabLogin').classList.remove('active');
-
-        // Hide step0 and wait, show step1 (class selection)
-        document.getElementById('step0').style.display = 'none';
-        document.getElementById('stepWait').style.display = 'none';
-        document.getElementById('step1').style.display = 'block';
-
-        // Update dots
+        
+        toggleVisibility('panelLogin', false);
+        toggleVisibility('panelSignup', true);
+        
+        const tabSignup = document.getElementById('tabSignup');
+        const tabLogin = document.getElementById('tabLogin');
+        if(tabSignup && tabLogin) {
+          tabSignup.classList.add('active');
+          tabLogin.classList.remove('active');
+        }
+        
+        toggleVisibility('step0', false);
+        toggleVisibility('stepWait', false);
+        toggleVisibility('step1', true);
+        
         for(let i=0;i<2;i++){
           const dot=document.getElementById(`dot${i}`);
           if(dot) dot.className='step'+(i===0?'done':'active');
         }
-
-        // Load school name if we have schoolId
+        
         if(profile.schoolId){
           try{
             const settSnap = await db.collection('settings').doc(profile.schoolId).get();
@@ -929,12 +959,11 @@ async function doLogin(){
             }
           }catch(_){}
         }
-
+        
         showErr('signupErr','Please select your grade and stream to complete setup.');
         return;
       }
 
-      // ── Active with grade and stream — check schoolId too ──
       if(profile.status === 'active' && !profile.schoolId){
         await auth.signOut();
         manualRedirect = false;
@@ -956,57 +985,29 @@ async function doLogin(){
   }
 }
 
-document.getElementById('liPass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
-
-// ── SIGNUP STEPS ──
-let currentStep = 0;
-
-function goStep(n){
-  document.getElementById(`step${currentStep}`).style.display='none';
-  document.getElementById(`step${n}`).style.display='block';
-  // update dots
-  for(let i=0;i<2;i++){
-    const d=document.getElementById(`dot${i}`);
-    if(d) d.className='step'+(i===n?' active':i<n?' done':'');
-  }
-  // when step1 appears, load streams if grade already selected
-  if(n===1){
-    const grade = document.getElementById('suGrade').value;
-    if(grade) onSignupGradeChange();
-  }
-  // show summary on step 2
-  if(n===2) buildSummary();
-  currentStep=n;
-  clearAlerts();
+const liPass = document.getElementById('liPass');
+if(liPass) {
+  liPass.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
 }
 
-function nextStep(n){
-  if(n > currentStep){
-    // validate current before advancing
-    if(currentStep===0 && !validateStep0()) return;
-    if(currentStep===1 && !validateStep1()) return;
-  }
-  goStep(n);
-}
-
-function validateStep0(){
-  const first = document.getElementById('suFirst').value.trim();
-  const last  = document.getElementById('suLast').value.trim();
-  const email = document.getElementById('suEmail').value.trim();
-  if(!first||!last){showErr('signupErr','Please enter your first and last name.');return false;}
-  if(!email||!email.includes('@')){showErr('signupErr','Please enter a valid email address.');return false;}
-  return true;
-}
-// ── Load streams for signup — uses fixed options (teacher selects after approval) ──
+// ── Load streams for signup ──
 async function onSignupGradeChange(){
-  const grade = document.getElementById('suGrade').value;
+  const grade = document.getElementById('suGrade')?.value;
   const ss    = document.getElementById('suStream');
   const hint  = document.getElementById('streamHint');
+  
+  if(!ss) return;
+  
   ss.innerHTML = '<option value="">Loading streams…</option>';
-  ss.disabled  = true;
-  if(!grade){ ss.innerHTML='<option value="">-- Select Grade first --</option>'; ss.disabled=false; hint.textContent=''; return; }
+  if(ss) ss.disabled = true;
+  
+  if(!grade){ 
+    ss.innerHTML='<option value="">-- Select Grade first --</option>'; 
+    ss.disabled=false; 
+    if(hint) hint.textContent = ''; 
+    return; 
+  }
 
-  // Resolve schoolId — from memory, or read from teacher's own profile
   let sid = _schoolId;
   if(!sid){
     try{
@@ -1022,15 +1023,14 @@ async function onSignupGradeChange(){
   if(!sid){
     ss.innerHTML = '<option value="">School not identified — contact admin</option>';
     ss.disabled  = false;
-    hint.textContent = 'Could not identify your school. Please contact the administrator.';
-    hint.style.color = 'var(--err)';
+    if(hint) {
+      hint.textContent = 'Could not identify your school. Please contact the administrator.';
+      hint.style.color = 'var(--err)';
+    }
     return;
   }
 
   let streams = [];
-
-  // Fetch live from Firestore — scoped to this school ONLY
-  // Do NOT use localStorage cache — it may contain streams from another school
   try{
     const snap = await db.collection('students')
       .where('grade','==',grade)
@@ -1041,66 +1041,41 @@ async function onSignupGradeChange(){
     streams = [...set].sort();
   }catch(e){
     console.warn('Stream fetch failed:', e.message);
-    hint.textContent = 'Could not load streams: '+e.message;
-    hint.style.color = 'var(--err)';
+    if(hint) {
+      hint.textContent = 'Could not load streams: '+e.message;
+      hint.style.color = 'var(--err)';
+    }
   }
 
-  // Always start with "No stream" option (for schools without streams)
   if(!streams.length){
     ss.innerHTML = '<option value="">— No stream (single class) —</option>';
     ss.disabled  = false;
-    hint.textContent = 'No streams found — you can proceed without selecting a stream.';
-    hint.style.color = 'var(--text3)';
+    if(hint) {
+      hint.textContent = 'No streams found — you can proceed without selecting a stream.';
+      hint.style.color = 'var(--text3)';
+    }
   } else {
     ss.innerHTML =
       '<option value="">— No stream —</option>' +
       streams.map(s=>`<option value="${s}">${s}</option>`).join('');
     ss.disabled  = false;
-    hint.textContent = `${streams.length} stream${streams.length>1?'s':''} found for ${grade}`;
-    hint.style.color = 'var(--success)';
+    if(hint) {
+      hint.textContent = `${streams.length} stream${streams.length>1?'s':''} found for ${grade}`;
+      hint.style.color = 'var(--success)';
+    }
   }
 }
 
-function validateStep1(){
-  const grade  = document.getElementById('suGrade').value;
-  const stream = document.getElementById('suStream').value;
-  if(!grade||!stream){showErr('signupErr','Please select your Grade and Stream.');return false;}
-  return true;
-}
-
-function buildSummary(){
-  const first  = document.getElementById('suFirst').value.trim();
-  const last   = document.getElementById('suLast').value.trim();
-  const email  = document.getElementById('suEmail').value.trim();
-  const grade  = document.getElementById('suGrade').value;
-  const stream = document.getElementById('suStream').value;
-  const tsc    = document.getElementById('suTSC').value.trim();
-  const div    = document.getElementById('regSummary');
-  div.style.display='block';
-  div.innerHTML=`
-    <div style="font-weight:700;color:var(--text);margin-bottom:6px;font-size:12px">📋 Registration Summary</div>
-    <div>👤 <strong>${first} ${last}</strong></div>
-    ${tsc?`<div>🪪 TSC: <strong>${tsc}</strong></div>`:''}
-    <div>✉️ ${email}</div>
-    <div>🏫 Class: <strong>${grade} — ${stream}</strong></div>
-    <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:10.5px;color:var(--text3);">
-      ⚠️ You will only access <strong>${grade} ${stream}</strong> data. Verify before submitting.
-    </div>`;
-}
-
-// ── STEP 0: Submit access request — NO schoolId needed yet ──
-let _pendingUid  = null; // uid of created account waiting for approval
-// School resolved from URL ?sid= — see resolveSchoolId()
-
+// ── STEP 0: Submit access request ──
 async function doSignup(){
   clearAlerts();
-  const first = document.getElementById('suFirst').value.trim();
-  const last  = document.getElementById('suLast').value.trim();
-  const phone = document.getElementById('suPhone').value.trim();
-  const email = document.getElementById('suEmail').value.trim();
-  const tsc   = document.getElementById('suTSC').value.trim();
-  const pass  = document.getElementById('suPass').value;
-  const pass2 = document.getElementById('suPass2').value;
+  const first = document.getElementById('suFirst')?.value.trim();
+  const last  = document.getElementById('suLast')?.value.trim();
+  const phone = document.getElementById('suPhone')?.value.trim();
+  const email = document.getElementById('suEmail')?.value.trim();
+  const tsc   = document.getElementById('suTSC')?.value.trim();
+  const pass  = document.getElementById('suPass')?.value;
+  const pass2 = document.getElementById('suPass2')?.value;
 
   if(!_schoolId){
     showErr('signupErr','Invalid registration link. Ask your administrator for the correct link.');
@@ -1111,13 +1086,19 @@ async function doSignup(){
   if(pass.length<8){showErr('signupErr','Password must be at least 8 characters.');return;}
   if(pass!==pass2){showErr('signupErr','Passwords do not match.');return;}
 
-  // ── Guard: already submitted? Restore wait screen ──
-  const existingUid = localStorage.getItem('cbe_pending_uid');
-  if(existingUid){
+  // Only block if this exact email already has a pending request
+  const existingUid   = localStorage.getItem('cbe_pending_uid');
+  const existingEmail = localStorage.getItem('cbe_pending_email');
+  if(existingUid && existingEmail && existingEmail === email){
     _pendingUid = existingUid;
     showWaitingScreen(existingUid);
-    listenForTeacherApproval(existingUid);
+    setTimeout(()=>listenForTeacherApproval(existingUid), 500);
     return;
+  }
+  // Different email — clear stale pending data and proceed with new signup
+  if(existingUid && existingEmail !== email){
+    localStorage.removeItem('cbe_pending_uid');
+    localStorage.removeItem('cbe_pending_email');
   }
 
   setLoading('signupBtn','signupBtnTxt',true,'Create Account');
@@ -1127,11 +1108,9 @@ async function doSignup(){
     await cred.user.updateProfile({displayName:`${first} ${last}`});
     _pendingUid = cred.user.uid;
 
-    // Persist to localStorage so page remembers across sessions
     localStorage.setItem('cbe_pending_uid',   cred.user.uid);
     localStorage.setItem('cbe_pending_email', email);
 
-    // Save teacher profile — schoolId from validated code, no grade/stream yet
     await db.collection('users').doc(_pendingUid).set({
       firstName: first, lastName: last,
       fullName:  `${first} ${last}`,
@@ -1139,12 +1118,11 @@ async function doSignup(){
       tscNumber: tsc||null,
       role:       'teacher',
       status:     'pending',
-      schoolId:   _schoolId,   // ← from URL ?sid= — routes to correct admin
+      schoolId:   _schoolId,
       schoolName: _schoolName,
       createdAt:  firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // Write request to the specific school's admin — keyed by schoolId
     await db.collection('teacherRequests').doc(_pendingUid).set({
       uid: _pendingUid,
       fullName:   `${first} ${last}`,
@@ -1156,27 +1134,20 @@ async function doSignup(){
       requestedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // Keep signed in — listener needs auth
-    // Set manualRedirect so onAuthStateChanged doesn't re-fire
     manualRedirect = true;
     setLoading('signupBtn','signupBtnTxt',false,'Create Account');
-
-    // Show wait screen — listener starts after short delay for token to propagate
     showWaitingScreen(_pendingUid);
     setTimeout(()=>listenForTeacherApproval(_pendingUid), 1000);
   }catch(e){
     manualRedirect = false;
     setLoading('signupBtn','signupBtnTxt',false,'Create Account');
     if(e.code === 'auth/email-already-in-use'){
-      // Account exists — sign them in to restore wait screen
       const savedUid    = localStorage.getItem('cbe_pending_uid');
       const savedEmail  = localStorage.getItem('cbe_pending_email');
       if(savedUid && savedEmail && pass){
-        // Try signing in with the password they just typed
         try{
           manualRedirect = true;
           await auth.signInWithEmailAndPassword(savedEmail, pass);
-          // onAuthStateChanged will fire, detect pending, show wait screen + start listener
           _pendingUid = savedUid;
         }catch(signInErr){
           manualRedirect = false;
@@ -1195,8 +1166,6 @@ async function doSignup(){
 }
 
 // ── Real-time approval listener ──
-let _approvalUnsub = null;
-
 function listenForApproval(uid){
   if(_approvalUnsub){ _approvalUnsub(); _approvalUnsub = null; }
 
@@ -1206,16 +1175,14 @@ function listenForApproval(uid){
       const d = snap.data();
 
       if(d.status === 'active'){
-        // Approved — show success, stop listening
         if(_approvalUnsub){ _approvalUnsub(); _approvalUnsub = null; }
         showApprovalBanner('approved',
           '🎉 Account Approved!',
           'Your account has been activated by the administrator. You can now sign in.');
-        // Pre-fill email so they just need password
         const emailEl = document.getElementById('liEmail');
         if(emailEl && d.email) emailEl.value = d.email;
-        // Show login form fields
-        document.getElementById('loginOk').classList.remove('show');
+        const loginOk = document.getElementById('loginOk');
+        if(loginOk) loginOk.classList.remove('show');
         return;
       }
 
@@ -1227,7 +1194,6 @@ function listenForApproval(uid){
         return;
       }
 
-      // Still pending
       showApprovalBanner('pending',
         '⏳ Awaiting Approval',
         'Your account is pending admin approval. This page will update automatically when approved.');
@@ -1240,96 +1206,88 @@ function showApprovalBanner(type, title, msg){
   const msgEl   = document.getElementById('approvalBannerMsg');
   const statusEl = document.getElementById('approvalStatus');
 
-  banner.className = ''; // reset
+  if(!banner) return;
+  
+  banner.className = '';
   banner.style.display = 'block';
   banner.classList.add(type);
-  titleEl.textContent = title;
-  msgEl.textContent   = msg;
+  if(titleEl) titleEl.textContent = title;
+  if(msgEl) msgEl.textContent = msg;
 
-  if(type === 'approved'){
+  if(type === 'approved' && statusEl){
     statusEl.textContent = 'Approved — enter your password below to sign in';
     statusEl.style.color = '#065f46';
     statusEl.style.fontWeight = '700';
-  } else if(type === 'rejected'){
+  } else if(type === 'rejected' && statusEl){
     statusEl.textContent = 'Contact: 0704 518 130';
     statusEl.style.color = '#991b1b';
-  } else {
+  } else if(statusEl){
     statusEl.textContent = 'Waiting for administrator…';
     statusEl.style.color = '#92400e';
   }
 }
 
-// ── Show waiting screen inside signup panel ──
 function showWaitingScreen(uid){
-  // Update dots to show step 0 done
   for(let i=0;i<2;i++){
     const d=document.getElementById(`dot${i}`);
     if(d) d.className='step'+(i===0?'done':'');
   }
-  document.getElementById('step0').style.display='none';
-  document.getElementById('step1').style.display='none';
-  document.getElementById('stepWait').style.display='block';
+  toggleVisibility('step0', false);
+  toggleVisibility('step1', false);
+  toggleVisibility('stepWait', true);
 }
 
 // ── Listen for admin approval of teacher ──
-// When approved, admin sets: status='active', schoolId, grade, stream
-// Teacher then selects their class from the approved school's real streams
-let _teacherApprovalUnsub = null;
-
 function listenForTeacherApproval(uid, retryCount=0){
   if(_teacherApprovalUnsub){ _teacherApprovalUnsub(); _teacherApprovalUnsub=null; }
 
-  // Wait for auth token to be fully ready before starting listener
-  // Especially important on first load after signup
   const user = auth.currentUser;
   if(!user){
-    // Not signed in yet — wait for auth state then retry
     if(retryCount < 3){
       setTimeout(()=>listenForTeacherApproval(uid, retryCount+1), 1500);
     }
     return;
   }
 
-  // Force token refresh to ensure auth is fully propagated
   user.getIdToken(true).then(()=>{
     _teacherApprovalUnsub = db.collection('users').doc(uid)
       .onSnapshot(async snap=>{
         if(!snap.exists) return;
         const d = snap.data();
 
-        // Show any admin message
         if(d.adminMessage){
-          document.getElementById('waitOwnerMsgText').textContent = d.adminMessage;
-          document.getElementById('waitOwnerMsg').style.display = 'block';
+          const waitOwnerMsgText = document.getElementById('waitOwnerMsgText');
+          const waitOwnerMsg = document.getElementById('waitOwnerMsg');
+          if(waitOwnerMsgText) waitOwnerMsgText.textContent = d.adminMessage;
+          if(waitOwnerMsg) waitOwnerMsg.style.display = 'block';
         }
 
         if(d.status === 'suspended'){
           if(_teacherApprovalUnsub){ _teacherApprovalUnsub(); _teacherApprovalUnsub=null; }
           showApprovalBanner('rejected','🚫 Request Not Approved',
             d.adminMessage||'Your request was not approved. Contact the administrator.');
-          document.getElementById('stepWait').style.display='none';
-          document.getElementById('step0').style.display='block';
+          toggleVisibility('stepWait', false);
+          toggleVisibility('step0', true);
           return;
         }
 
         if(d.status === 'active' && d.schoolId){
-          // ✅ Approved + school assigned
           if(_teacherApprovalUnsub){ _teacherApprovalUnsub(); _teacherApprovalUnsub=null; }
           _pendingUid = uid;
           _schoolId   = d.schoolId;
 
-          // Grade set — fully ready → go to marksheet
           if(d.grade){
             localStorage.removeItem('cbe_pending_uid');
             localStorage.removeItem('cbe_pending_email');
             manualRedirect = true;
-            document.getElementById('waitOwnerMsgText').textContent = '✅ Approved! Redirecting…';
-            document.getElementById('waitOwnerMsg').style.display = 'block';
+            const waitOwnerMsgText = document.getElementById('waitOwnerMsgText');
+            const waitOwnerMsg = document.getElementById('waitOwnerMsg');
+            if(waitOwnerMsgText) waitOwnerMsgText.textContent = '✅ Approved! Redirecting…';
+            if(waitOwnerMsg) waitOwnerMsg.style.display = 'block';
             setTimeout(()=>{ window.location.href = 'marksheet.html'; }, 1500);
             return;
           }
 
-          // No grade yet — show class selection
           try{
             const settSnap = await db.collection('settings').doc(d.schoolId).get();
             if(settSnap.exists){
@@ -1340,8 +1298,9 @@ function listenForTeacherApproval(uid, retryCount=0){
             }
           }catch(_){}
 
-          document.getElementById('stepWait').style.display='none';
-          document.getElementById('step1').style.display='block';
+          toggleVisibility('stepWait', false);
+          toggleVisibility('step1', true);
+          
           for(let i=0;i<2;i++){
             const dot=document.getElementById(`dot${i}`);
             if(dot) dot.className='step'+(i===0?'done':'active');
@@ -1349,7 +1308,6 @@ function listenForTeacherApproval(uid, retryCount=0){
           return;
         }
 
-        // Active but no schoolId — admin approved but hasn't fully set up
         if(d.status === 'active' && !d.schoolId){
           const waitTxt = document.getElementById('waitOwnerMsgText');
           const waitMsg = document.getElementById('waitOwnerMsg');
@@ -1362,16 +1320,21 @@ function listenForTeacherApproval(uid, retryCount=0){
         if(e.code === 'permission-denied'){
           const u = auth.currentUser;
           if(!u){
-            // Not signed in — show login tab
-            document.getElementById('panelSignup').classList.remove('active');
-            document.getElementById('panelLogin').classList.add('active');
-            document.getElementById('tabLogin').classList.add('active');
-            document.getElementById('tabSignup').classList.remove('active');
-            document.getElementById('loginOkMsg').textContent =
-              '⏳ Please sign in to check your approval status.';
-            document.getElementById('loginOk').classList.add('show');
+            toggleVisibility('panelSignup', false);
+            toggleVisibility('panelLogin', true);
+            
+            const tabLogin = document.getElementById('tabLogin');
+            const tabSignup = document.getElementById('tabSignup');
+            if(tabLogin && tabSignup) {
+              tabLogin.classList.add('active');
+              tabSignup.classList.remove('active');
+            }
+            
+            const loginOkMsg = document.getElementById('loginOkMsg');
+            const loginOk = document.getElementById('loginOk');
+            if(loginOkMsg) loginOkMsg.textContent = '⏳ Please sign in to check your approval status.';
+            if(loginOk) loginOk.classList.add('show');
           } else if(retryCount < 5){
-            // Signed in but token not ready — retry with backoff
             setTimeout(()=>listenForTeacherApproval(uid, retryCount+1), 2000*(retryCount+1));
           }
         } else if(retryCount < 3){
@@ -1388,12 +1351,12 @@ function listenForTeacherApproval(uid, retryCount=0){
 
 // ── Save class assignment after approval ──
 async function saveClassAssignment(){
-  const grade  = document.getElementById('suGrade').value;
-  const stream = document.getElementById('suStream').value; // optional
+  const grade = document.getElementById('suGrade')?.value;
+  const stream = document.getElementById('suStream')?.value;
+  
   if(!grade){showErr('signupErr','Please select your grade.');return;}
   if(!_pendingUid){showErr('signupErr','Session expired. Please refresh.');return;}
 
-  // Must be authenticated to update users doc
   if(!auth.currentUser){
     showErr('signupErr','Session expired. Please sign in again, then complete setup.');
     return;
@@ -1401,19 +1364,15 @@ async function saveClassAssignment(){
 
   setLoading('classBtn','classBtnTxt',true,'Confirm');
   try{
-    // Update the users doc with grade and stream
     await db.collection('users').doc(_pendingUid).update({
       grade,
-      stream: stream || null,  // null if no stream (single-class school)
+      stream: stream || null,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
     setLoading('classBtn','classBtnTxt',false,'Confirm');
-
-    // Clear pending state — setup complete
     localStorage.removeItem('cbe_pending_uid');
     localStorage.removeItem('cbe_pending_email');
-    // Teacher is still signed in → redirect directly to marksheet
     manualRedirect = true;
     window.location.href = 'marksheet.html';
 
@@ -1425,45 +1384,74 @@ async function saveClassAssignment(){
 
 // ── FORGOT PASSWORD ──
 function showReset(){
-  document.getElementById('panelLogin').classList.remove('active');
-  document.getElementById('panelReset').classList.add('active');
-  document.getElementById('tabLogin').classList.remove('active');
-  document.getElementById('tabSignup').classList.remove('active');
-  document.getElementById('resetEmail').value = document.getElementById('liEmail').value.trim();
-  document.getElementById('resetErr').classList.remove('show');
-  document.getElementById('resetOk').classList.remove('show');
+  toggleVisibility('panelLogin', false);
+  toggleVisibility('panelReset', true);
+  
+  const tabLogin = document.getElementById('tabLogin');
+  const tabSignup = document.getElementById('tabSignup');
+  if(tabLogin && tabSignup) {
+    tabLogin.classList.remove('active');
+    tabSignup.classList.remove('active');
+  }
+  
+  const resetEmail = document.getElementById('resetEmail');
+  const liEmail = document.getElementById('liEmail');
+  if(resetEmail && liEmail) resetEmail.value = liEmail.value.trim();
+  
+  const resetErr = document.getElementById('resetErr');
+  const resetOk = document.getElementById('resetOk');
+  if(resetErr) resetErr.classList.remove('show');
+  if(resetOk) resetOk.classList.remove('show');
   clearAlerts();
 }
 
 function hideReset(){
-  document.getElementById('panelReset').classList.remove('active');
-  document.getElementById('panelLogin').classList.add('active');
-  document.getElementById('tabLogin').classList.add('active');
-  document.getElementById('resetErr').classList.remove('show');
-  document.getElementById('resetOk').classList.remove('show');
+  toggleVisibility('panelReset', false);
+  toggleVisibility('panelLogin', true);
+  
+  const tabLogin = document.getElementById('tabLogin');
+  const tabSignup = document.getElementById('tabSignup');
+  if(tabLogin && tabSignup) {
+    tabLogin.classList.add('active');
+    tabSignup.classList.remove('active');
+  }
+  
+  const resetErr = document.getElementById('resetErr');
+  const resetOk = document.getElementById('resetOk');
+  if(resetErr) resetErr.classList.remove('show');
+  if(resetOk) resetOk.classList.remove('show');
   clearAlerts();
 }
 
 async function doReset(){
-  document.getElementById('resetErr').classList.remove('show');
-  document.getElementById('resetOk').classList.remove('show');
-  const email = document.getElementById('resetEmail').value.trim();
+  const resetErr = document.getElementById('resetErr');
+  const resetOk = document.getElementById('resetOk');
+  if(resetErr) resetErr.classList.remove('show');
+  if(resetOk) resetOk.classList.remove('show');
+  
+  const email = document.getElementById('resetEmail')?.value.trim();
   if(!email){
-    document.getElementById('resetErrMsg').textContent='Please enter your email address.';
-    document.getElementById('resetErr').classList.add('show');
+    const resetErrMsg = document.getElementById('resetErrMsg');
+    if(resetErrMsg) resetErrMsg.textContent = 'Please enter your email address.';
+    if(resetErr) resetErr.classList.add('show');
     return;
   }
+  
   const btn=document.getElementById('resetBtn');
   const txt=document.getElementById('resetBtnTxt');
+  if(!btn || !txt) return;
+  
   btn.disabled=true;
   txt.innerHTML='<div class="spin"></div> Sending…';
   try{
     await auth.sendPasswordResetEmail(email);
     btn.disabled=false;
     txt.innerHTML='Send Reset Link';
-    document.getElementById('resetOkMsg').textContent='Reset link sent! Check your inbox (and spam folder).';
-    document.getElementById('resetOk').classList.add('show');
-    document.getElementById('resetEmail').value='';
+    const resetOkMsg = document.getElementById('resetOkMsg');
+    if(resetOkMsg) resetOkMsg.textContent = 'Reset link sent! Check your inbox (and spam folder).';
+    if(resetOk) resetOk.classList.add('show');
+    const resetEmail = document.getElementById('resetEmail');
+    if(resetEmail) resetEmail.value = '';
   }catch(e){
     btn.disabled=false;
     txt.innerHTML='Send Reset Link';
@@ -1471,17 +1459,22 @@ async function doReset(){
       :e.code==='auth/invalid-email'?'Please enter a valid email address.'
       :e.code==='auth/too-many-requests'?'Too many attempts. Try again later.'
       :e.message;
-    document.getElementById('resetErrMsg').textContent=msg;
-    document.getElementById('resetErr').classList.add('show');
+    const resetErrMsg = document.getElementById('resetErrMsg');
+    if(resetErrMsg) resetErrMsg.textContent = msg;
+    if(resetErr) resetErr.classList.add('show');
   }
 }
 
 document.addEventListener('DOMContentLoaded',function(){
-  document.getElementById('resetEmail').addEventListener('keydown',function(e){
-    if(e.key==='Enter') doReset();
-  });
+  const resetEmail = document.getElementById('resetEmail');
+  if(resetEmail) {
+    resetEmail.addEventListener('keydown',function(e){
+      if(e.key==='Enter') doReset();
+    });
+  }
 });
 
 </script>
+
 </body>
 </html>

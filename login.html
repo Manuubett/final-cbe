@@ -587,28 +587,40 @@ let manualRedirect = false;
 let _schoolId = null;
 let _schoolName = '';
 
-async function resolveSchoolId(){
+function resolveSchoolId(){
   const params = new URLSearchParams(window.location.search);
   const sid = params.get('sid');
-  const btn = document.getElementById('signupBtn');
 
   if(!sid){
+    // No school code in URL — block signup
     const warn = document.getElementById('noSchoolWarning');
     if(warn) warn.style.display='block';
+    const btn = document.getElementById('signupBtn');
     if(btn){ btn.disabled=true; btn.style.opacity='.5'; btn.title='Use the registration link from your administrator'; }
     log('warn','No ?sid= in URL — signup blocked');
     return;
   }
 
-  // Disable signup until school is confirmed
-  if(btn){ btn.disabled=true; btn.textContent='Verifying school…'; }
-
+  // Set schoolId immediately from URL — button stays enabled
   _schoolId = sid;
+  log('info','School ID set from URL', _schoolId);
 
-  // Verify the school exists and load its name
-  try{
-    const snap = await db.collection('settings').doc(sid).get();
-    if(snap.exists){
+  // Auto-switch to signup tab — teacher came via registration link
+  const tabLogin  = document.getElementById('tabLogin');
+  const tabSignup = document.getElementById('tabSignup');
+  const panelLogin  = document.getElementById('panelLogin');
+  const panelSignup = document.getElementById('panelSignup');
+  if(tabLogin && tabSignup && panelLogin && panelSignup){
+    tabLogin.classList.remove('active');
+    tabSignup.classList.add('active');
+    panelLogin.classList.remove('active');
+    panelSignup.classList.add('active');
+  }
+
+  // Load school name in background — does not block signup
+  db.collection('settings').doc(sid).get()
+    .then(snap=>{
+      if(!snap.exists) return; // no settings yet — fine, schoolId is still valid
       const s = snap.data();
       _schoolName = s.name||'';
       const banner = document.getElementById('schoolBanner');
@@ -620,24 +632,10 @@ async function resolveSchoolId(){
       if(nameEl && s.name) nameEl.textContent = s.name;
       const subEl = document.getElementById('schoolSubDisplay');
       if(subEl) subEl.textContent = (s.name||'CBE Mark Sheet') + ' · Teacher Portal';
-      log('info','School verified', {schoolId:_schoolId, name:_schoolName});
-    } else {
-      // settings doc missing — school may not have set up yet
-      // Still allow signup — schoolId from URL is valid
-      log('warn','No settings doc for school', sid);
-      const warn = document.getElementById('noSchoolWarning');
-      if(warn){
-        warn.textContent = '⚠️ School not fully set up yet. You can still register.';
-        warn.style.display='block';
-      }
-    }
-  }catch(e){ log('warn','Could not load school settings', e.message); }
-
-  // Re-enable signup button
-  if(btn){ btn.disabled=false; btn.textContent='Create Account →'; }
+    })
+    .catch(e=>log('warn','Could not load school name', e.message));
 }
 
-// Run on page load — awaited so _schoolId is ready before any interaction
 resolveSchoolId();
 
 // Only redirect on page load if already authenticated (returning user)

@@ -590,42 +590,54 @@ let _schoolName = '';
 async function resolveSchoolId(){
   const params = new URLSearchParams(window.location.search);
   const sid = params.get('sid');
+  const btn = document.getElementById('signupBtn');
 
   if(!sid){
-    // No school in URL — show warning, block signup
     const warn = document.getElementById('noSchoolWarning');
     if(warn) warn.style.display='block';
-    const btn = document.getElementById('signupBtn');
     if(btn){ btn.disabled=true; btn.style.opacity='.5'; btn.title='Use the registration link from your administrator'; }
     log('warn','No ?sid= in URL — signup blocked');
     return;
   }
 
+  // Disable signup until school is confirmed
+  if(btn){ btn.disabled=true; btn.textContent='Verifying school…'; }
+
   _schoolId = sid;
 
-  // Load school name to display
+  // Verify the school exists and load its name
   try{
     const snap = await db.collection('settings').doc(sid).get();
     if(snap.exists){
       const s = snap.data();
       _schoolName = s.name||'';
-      // Show school banner
       const banner = document.getElementById('schoolBanner');
       if(banner){
         banner.textContent = '🏫 ' + (s.name||'Your School') + (s.county?' · '+s.county:'');
         banner.style.display='block';
       }
-      // Update header
       const nameEl = document.getElementById('schoolNameDisplay');
       if(nameEl && s.name) nameEl.textContent = s.name;
       const subEl = document.getElementById('schoolSubDisplay');
       if(subEl) subEl.textContent = (s.name||'CBE Mark Sheet') + ' · Teacher Portal';
+      log('info','School verified', {schoolId:_schoolId, name:_schoolName});
+    } else {
+      // settings doc missing — school may not have set up yet
+      // Still allow signup — schoolId from URL is valid
+      log('warn','No settings doc for school', sid);
+      const warn = document.getElementById('noSchoolWarning');
+      if(warn){
+        warn.textContent = '⚠️ School not fully set up yet. You can still register.';
+        warn.style.display='block';
+      }
     }
-  }catch(e){ log('warn','Could not load school name', e.message); }
+  }catch(e){ log('warn','Could not load school settings', e.message); }
 
-  log('info','School resolved from URL', {schoolId:_schoolId, name:_schoolName});
+  // Re-enable signup button
+  if(btn){ btn.disabled=false; btn.textContent='Create Account →'; }
 }
 
+// Run on page load — awaited so _schoolId is ready before any interaction
 resolveSchoolId();
 
 // Only redirect on page load if already authenticated (returning user)
@@ -745,7 +757,12 @@ function showSignupWaitFromLocal(uid){
   document.getElementById('step0').style.display = 'none';
   document.getElementById('stepWait').style.display = 'block';
   document.getElementById('step1').style.display = 'none';
-  listenForTeacherApproval(uid);
+  for(let i=0;i<2;i++){
+    const d=document.getElementById('dot'+i);
+    if(d) d.className='step'+(i===0?'done':'');
+  }
+  // Small delay ensures auth token is ready before starting listener
+  setTimeout(()=>listenForTeacherApproval(uid), 500);
 }
 
 // ── Show class selection (called from onAuthStateChanged) ──
@@ -1146,22 +1163,29 @@ async function doSignup(){
     manualRedirect = true;
     setLoading('signupBtn','signupBtnTxt',false,'Create Account');
 
-    // Show wait screen and start listener
+    // Show wait screen — listener starts after short delay for token to propagate
     showWaitingScreen(_pendingUid);
-    listenForTeacherApproval(_pendingUid);
+    setTimeout(()=>listenForTeacherApproval(_pendingUid), 1000);
   }catch(e){
     manualRedirect = false;
     setLoading('signupBtn','signupBtnTxt',false,'Create Account');
     if(e.code === 'auth/email-already-in-use'){
-      // Account exists — check if they have a pending request saved
-      const savedUid = localStorage.getItem('cbe_pending_uid');
-      if(savedUid){
-        // Restore their wait screen
-        _pendingUid = savedUid;
-        showWaitingScreen(savedUid);
-        listenForTeacherApproval(savedUid);
+      // Account exists — sign them in to restore wait screen
+      const savedUid    = localStorage.getItem('cbe_pending_uid');
+      const savedEmail  = localStorage.getItem('cbe_pending_email');
+      if(savedUid && savedEmail && pass){
+        // Try signing in with the password they just typed
+        try{
+          manualRedirect = true;
+          await auth.signInWithEmailAndPassword(savedEmail, pass);
+          // onAuthStateChanged will fire, detect pending, show wait screen + start listener
+          _pendingUid = savedUid;
+        }catch(signInErr){
+          manualRedirect = false;
+          showErr('signupErr','This email is already registered. Sign in using the Login tab.');
+        }
       } else {
-        showErr('signupErr','This email is already registered. Use the Sign In tab to login.');
+        showErr('signupErr','This email is already registered. Sign in using the Login tab.');
       }
     } else {
       const msg = e.code==='auth/weak-password'
@@ -1254,85 +1278,114 @@ function showWaitingScreen(uid){
 // Teacher then selects their class from the approved school's real streams
 let _teacherApprovalUnsub = null;
 
-function listenForTeacherApproval(uid){
+function listenForTeacherApproval(uid, retryCount=0){
   if(_teacherApprovalUnsub){ _teacherApprovalUnsub(); _teacherApprovalUnsub=null; }
 
-  _teacherApprovalUnsub = db.collection('users').doc(uid)
-    .onSnapshot(async snap=>{
-      if(!snap.exists) return;
-      const d = snap.data();
+  // Wait for auth token to be fully ready before starting listener
+  // Especially important on first load after signup
+  const user = auth.currentUser;
+  if(!user){
+    // Not signed in yet — wait for auth state then retry
+    if(retryCount < 3){
+      setTimeout(()=>listenForTeacherApproval(uid, retryCount+1), 1500);
+    }
+    return;
+  }
 
-      // Show any admin message
-      if(d.adminMessage){
-        document.getElementById('waitOwnerMsgText').textContent = d.adminMessage;
-        document.getElementById('waitOwnerMsg').style.display = 'block';
-      }
+  // Force token refresh to ensure auth is fully propagated
+  user.getIdToken(true).then(()=>{
+    _teacherApprovalUnsub = db.collection('users').doc(uid)
+      .onSnapshot(async snap=>{
+        if(!snap.exists) return;
+        const d = snap.data();
 
-      if(d.status === 'suspended'){
-        if(_teacherApprovalUnsub){ _teacherApprovalUnsub(); _teacherApprovalUnsub=null; }
-        showApprovalBanner('rejected','🚫 Request Not Approved',
-          d.adminMessage||'Your request was not approved. Contact the administrator.');
-        document.getElementById('stepWait').style.display='none';
-        document.getElementById('step0').style.display='block';
-        return;
-      }
-
-      if(d.status === 'active' && d.schoolId){
-        // ✅ Approved + school assigned
-        if(_teacherApprovalUnsub){ _teacherApprovalUnsub(); _teacherApprovalUnsub=null; }
-        _pendingUid = uid;
-        _schoolId   = d.schoolId;
-
-        // Grade and stream already set — fully ready → go to marksheet
-        if(d.grade && d.stream){
-          localStorage.removeItem('cbe_pending_uid');
-          localStorage.removeItem('cbe_pending_email');
-          manualRedirect = true;
-          // Small delay so teacher sees the approval moment
-          document.getElementById('waitOwnerMsgText').textContent = '✅ Approved! Redirecting…';
+        // Show any admin message
+        if(d.adminMessage){
+          document.getElementById('waitOwnerMsgText').textContent = d.adminMessage;
           document.getElementById('waitOwnerMsg').style.display = 'block';
-          setTimeout(()=>{ window.location.href = 'marksheet.html'; }, 1500);
+        }
+
+        if(d.status === 'suspended'){
+          if(_teacherApprovalUnsub){ _teacherApprovalUnsub(); _teacherApprovalUnsub=null; }
+          showApprovalBanner('rejected','🚫 Request Not Approved',
+            d.adminMessage||'Your request was not approved. Contact the administrator.');
+          document.getElementById('stepWait').style.display='none';
+          document.getElementById('step0').style.display='block';
           return;
         }
 
-        // No grade/stream yet — show class selection (teacher picks their class)
-        try{
-          const settSnap = await db.collection('settings').doc(d.schoolId).get();
-          if(settSnap.exists){
-            const sch = settSnap.data();
-            _schoolName = sch.name||'';
-            const infoEl = document.getElementById('approvedSchoolInfo');
-            if(infoEl) infoEl.innerHTML=`🏫 <strong>${sch.name||''}</strong>${sch.county?' · '+sch.county:''}`;
+        if(d.status === 'active' && d.schoolId){
+          // ✅ Approved + school assigned
+          if(_teacherApprovalUnsub){ _teacherApprovalUnsub(); _teacherApprovalUnsub=null; }
+          _pendingUid = uid;
+          _schoolId   = d.schoolId;
+
+          // Grade set — fully ready → go to marksheet
+          if(d.grade){
+            localStorage.removeItem('cbe_pending_uid');
+            localStorage.removeItem('cbe_pending_email');
+            manualRedirect = true;
+            document.getElementById('waitOwnerMsgText').textContent = '✅ Approved! Redirecting…';
+            document.getElementById('waitOwnerMsg').style.display = 'block';
+            setTimeout(()=>{ window.location.href = 'marksheet.html'; }, 1500);
+            return;
           }
-        }catch(_){}
 
-        document.getElementById('stepWait').style.display='none';
-        document.getElementById('step1').style.display='block';
-        for(let i=0;i<2;i++){
-          const dot=document.getElementById(`dot${i}`);
-          if(dot) dot.className='step'+(i===0?'done':'active');
+          // No grade yet — show class selection
+          try{
+            const settSnap = await db.collection('settings').doc(d.schoolId).get();
+            if(settSnap.exists){
+              const sch = settSnap.data();
+              _schoolName = sch.name||'';
+              const infoEl = document.getElementById('approvedSchoolInfo');
+              if(infoEl) infoEl.innerHTML=`🏫 <strong>${sch.name||''}</strong>${sch.county?' · '+sch.county:''}`;
+            }
+          }catch(_){}
+
+          document.getElementById('stepWait').style.display='none';
+          document.getElementById('step1').style.display='block';
+          for(let i=0;i<2;i++){
+            const dot=document.getElementById(`dot${i}`);
+            if(dot) dot.className='step'+(i===0?'done':'active');
+          }
+          return;
         }
-        return;
-      }
 
-      // Approved but school not yet assigned — show message
-      if(d.status === 'active' && !d.schoolId){
-        const waitTxt = document.getElementById('waitOwnerMsgText');
-        const waitMsg = document.getElementById('waitOwnerMsg');
-        if(waitTxt) waitTxt.textContent='Account approved! Administrator is assigning your school — please wait.';
-        if(waitMsg) waitMsg.style.display='block';
-      }
+        // Active but no schoolId — admin approved but hasn't fully set up
+        if(d.status === 'active' && !d.schoolId){
+          const waitTxt = document.getElementById('waitOwnerMsgText');
+          const waitMsg = document.getElementById('waitOwnerMsg');
+          if(waitTxt) waitTxt.textContent='Approved! Administrator is completing your setup…';
+          if(waitMsg) waitMsg.style.display='block';
+        }
 
-    }, e=>{
-      console.warn('Teacher approval listener error:', e.message);
-      // If permission denied — teacher may need to sign in
-      if(e.code === 'permission-denied'){
-        const waitTxt = document.getElementById('waitOwnerMsgText');
-        const waitMsg = document.getElementById('waitOwnerMsg');
-        if(waitTxt) waitTxt.textContent = 'Connection error. Please refresh the page.';
-        if(waitMsg) waitMsg.style.display = 'block';
-      }
-    });
+      }, e=>{
+        console.warn('Teacher approval listener error:', e.code, e.message);
+        if(e.code === 'permission-denied'){
+          const u = auth.currentUser;
+          if(!u){
+            // Not signed in — show login tab
+            document.getElementById('panelSignup').classList.remove('active');
+            document.getElementById('panelLogin').classList.add('active');
+            document.getElementById('tabLogin').classList.add('active');
+            document.getElementById('tabSignup').classList.remove('active');
+            document.getElementById('loginOkMsg').textContent =
+              '⏳ Please sign in to check your approval status.';
+            document.getElementById('loginOk').classList.add('show');
+          } else if(retryCount < 5){
+            // Signed in but token not ready — retry with backoff
+            setTimeout(()=>listenForTeacherApproval(uid, retryCount+1), 2000*(retryCount+1));
+          }
+        } else if(retryCount < 3){
+          setTimeout(()=>listenForTeacherApproval(uid, retryCount+1), 2000);
+        }
+      });
+  }).catch(e=>{
+    console.warn('Token refresh failed:', e.message);
+    if(retryCount < 3){
+      setTimeout(()=>listenForTeacherApproval(uid, retryCount+1), 2000);
+    }
+  });
 }
 
 // ── Save class assignment after approval ──

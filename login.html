@@ -692,12 +692,36 @@ function checkLocalPendingRequest(){
   const email = localStorage.getItem('cbe_pending_email');
   if(!uid) return; // brand new visitor — stay on login tab
 
-  // They submitted before — restore waiting screen
   _pendingUid = uid;
-  // Pre-fill email on login tab in case they want to try logging in
-  if(email){ const el = document.getElementById('liEmail'); if(el) el.value = email; }
 
-  // Switch to signup tab and show wait screen
+  // Check if already signed in (kept in session after signup)
+  const currentUser = auth.currentUser;
+  if(currentUser && currentUser.uid === uid){
+    // Still signed in — go straight to wait screen and listen
+    _showWaitAndListen(uid, email);
+    return;
+  }
+
+  // Signed out (returned tomorrow) — onAuthStateChanged will handle
+  // Pre-fill email and show a note on login tab
+  if(email){
+    const emailEl = document.getElementById('liEmail');
+    if(emailEl) emailEl.value = email;
+  }
+  // Show login tab with a banner telling them to sign in to check status
+  document.getElementById('loginOkMsg').textContent =
+    '⏳ Your registration is pending approval. Sign in below to check your status.';
+  document.getElementById('loginOk').classList.add('show');
+  // Stay on login tab — they sign in, onAuthStateChanged detects pending and shows wait screen
+}
+
+function _showWaitAndListen(uid, email){
+  // Pre-fill email for later
+  if(email){
+    const emailEl = document.getElementById('liEmail');
+    if(emailEl) emailEl.value = email;
+  }
+  // Switch to signup panel, show wait screen
   document.getElementById('panelLogin').classList.remove('active');
   document.getElementById('panelSignup').classList.add('active');
   document.getElementById('tabSignup').classList.add('active');
@@ -709,8 +733,6 @@ function checkLocalPendingRequest(){
     const d=document.getElementById('dot'+i);
     if(d) d.className='step'+(i===0?'done':'');
   }
-
-  // Start listening for approval changes
   listenForTeacherApproval(uid);
 }
 
@@ -835,12 +857,14 @@ async function doLogin(){
     if(snap.exists){
       const profile = snap.data();
       if(profile.status === 'pending'){
-        await auth.signOut();
         manualRedirect = false;
         setLoading('loginBtn','loginBtnTxt',false,'Sign In');
-        showApprovalBanner('pending', '⏳ Awaiting Approval',
-          'Your account is pending admin approval. Stay on this page — it will update automatically when approved.');
-        listenForApproval(cred.user.uid);
+        // Keep signed in so the listener works — marksheet blocks pending accounts
+        // Store uid so we know this is a pending teacher
+        localStorage.setItem('cbe_pending_uid', cred.user.uid);
+        localStorage.setItem('cbe_pending_email', email);
+        _pendingUid = cred.user.uid;
+        _showWaitAndListen(cred.user.uid, email);
         return;
       }
 
@@ -958,51 +982,77 @@ function validateStep0(){
   if(!email||!email.includes('@')){showErr('signupErr','Please enter a valid email address.');return false;}
   return true;
 }
-// ── Load streams for signup based on grade ──
+// ── Load streams for signup — uses fixed options (teacher selects after approval) ──
 async function onSignupGradeChange(){
-  const grade   = document.getElementById('suGrade').value;
-  const ss      = document.getElementById('suStream');
-  const hint    = document.getElementById('streamHint');
-  ss.innerHTML  = '<option value="">Loading streams…</option>';
-  if(!grade){ ss.innerHTML='<option value="">-- Select Grade first --</option>'; hint.textContent=''; return; }
+  const grade = document.getElementById('suGrade').value;
+  const ss    = document.getElementById('suStream');
+  const hint  = document.getElementById('streamHint');
+  ss.innerHTML = '<option value="">Loading streams…</option>';
+  ss.disabled  = true;
+  if(!grade){ ss.innerHTML='<option value="">-- Select Grade first --</option>'; ss.disabled=false; hint.textContent=''; return; }
+
+  // Resolve schoolId — from memory, or read from teacher's own profile
+  let sid = _schoolId;
+  if(!sid){
+    try{
+      const u = auth.currentUser;
+      if(u){
+        const snap = await db.collection('users').doc(u.uid).get();
+        if(snap.exists) sid = snap.data().schoolId || null;
+        if(sid) _schoolId = sid;
+      }
+    }catch(_){}
+  }
+
+  if(!sid){
+    ss.innerHTML = '<option value="">School not identified — contact admin</option>';
+    ss.disabled  = false;
+    hint.textContent = 'Could not identify your school. Please contact the administrator.';
+    hint.style.color = 'var(--err)';
+    return;
+  }
 
   let streams = [];
 
-  // 1. Try localStorage cache written by admission page
+  // 1. Try localStorage cache first (instant)
   try{
     const raw = localStorage.getItem('cbe_streams');
     if(raw){
       const map = JSON.parse(raw);
-      if(map[grade] && map[grade].length) streams = map[grade];
+      if(map[grade]?.length) streams = map[grade];
     }
   }catch(_){}
 
-  // 2. Always fetch live from Firestore to catch latest
+  // 2. Fetch live from Firestore — teacher is authenticated at this point
   try{
-    const snap = await db.collection('students').where('grade','==',grade).get();
-    const set  = new Set(streams);
+    const snap = await db.collection('students')
+      .where('grade','==',grade)
+      .where('schoolId','==',sid)
+      .get();
+    const set = new Set(streams);
     snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
     streams = [...set].sort();
-
     // Update cache
     try{
-      const raw  = localStorage.getItem('cbe_streams');
-      const map  = raw ? JSON.parse(raw) : {};
+      const map = JSON.parse(localStorage.getItem('cbe_streams')||'{}');
       map[grade] = streams;
       localStorage.setItem('cbe_streams', JSON.stringify(map));
-      localStorage.setItem('cbe_streams_ts', Date.now().toString());
     }catch(_){}
   }catch(e){
-    // Firestore failed — use whatever we got from cache
+    console.warn('Stream fetch failed:', e.message);
+    hint.textContent = 'Could not load streams: '+e.message;
+    hint.style.color = 'var(--err)';
   }
 
   if(!streams.length){
     ss.innerHTML = '<option value="">No streams found for this grade</option>';
-    hint.textContent = 'No streams found. Make sure students are registered in the admission page first.';
+    ss.disabled  = false;
+    hint.textContent = 'No streams found. Ask admin to add students in Admission first.';
     hint.style.color = 'var(--err)';
   } else {
     ss.innerHTML = '<option value="">-- Select Stream --</option>' +
       streams.map(s=>`<option value="${s}">${s}</option>`).join('');
+    ss.disabled  = false;
     hint.textContent = `${streams.length} stream${streams.length>1?'s':''} found for ${grade}`;
     hint.style.color = 'var(--success)';
   }
@@ -1103,8 +1153,8 @@ async function doSignup(){
       requestedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // Sign out — they wait for approval, then come back to select class
-    await auth.signOut();
+    // Keep teacher signed in (pending) so the approval listener works
+    // marksheet.html blocks pending accounts — they can't access data
     manualRedirect = false;
     setLoading('signupBtn','signupBtnTxt',false,'Create Account');
 
@@ -1240,29 +1290,24 @@ function listenForTeacherApproval(uid){
       }
 
       if(d.status === 'active' && d.schoolId){
-        // ✅ Approved + school assigned — auto-move to class selection
+        // ✅ Approved + school assigned
         if(_teacherApprovalUnsub){ _teacherApprovalUnsub(); _teacherApprovalUnsub=null; }
         _pendingUid = uid;
         _schoolId   = d.schoolId;
 
-        // If grade/stream already set (admin assigned it) — go straight to login
+        // Grade and stream already set — fully ready → go to marksheet
         if(d.grade && d.stream){
           localStorage.removeItem('cbe_pending_uid');
           localStorage.removeItem('cbe_pending_email');
-          // Show login with success message
-          document.getElementById('panelSignup').classList.remove('active');
-          document.getElementById('panelLogin').classList.add('active');
-          document.getElementById('tabLogin').classList.add('active');
-          document.getElementById('tabSignup').classList.remove('active');
-          document.getElementById('loginOkMsg').textContent =
-            `✅ Your account is ready! Sign in with your email and password.`;
-          document.getElementById('loginOk').classList.add('show');
-          const emailEl=document.getElementById('liEmail');
-          if(emailEl) emailEl.value = localStorage.getItem('cbe_pending_email')||'';
+          manualRedirect = true;
+          // Small delay so teacher sees the approval moment
+          document.getElementById('waitOwnerMsgText').textContent = '✅ Approved! Redirecting…';
+          document.getElementById('waitOwnerMsg').style.display = 'block';
+          setTimeout(()=>{ window.location.href = 'marksheet.html'; }, 1500);
           return;
         }
 
-        // Load school name for display
+        // No grade/stream yet — show class selection (teacher picks their class)
         try{
           const settSnap = await db.collection('settings').doc(d.schoolId).get();
           if(settSnap.exists){
@@ -1273,7 +1318,6 @@ function listenForTeacherApproval(uid){
           }
         }catch(_){}
 
-        // Show class selection step
         document.getElementById('stepWait').style.display='none';
         document.getElementById('step1').style.display='block';
         for(let i=0;i<2;i++){
@@ -1301,6 +1345,12 @@ async function saveClassAssignment(){
   if(!grade||!stream){showErr('signupErr','Please select your grade and stream.');return;}
   if(!_pendingUid){showErr('signupErr','Session expired. Please refresh.');return;}
 
+  // Must be authenticated to update users doc
+  if(!auth.currentUser){
+    showErr('signupErr','Session expired. Please sign in again with your email and password, then complete setup.');
+    return;
+  }
+
   setLoading('classBtn','classBtnTxt',true,'Confirm');
   try{
     // Update the users doc with grade and stream
@@ -1314,20 +1364,9 @@ async function saveClassAssignment(){
     // Clear pending state — setup complete
     localStorage.removeItem('cbe_pending_uid');
     localStorage.removeItem('cbe_pending_email');
-
-    // Switch to login tab — they can now sign in
-    document.getElementById('panelSignup').classList.remove('active');
-    document.getElementById('panelLogin').classList.add('active');
-    document.getElementById('tabLogin').classList.add('active');
-    document.getElementById('tabSignup').classList.remove('active');
-
-    // Pre-fill email and show success
-    const savedEmail = localStorage.getItem('cbe_pending_email') || '';
-    const emailEl = document.getElementById('liEmail');
-    if(emailEl && savedEmail) emailEl.value = savedEmail;
-    document.getElementById('loginOkMsg').textContent =
-      `✅ Setup complete! Class: ${grade} ${stream}. Sign in with your email and password.`;
-    document.getElementById('loginOk').classList.add('show');
+    // Teacher is still signed in → redirect directly to marksheet
+    manualRedirect = true;
+    window.location.href = 'marksheet.html';
 
   }catch(e){
     setLoading('classBtn','classBtnTxt',false,'Confirm');

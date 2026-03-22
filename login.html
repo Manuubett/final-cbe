@@ -538,16 +538,16 @@ select.inp{cursor:pointer;appearance:none;padding-right:30px}
         </div>
       </div>
       <div class="field">
-        <label>Stream <span>(your class)</span></label>
+        <label>Stream <span style="color:var(--text3);font-weight:400">(optional — leave blank if no streams)</span></label>
         <div class="inp-wrap"><span class="inp-icon">📋</span>
           <select class="inp" id="suStream">
-            <option value="">-- Select Grade first --</option>
+            <option value="">-- No stream / Select Grade first --</option>
           </select>
           <span class="sel-arrow">▾</span>
         </div>
         <span style="font-size:10.5px;color:var(--text3);margin-top:4px;display:block" id="streamHint"></span>
       </div>
-      <p class="hint">⚠️ You will only access marks for this class. Contact admin to change.</p>
+      <p class="hint">⚠️ You will only access marks for this class. Contact admin to change your assignment.</p>
       <button class="submit-btn" id="classBtn" onclick="saveClassAssignment()">
         <span id="classBtnTxt">✅ Confirm My Class</span>
       </button>
@@ -1014,43 +1014,31 @@ async function onSignupGradeChange(){
 
   let streams = [];
 
-  // 1. Try localStorage cache first (instant)
-  try{
-    const raw = localStorage.getItem('cbe_streams');
-    if(raw){
-      const map = JSON.parse(raw);
-      if(map[grade]?.length) streams = map[grade];
-    }
-  }catch(_){}
-
-  // 2. Fetch live from Firestore — teacher is authenticated at this point
+  // Fetch live from Firestore — scoped to this school ONLY
+  // Do NOT use localStorage cache — it may contain streams from another school
   try{
     const snap = await db.collection('students')
       .where('grade','==',grade)
       .where('schoolId','==',sid)
       .get();
-    const set = new Set(streams);
+    const set = new Set();
     snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
     streams = [...set].sort();
-    // Update cache
-    try{
-      const map = JSON.parse(localStorage.getItem('cbe_streams')||'{}');
-      map[grade] = streams;
-      localStorage.setItem('cbe_streams', JSON.stringify(map));
-    }catch(_){}
   }catch(e){
     console.warn('Stream fetch failed:', e.message);
     hint.textContent = 'Could not load streams: '+e.message;
     hint.style.color = 'var(--err)';
   }
 
+  // Always start with "No stream" option (for schools without streams)
   if(!streams.length){
-    ss.innerHTML = '<option value="">No streams found for this grade</option>';
+    ss.innerHTML = '<option value="">— No stream (single class) —</option>';
     ss.disabled  = false;
-    hint.textContent = 'No streams found. Ask admin to add students in Admission first.';
-    hint.style.color = 'var(--err)';
+    hint.textContent = 'No streams found — you can proceed without selecting a stream.';
+    hint.style.color = 'var(--text3)';
   } else {
-    ss.innerHTML = '<option value="">-- Select Stream --</option>' +
+    ss.innerHTML =
+      '<option value="">— No stream —</option>' +
       streams.map(s=>`<option value="${s}">${s}</option>`).join('');
     ss.disabled  = false;
     hint.textContent = `${streams.length} stream${streams.length>1?'s':''} found for ${grade}`;
@@ -1350,13 +1338,13 @@ function listenForTeacherApproval(uid){
 // ── Save class assignment after approval ──
 async function saveClassAssignment(){
   const grade  = document.getElementById('suGrade').value;
-  const stream = document.getElementById('suStream').value;
-  if(!grade||!stream){showErr('signupErr','Please select your grade and stream.');return;}
+  const stream = document.getElementById('suStream').value; // optional
+  if(!grade){showErr('signupErr','Please select your grade.');return;}
   if(!_pendingUid){showErr('signupErr','Session expired. Please refresh.');return;}
 
   // Must be authenticated to update users doc
   if(!auth.currentUser){
-    showErr('signupErr','Session expired. Please sign in again with your email and password, then complete setup.');
+    showErr('signupErr','Session expired. Please sign in again, then complete setup.');
     return;
   }
 
@@ -1364,7 +1352,8 @@ async function saveClassAssignment(){
   try{
     // Update the users doc with grade and stream
     await db.collection('users').doc(_pendingUid).update({
-      grade, stream,
+      grade,
+      stream: stream || null,  // null if no stream (single-class school)
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 

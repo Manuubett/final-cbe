@@ -1153,12 +1153,12 @@ async function doSignup(){
       requestedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // Keep teacher signed in (pending) so the approval listener works
-    // marksheet.html blocks pending accounts — they can't access data
-    manualRedirect = false;
+    // Keep signed in — listener needs auth
+    // Set manualRedirect so onAuthStateChanged doesn't re-fire
+    manualRedirect = true;
     setLoading('signupBtn','signupBtnTxt',false,'Create Account');
 
-    // Show waiting screen inside signup panel
+    // Show wait screen and start listener
     showWaitingScreen(_pendingUid);
     listenForTeacherApproval(_pendingUid);
   }catch(e){
@@ -1335,7 +1335,16 @@ function listenForTeacherApproval(uid){
         if(waitMsg) waitMsg.style.display='block';
       }
 
-    }, e=>{ console.warn('Teacher approval listener:', e.message); });
+    }, e=>{
+      console.warn('Teacher approval listener error:', e.message);
+      // If permission denied — teacher may need to sign in
+      if(e.code === 'permission-denied'){
+        const waitTxt = document.getElementById('waitOwnerMsgText');
+        const waitMsg = document.getElementById('waitOwnerMsg');
+        if(waitTxt) waitTxt.textContent = 'Connection error. Please refresh the page.';
+        if(waitMsg) waitMsg.style.display = 'block';
+      }
+    });
 }
 
 // ── Save class assignment after approval ──

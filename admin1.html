@@ -772,7 +772,8 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
 
         <div class="mfield">
           <label>Full Registration Link</label>
-          <div style="background:var(--surf2);border:1.5px solid var(--border);border-radius:var(--r2);padding:10px 14px;font-family:monospace;font-size:12px;color:var(--accent);word-break:break-all;user-select:all;cursor:text" id="regLinkText">—</div>
+          <input type="text" id="regLinkText" readonly onclick="this.select()"
+            style="width:100%;background:var(--surf2);border:1.5px solid var(--border);border-radius:var(--r2);padding:10px 14px;font-family:monospace;font-size:12px;color:var(--accent);word-break:break-all;cursor:text;outline:none" value="—">
         </div>
 
         <div style="display:flex;gap:8px">
@@ -1257,25 +1258,36 @@ async function _debugTeacherDocs(adminSchoolId){
 async function _patchTeachersSchoolId(schoolId){
   if(!schoolId) return;
   try{
-    // Only check teachers already in this school or with no school assigned
-    const snap = await db.collection('users')
-      .where('role','==','teacher')
-      .where('schoolId','==',schoolId)
-      .get();
+    // Check teacherRequests for this school — find matching user docs with missing schoolId
+    const reqSnap = await db.collection('teacherRequests')
+      .where('schoolId','==',schoolId).get();
+    if(reqSnap.empty) return;
+
     const batch = db.batch();
     let count = 0;
-    snap.forEach(doc=>{
-      const d = doc.data();
-      // Patch if no schoolId OR if it has a placeholder
-      if(!d.schoolId || d.schoolId === '__none__'){
-        batch.update(doc.ref, {schoolId, updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
-        count++;
-      }
-    });
+    for(const req of reqSnap.docs){
+      const uid = req.id;
+      const userRef = db.collection('users').doc(uid);
+      try{
+        const userSnap = await userRef.get();
+        if(userSnap.exists){
+          const d = userSnap.data();
+          // Patch if schoolId is missing, null, or wrong
+          if(!d.schoolId || d.schoolId !== schoolId){
+            batch.update(userRef, {
+              schoolId,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            count++;
+            log('info', `Will patch teacher ${d.fullName||uid} schoolId → ${schoolId}`);
+          }
+        }
+      }catch(_){}
+    }
     if(count > 0){
       await batch.commit();
-      log('info', `Patched ${count} teachers with schoolId`);
-      // Reload to pick up the newly patched teachers
+      log('info', `Patched ${count} teacher(s) schoolId via teacherRequests`);
+      toast(`✅ Fixed ${count} teacher request(s) — they should now appear below`, 'info');
       if(_teachersUnsub){ _teachersUnsub(); _teachersUnsub = null; }
       loadTeachers();
     }
@@ -1634,7 +1646,7 @@ function doCopyLink(){
 }
 
 function doShareWhatsApp(){
-  const link = el('regLinkText').textContent;
+  const link = el('regLinkText').value || el('regLinkText').textContent;
   const msg  = encodeURIComponent(`Hello! Please use this link to register as a teacher on our CBE Mark Sheet System:
 
 ${link}

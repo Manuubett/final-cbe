@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1250,29 +1251,41 @@ function loadTeachers(){
   el('teacherTbody').innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-icon">⏳</div><div>Loading…</div></td></tr>`;
   log('info','Listening for teachers', _schoolId);
 
-  // Query by role + schoolId — filtered at Firestore level (rules require this)
+  // Query teachers for this school
+  // Uses composite index (role + schoolId). If index not yet created,
+  // falls back to schoolId-only query and filters role client-side.
+  function _applySnap(snap){
+    allTeachers = [];
+    snap.forEach(d=>{
+      const data = d.data();
+      // Client-side role filter covers fallback path
+      if(data.role === 'teacher') allTeachers.push({uid:d.id, ...data});
+    });
+    allTeachers.sort((a,b)=>{
+      const ta = a.createdAt?.toDate?.()?.getTime() || 0;
+      const tb = b.createdAt?.toDate?.()?.getTime() || 0;
+      return tb - ta;
+    });
+    log('info','Teachers loaded', allTeachers.length);
+    updateStats(); renderTable();
+    const pending = allTeachers.filter(t=>t.status==='pending').length;
+    document.title = pending > 0 ? `(${pending}) Admin — CBE` : 'Admin — CBE Mark Sheet';
+  }
+
+  // Try composite query first
   _teachersUnsub = db.collection('users')
     .where('role','==','teacher')
     .where('schoolId','==',_schoolId)
-    .onSnapshot(snap=>{
-      allTeachers = [];
-      snap.forEach(d=>{
-        allTeachers.push({uid:d.id, ...d.data()});
-      });
-      // Sort newest first client-side — no orderBy needed
-      allTeachers.sort((a,b)=>{
-        const ta = a.createdAt?.toDate?.()?.getTime() || 0;
-        const tb = b.createdAt?.toDate?.()?.getTime() || 0;
-        return tb - ta;
-      });
-      log('info','Teachers loaded', allTeachers.length);
-      updateStats(); renderTable();
-      // Update tab title if pending
-      const pending = allTeachers.filter(t=>t.status==='pending').length;
-      document.title = pending > 0 ? `(${pending}) Admin — CBE` : 'Admin — CBE Mark Sheet';
-    }, e=>{
-      log('error','Teachers listener error', e.message);
-      el('teacherTbody').innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-icon">❌</div><div>${e.message}</div></td></tr>`;
+    .onSnapshot(_applySnap, e=>{
+      log('warn','Composite query failed, trying fallback:', e.message);
+      // Fallback: query by schoolId only — works without composite index
+      if(_teachersUnsub){ _teachersUnsub(); _teachersUnsub = null; }
+      _teachersUnsub = db.collection('users')
+        .where('schoolId','==',_schoolId)
+        .onSnapshot(_applySnap, e2=>{
+          log('error','Teachers listener error', e2.message);
+          el('teacherTbody').innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-icon">❌</div><div>${e2.message}</div></td></tr>`;
+        });
     });
 }
 

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -898,7 +897,10 @@ auth.onAuthStateChanged(async u => {
     loadResultsCount();
     applySchoolSettings(db).catch(()=>{});
 
-    // 6. One-time patch — fix any teachers who registered before schoolId was required
+    // 6. Debug — log what teacher docs exist and their schoolId values
+    _debugTeacherDocs(_schoolId);
+
+    // 7. One-time patch — fix any teachers who registered before schoolId was required
     _patchTeachersSchoolId(_schoolId).catch(()=>{});
 
     // 6. Start payment gate listener
@@ -1213,6 +1215,44 @@ async function saveReassign(){
   btn.disabled=false; btn.textContent='💾 Save Changes';
 }
 
+// ── Debug: check what teacher docs exist in Firestore ──
+async function _debugTeacherDocs(adminSchoolId){
+  try{
+    // Query ALL users with role=teacher — no schoolId filter
+    const snap = await db.collection('users').where('role','==','teacher').get();
+    if(snap.empty){
+      log('warn','DEBUG: No teacher docs found at all in users collection');
+      toast('⚠️ No teachers found in database at all','info');
+      return;
+    }
+    log('info',`DEBUG: Found ${snap.size} teacher doc(s) total`);
+    snap.forEach(d=>{
+      const data = d.data();
+      const match = data.schoolId === adminSchoolId;
+      log(match ? 'info' : 'warn',
+        `DEBUG teacher: ${data.fullName||data.email} | schoolId="${data.schoolId}" | status="${data.status}" | ${match ? '✅ MATCHES admin' : '❌ MISMATCH — admin is "'+adminSchoolId+'"'}`
+      );
+    });
+    // Show toast if there are teachers but none match
+    const matching = snap.docs.filter(d=>d.data().schoolId === adminSchoolId).length;
+    if(matching === 0 && snap.size > 0){
+      toast(`⚠️ ${snap.size} teacher(s) found but schoolId mismatch — check console`,'err');
+    }
+  }catch(e){
+    log('warn','DEBUG query failed (rules may block full scan):', e.message);
+    // Rules block reading all teachers — try reading teacherRequests instead
+    try{
+      const reqSnap = await db.collection('teacherRequests')
+        .where('schoolId','==',adminSchoolId).get();
+      log('info',`DEBUG teacherRequests for this school: ${reqSnap.size}`);
+      reqSnap.forEach(d=>{
+        const data = d.data();
+        log('info',`  Request: ${data.fullName||data.email} | status="${data.status}"`);
+      });
+    }catch(e2){ log('warn','DEBUG teacherRequests also failed:', e2.message); }
+  }
+}
+
 // ── Patch teachers missing schoolId (one-time fix for existing data) ──
 async function _patchTeachersSchoolId(schoolId){
   if(!schoolId) return;
@@ -1277,7 +1317,8 @@ function loadTeachers(){
     .where('role','==','teacher')
     .where('schoolId','==',_schoolId)
     .onSnapshot(_applySnap, e=>{
-      log('warn','Composite query failed, trying fallback:', e.message);
+      log('warn','Composite query failed (index missing?), trying fallback:', e.message);
+      toast('Index missing — using fallback query. Deploy firestore.indexes.json to fix.','info');
       // Fallback: query by schoolId only — works without composite index
       if(_teachersUnsub){ _teachersUnsub(); _teachersUnsub = null; }
       _teachersUnsub = db.collection('users')

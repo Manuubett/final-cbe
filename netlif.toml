@@ -1,0 +1,79 @@
+[build]
+  publish = "."
+
+# Clean URLs — removes .html extension
+[[redirects]]
+  from = "/login"
+  to = "/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 200
+
+[[redirects]]
+  from = "/marksheet"
+  to = "/marksheet.html"
+  status = 200
+
+[[redirects]]
+  from = "/admission"
+  to = "/admission.html"
+  status = 200
+
+[[redirects]]
+  from = "/analysis"
+  to = "/analysis.html"
+  status = 200
+
+[[redirects]]
+  from = "/register"
+  to = "/registration.html"
+  status = 200
+
+[[redirects]]
+  from = "/approval"
+  to = "/approval.html"
+  status = 200
+
+[[redirects]]
+  from = "/owner"
+  to = "/owner.html"
+  status = 200
+
+[[redirects]]
+  from = "/db-cleaner"
+  to = "/db-cleaner.html"
+  status = 200
+
+# Redirect .html URLs to clean versions (optional — prevents duplicate content)
+[[redirects]]
+  from = "/login.html"
+  to = "/login"
+  status = 301
+
+[[redirects]]
+  from = "/admin1.html"
+  to = "/admin"
+  status = 301
+
+[[redirects]]
+  from = "/marksheet.html"
+  to = "/marksheet"
+  status = 301
+
+[[redirects]]
+  from = "/admission.html"
+  to = "/admission"
+  status = 301
+
+[[redirects]]
+  from = "/analysis.html"
+  to = "/analysis"
+  status = 301
+
+[[redirects]]
+  from = "/registration.html"
+  to = "/register"
+  status = 301

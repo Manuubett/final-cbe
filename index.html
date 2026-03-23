@@ -253,6 +253,50 @@ h1{animation:fadeUp .5s .1s both}
   .demo-controls{gap:8px;}
 }
 </style>
+<!-- Firebase for return-user detection -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script>
+(function(){
+  // Check localStorage for known role — fastest path, no network needed
+  var role = localStorage.getItem('cbe_user_role');
+  if(role === 'admin'){
+    window.location.replace('admin.html'); return;
+  }
+  if(role === 'teacher'){
+    window.location.replace('login.html'); return;
+  }
+
+  // No stored role — check Firebase Auth for signed-in user
+  // Only fires for returning users whose session is still alive
+  try{
+    firebase.initializeApp({
+      apiKey:"AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
+      authDomain:"bett-294a2.firebaseapp.com",
+      projectId:"bett-294a2"
+    });
+    firebase.auth().onAuthStateChanged(function(user){
+      if(!user) return; // not signed in — show index normally
+      // Signed in — check their role from Firestore then redirect
+      firebase.firestore
+        ? firebase.firestore().collection('users').doc(user.uid).get()
+            .then(function(snap){
+              if(!snap.exists) return;
+              var role = snap.data().role;
+              if(role === 'admin'){
+                localStorage.setItem('cbe_user_role','admin');
+                window.location.replace('admin.html');
+              } else if(role === 'teacher'){
+                localStorage.setItem('cbe_user_role','teacher');
+                window.location.replace('login.html');
+              }
+            }).catch(function(){})
+        : null;
+    });
+  } catch(e){}
+})();
+</script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 

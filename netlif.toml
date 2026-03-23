@@ -1,79 +1,258 @@
+# ══════════════════════════════════════════════════════════════
+#  CBE Mark Sheet System — Netlify Configuration
+#  Site: https://bett.website
+#  Copyright © 2026 Bett Emanuel
+# ══════════════════════════════════════════════════════════════
+
 [build]
   publish = "."
 
-# Clean URLs — removes .html extension
+# ── Force HTTPS — redirect all HTTP and www traffic ──
+[[redirects]]
+  from = "http://bett.website/*"
+  to   = "https://bett.website/:splat"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from = "http://www.bett.website/*"
+  to   = "https://bett.website/:splat"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from = "https://www.bett.website/*"
+  to   = "https://bett.website/:splat"
+  status = 301
+  force  = true
+
+# ── Clean URLs — serve .html files at slug paths ──
 [[redirects]]
   from = "/login"
-  to = "/login.html"
+  to   = "/login.html"
   status = 200
 
 [[redirects]]
   from = "/admin"
-  to = "/admin.html"
+  to   = "/admin.html"
   status = 200
 
 [[redirects]]
   from = "/marksheet"
-  to = "/marksheet.html"
+  to   = "/marksheet.html"
   status = 200
 
 [[redirects]]
   from = "/admission"
-  to = "/admission.html"
+  to   = "/admission.html"
   status = 200
 
 [[redirects]]
   from = "/analysis"
-  to = "/analysis.html"
+  to   = "/analysis.html"
   status = 200
 
 [[redirects]]
   from = "/register"
-  to = "/registration.html"
+  to   = "/registration.html"
+  status = 200
+
+[[redirects]]
+  from = "/registration"
+  to   = "/registration.html"
   status = 200
 
 [[redirects]]
   from = "/approval"
-  to = "/approval.html"
+  to   = "/approval.html"
   status = 200
 
 [[redirects]]
   from = "/owner"
-  to = "/owner.html"
+  to   = "/owner.html"
   status = 200
 
 [[redirects]]
-  from = "/db-cleaner"
-  to = "/db-cleaner.html"
+  from = "/demo"
+  to   = "/demo.html"
   status = 200
 
-# Redirect .html URLs to clean versions (optional — prevents duplicate content)
+[[redirects]]
+  from = "/settings"
+  to   = "/settings.html"
+  status = 200
+
+# ── Redirect .html URLs to clean slugs ──
 [[redirects]]
   from = "/login.html"
-  to = "/login"
+  to   = "/login"
   status = 301
 
 [[redirects]]
-  from = "/admin1.html"
-  to = "/admin"
+  from = "/admin.html"
+  to   = "/admin"
   status = 301
 
 [[redirects]]
   from = "/marksheet.html"
-  to = "/marksheet"
+  to   = "/marksheet"
   status = 301
 
 [[redirects]]
   from = "/admission.html"
-  to = "/admission"
+  to   = "/admission"
   status = 301
 
 [[redirects]]
   from = "/analysis.html"
-  to = "/analysis"
+  to   = "/analysis"
   status = 301
 
 [[redirects]]
   from = "/registration.html"
-  to = "/register"
+  to   = "/register"
   status = 301
+
+[[redirects]]
+  from = "/demo.html"
+  to   = "/demo"
+  status = 301
+
+[[redirects]]
+  from = "/approval.html"
+  to   = "/approval"
+  status = 301
+
+[[redirects]]
+  from = "/owner.html"
+  to   = "/owner"
+  status = 301
+
+# ══════════════════════════════════════════════════════════════
+#  SECURITY HEADERS
+# ══════════════════════════════════════════════════════════════
+
+# ── Global — every page ──
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Content-Security-Policy = "default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://www.gstatic.com https://*.firebaseapp.com https://*.googleapis.com https://*.firebaseio.com; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.gstatic.com/firebasejs/; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-src 'none'; object-src 'none'"
+
+# ── Admin — no cache, hidden from Google ──
+[[headers]]
+  for = "/admin.html"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, private"
+    Pragma = "no-cache"
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+
+[[headers]]
+  for = "/admin"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, private"
+    Pragma = "no-cache"
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+
+# ── Owner — maximum protection ──
+[[headers]]
+  for = "/owner.html"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, private"
+    Pragma = "no-cache"
+    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet"
+
+[[headers]]
+  for = "/owner"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, private"
+    Pragma = "no-cache"
+    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet"
+
+# ── DB Cleaner — maximum protection ──
+[[headers]]
+  for = "/db-cleaner.html"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, private"
+    Pragma = "no-cache"
+    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet"
+
+# ── Internal app pages — no indexing, no cache ──
+[[headers]]
+  for = "/marksheet.html"
+  [headers.values]
+    Cache-Control = "no-store, private"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/marksheet"
+  [headers.values]
+    Cache-Control = "no-store, private"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/analysis.html"
+  [headers.values]
+    Cache-Control = "no-store, private"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/analysis"
+  [headers.values]
+    Cache-Control = "no-store, private"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/admission.html"
+  [headers.values]
+    Cache-Control = "no-store, private"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/admission"
+  [headers.values]
+    Cache-Control = "no-store, private"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/approval.html"
+  [headers.values]
+    Cache-Control = "no-store, private"
+    X-Robots-Tag = "noindex, nofollow"
+
+# ── Public pages — allow caching for speed ──
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/demo.html"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/registration.html"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+# ── Static assets — long cache for performance ──
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, immutable"
+
+[[headers]]
+  for = "/*.ico"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, immutable"
+
+[[headers]]
+  for = "/*.webmanifest"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBE Mark Sheet — Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f1f5fb;color:#1e2d45;font-size:13px}
+/* NAV */
+.nav{background:#fff;border-bottom:1px solid #dde5f0;padding:0 20px;height:50px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10}
+.nav-logo{background:#1a56db;color:#fff;width:28px;height:28px;border-radius:6px;display:grid;place-items:center;font-size:13px}
+.nav-name{font-weight:700;font-size:13px}
+.demo-badge{background:#fef3c7;color:#92400e;border:1px solid #fde68a;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.nav-right{margin-left:auto;display:flex;gap:8px}
+.nav-link{font-size:12px;color:#64748b;text-decoration:none;padding:5px 10px;border-radius:5px}
+.nav-link:hover{background:#f1f5fb}
+.nav-cta{background:#1a56db;color:#fff;font-size:12px;font-weight:700;padding:6px 16px;border-radius:5px;text-decoration:none}
+/* BANNER */
+.banner{background:linear-gradient(135deg,#1e3a8a,#1a56db);color:#fff;padding:22px 20px;text-align:center}
+.banner h1{font-size:clamp(18px,3vw,26px);font-weight:700;margin-bottom:5px}
+.banner p{font-size:13px;opacity:.8;margin-bottom:14px}
+.tabs{display:inline-flex;background:rgba(0,0,0,.2);border-radius:20px;padding:3px;gap:2px}
+.tab{padding:6px 16px;border-radius:16px;border:none;background:none;color:rgba(255,255,255,.65);font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.tab.active{background:#fff;color:#1a56db}
+/* MAIN */
+.body{max-width:960px;margin:20px auto;padding:0 14px}
+.card{background:#fff;border-radius:10px;border:1px solid #dde5f0;overflow:hidden;margin-bottom:16px}
+.card-head{padding:12px 16px;border-bottom:1px solid #dde5f0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.card-title{font-size:13.5px;font-weight:700}
+.card-sub{font-size:11.5px;color:#64748b;margin-top:1px}
+.head-right{display:flex;align-items:center;gap:8px}
+.save-ind{font-size:11.5px;font-weight:600;display:flex;align-items:center;gap:5px}
+.dot{width:6px;height:6px;border-radius:50%;background:#22c55e}
+.dot.busy{background:#f59e0b;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.btn{padding:6px 12px;border-radius:5px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-p{background:#1a56db;color:#fff}
+.btn-o{background:#fff;border:1px solid #cbd5e1;color:#475569}
+.btn-p:hover{background:#1447c0}
+.btn-o:hover{background:#f8fafc}
+/* TABLE */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f8fafc;color:#64748b;padding:8px 9px;text-align:center;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+th:nth-child(2){text-align:left}
+td{padding:7px 8px;text-align:center;border-bottom:1px solid #f1f5fb}
+td:first-child{color:#94a3b8;font-family:'DM Mono';font-size:11px}
+td:nth-child(2){text-align:left;font-weight:600;color:#1e2d45}
+tr:hover td{background:#f8fafc}
+.mi{width:44px;height:28px;border:1.5px solid #cbd5e1;border-radius:4px;text-align:center;font-size:12px;font-weight:700;font-family:'DM Mono';color:#1e2d45;background:#fff;transition:border-color .14s}
+.mi:focus{outline:none;border-color:#1a56db;background:#eff6ff}
+.mi.flash{border-color:#22c55e;background:#f0fdf4}
+.mi.over{border-color:#ef4444;background:#fef2f2}
+.td-avg{font-weight:800;font-family:'DM Mono';font-size:12px}
+.td-pos{font-family:'DM Mono';font-size:11px;color:#94a3b8;font-weight:700}
+.lv{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:800;font-family:'DM Mono'}
+.EE{background:#d1fae5;color:#065f46}
+.ME{background:#fef3c7;color:#92400e}
+.AE{background:#ffedd5;color:#9a3412}
+.BE{background:#fee2e2;color:#991b1b}
+/* KPI */
+.kpi-row{padding:10px 16px;border-top:1px solid #f1f5fb;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.kpi{text-align:center}
+.kpi-val{font-size:18px;font-weight:800;line-height:1;font-family:'DM Mono'}
+.kpi-lbl{font-size:9.5px;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+.tip{margin-left:auto;font-size:11.5px;color:#94a3b8}
+/* ANALYSIS */
+.ana-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px}
+.cc{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px}
+.cc.full{grid-column:1/-1}
+.cc-title{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.bar-lbl{width:28px;font-size:11px;font-weight:800}
+.bar-track{flex:1;height:20px;background:#e2e8f0;border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .6s ease;display:flex;align-items:center;padding-left:8px;font-size:10px;font-weight:700;color:#fff}
+.bar-cnt{width:44px;font-size:11px;color:#64748b;font-family:'DM Mono';text-align:right}
+.sbar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sbar-lbl{width:68px;font-size:11px;color:#64748b;font-weight:600;text-align:right}
+.sbar-track{flex:1;height:14px;background:#e2e8f0;border-radius:3px;overflow:hidden}
+.sbar-fill{height:100%;border-radius:3px;background:#1a56db;transition:width .6s .1s ease}
+.sbar-val{width:30px;font-size:11px;font-weight:700;font-family:'DM Mono'}
+.rk-table{width:100%;border-collapse:collapse;font-size:12px}
+.rk-table th{background:#e2e8f0;color:#64748b;padding:7px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase}
+.rk-table td{padding:8px 10px;border-bottom:1px solid #e2e8f0}
+.rk-table tr:hover td{background:#f1f5fb}
+.rn{width:24px;height:24px;border-radius:50%;display:inline-grid;place-items:center;font-size:11px;font-weight:800}
+.r1{background:#f59e0b;color:#fff}.r2{background:#94a3b8;color:#fff}.r3{background:#c47722;color:#fff}.rn{background:#e2e8f0;color:#64748b}
+/* CTA */
+.cta{background:linear-gradient(135deg,#1e3a8a,#1a56db);border-radius:10px;padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 20px}
+.cta-t{color:rgba(255,255,255,.8);font-size:13.5px}
+.cta-t strong{color:#fff;display:block;font-size:16px;margin-bottom:3px}
+.cta a{background:#fff;color:#1a56db;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none}
+@media(max-width:600px){.ana-grid{grid-template-columns:1fr}.nav-link{display:none}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">📊</div>
+  <span class="nav-name">CBE Mark Sheet</span>
+  <span class="demo-badge">DEMO</span>
+  <div class="nav-right">
+    <a class="nav-link" href="index.html">← Home</a>
+    <a class="nav-cta" href="registration.html">Register Real School</a>
+  </div>
+</nav>
+
+<div class="banner">
+  <h1>Try CBE Mark Sheet — no account needed</h1>
+  <p>Select a grade and stream, edit marks and see CBC levels calculate live. No account needed.</p>
+
+  <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px 14px;margin-bottom:14px;flex-wrap:wrap;justify-content:center">
+    <span style="font-size:12px;font-weight:600;opacity:.8">📌 Viewing:</span>
+    <select id="demoGrade" onchange="onDemoChange()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:5px;color:#fff;font-size:12px;font-weight:600;padding:4px 8px;cursor:pointer;font-family:inherit">
+      <option value="7">Grade 7</option>
+      <option value="8" selected>Grade 8</option>
+      <option value="9">Grade 9</option>
+    </select>
+    <select id="demoStream" onchange="onDemoChange()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:5px;color:#fff;font-size:12px;font-weight:600;padding:4px 8px;cursor:pointer;font-family:inherit">
+      <option value="North">North</option>
+      <option value="South">South</option>
+      <option value="East">East</option>
+    </select>
+    <select id="demoTerm" onchange="onDemoChange()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:5px;color:#fff;font-size:12px;font-weight:600;padding:4px 8px;cursor:pointer;font-family:inherit">
+      <option>Term 1</option>
+      <option selected>Term 2</option>
+      <option>Term 3</option>
+    </select>
+  </div>
+
+  <div style="margin-bottom:14px">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('marks',this)">📝 Mark Entry</button>
+      <button class="tab" onclick="switchTab('analysis',this)">📊 Analysis</button>
+    </div>
+  </div>
+
+  <div style="margin-top:4px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:12px;opacity:.65">👆 Demo data — select grade &amp; stream above, then try editing marks.</span>
+    <button onclick="startDemo()" style="display:inline-flex;align-items:center;gap:6px;padding:7px 18px;background:#fbbf24;color:#1e2d45;border-radius:20px;font-size:12.5px;font-weight:800;border:none;cursor:pointer;font-family:inherit">
+      ▶ Start Demo
+    </button>
+  </div>
+</div>
+
+<div class="body">
+
+  <!-- MARK ENTRY -->
+  <div id="pane-marks">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title" id="marksTitle">Grade 8 · North Stream · Term 2, 2026</div>
+          <div class="card-sub">Demo School — click any score to edit</div>
+        </div>
+        <div class="head-right">
+          <div class="save-ind"><div class="dot" id="dot"></div><span id="sv-txt">All saved</span></div>
+          <button class="btn btn-o" onclick="resetMarks()">🔄 Reset</button>
+          <button class="btn btn-p" onclick="doPrint()">🖨️ Print</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead id="tHead"></thead>
+          <tbody id="tBody"></tbody>
+        </table>
+      </div>
+      <div class="kpi-row" id="kpiRow">
+        <div class="tip">💡 Edit any score — levels recalculate instantly</div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <div class="cta-t"><strong>Enjoying the demo?</strong>Select a different grade or stream above to explore more.</div>
+      <button onclick="startDemo()" style="background:#fff;color:#1a56db;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit">▶ Restart Demo</button>
+    </div>
+  </div>
+
+  <!-- ANALYSIS -->
+  <div id="pane-analysis" style="display:none">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title" id="analysisTitle">Class Analysis — Grade 8 North</div>
+          <div class="card-sub" id="analysisSubTitle">Grade 8 · North · based on demo marks — change grade/stream above</div>
+        </div>
+        <div class="head-right">
+          <button class="btn btn-p" onclick="doPrint()">🖨️ Print Report</button>
+        </div>
+      </div>
+      <div class="ana-grid" id="anaGrid"></div>
+    </div>
+
+    <div class="cta">
+      <div class="cta-t"><strong>Switch grade or stream</strong>Use the selectors above to auto-load a different class analysis.</div>
+      <button onclick="startDemo()" style="background:#fff;color:#1a56db;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit">▶ Restart Demo</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var SUBJECTS = ['English','Kiswahili','Maths','Science','SST','CRE'];
+var STUDENTS = [
+  'Amina Wanjiku','Brian Otieno','Cynthia Muthoni','Daniel Kamau',
+  'Eva Cherono','Felix Mwangi','Grace Akinyi','Hassan Omondi',
+  'Irene Njeri','James Kipchoge','Kevin Mutua','Lilian Achieng'
+];
+
+var marks = [];
+
+function rand(){ return Math.floor(Math.random()*51)+50; }
+function initMarks(){
+  marks = [];
+  for(var i=0;i<STUDENTS.length;i++){
+    var r=[];
+    for(var j=0;j<SUBJECTS.length;j++) r.push(rand());
+    marks.push(r);
+  }
+}
+
+function avg(arr){
+  var s=0,c=0;
+  for(var i=0;i<arr.length;i++){if(arr[i]!==null){s+=arr[i];c++;}}
+  return c ? Math.round(s/c*10)/10 : null;
+}
+
+function level(a){
+  if(a===null) return null;
+  if(a>=80) return 'EE';
+  if(a>=60) return 'ME';
+  if(a>=40) return 'AE';
+  return 'BE';
+}
+
+function lvCol(lv){
+  if(lv==='EE') return '#22c55e';
+  if(lv==='ME') return '#f59e0b';
+  if(lv==='AE') return '#f97316';
+  if(lv==='BE') return '#ef4444';
+  return '#94a3b8';
+}
+
+// Build table header
+function buildHead(){
+  var tr = document.createElement('tr');
+  var ths = ['#','Student'].concat(SUBJECTS).concat(['Avg','Level','Pos']);
+  ths.forEach(function(h,i){
+    var th = document.createElement('th');
+    th.textContent = h;
+    if(i===1) th.style.textAlign='left';
+    tr.appendChild(th);
+  });
+  var head = document.getElementById('tHead');
+  head.innerHTML='';
+  head.appendChild(tr);
+}
+
+// Build table rows
+function buildRows(){
+  var avgs=[], lvls=[];
+  for(var i=0;i<STUDENTS.length;i++){
+    var a=avg(marks[i]);
+    avgs.push(a); lvls.push(level(a));
+  }
+  // positions
+  var sorted=avgs.slice().map(function(a,i){return{a:a,i:i};})
+    .filter(function(x){return x.a!==null;})
+    .sort(function(a,b){return b.a-a.a;});
+  var pos={};
+  sorted.forEach(function(x,r){pos[x.i]=r+1;});
+
+  var tb=document.getElementById('tBody');
+  tb.innerHTML='';
+  for(var i=0;i<STUDENTS.length;i++){
+    var tr=document.createElement('tr');
+
+    // #
+    var td0=document.createElement('td');
+    td0.textContent=(i<9?'0':'')+(i+1);
+    tr.appendChild(td0);
+
+    // Name
+    var td1=document.createElement('td');
+    td1.textContent=STUDENTS[i];
+    tr.appendChild(td1);
+
+    // Marks
+    for(var j=0;j<SUBJECTS.length;j++){
+      var td=document.createElement('td');
+      var inp=document.createElement('input');
+      inp.type='number'; inp.min='0'; inp.max='100';
+      inp.className='mi'; inp.setAttribute('inputmode','numeric');
+      inp.value=marks[i][j]!==null?marks[i][j]:'';
+      inp.dataset.r=i; inp.dataset.c=j;
+      inp.addEventListener('input',onInput);
+      inp.addEventListener('focus',function(){this.select();});
+      td.appendChild(inp); tr.appendChild(td);
+    }
+
+    // Avg
+    var tdA=document.createElement('td');
+    tdA.className='td-avg'; tdA.id='a'+i;
+    tdA.textContent=avgs[i]!==null?avgs[i]:'—';
+    if(avgs[i]!==null) tdA.style.color=lvCol(lvls[i]);
+    tr.appendChild(tdA);
+
+    // Level
+    var tdL=document.createElement('td');
+    tdL.id='l'+i;
+    if(lvls[i]){
+      var sp=document.createElement('span');
+      sp.className='lv '+lvls[i]; sp.textContent=lvls[i];
+      tdL.appendChild(sp);
+    } else { tdL.textContent='—'; }
+    tr.appendChild(tdL);
+
+    // Pos
+    var tdP=document.createElement('td');
+    tdP.className='td-pos'; tdP.id='p'+i;
+    tdP.textContent=pos[i]?'#'+pos[i]:'—';
+    tr.appendChild(tdP);
+
+    tb.appendChild(tr);
+  }
+  buildKpis(avgs,lvls);
+}
+
+function onInput(e){
+  var ri=parseInt(e.target.dataset.r), ci=parseInt(e.target.dataset.c);
+  var v=e.target.value===''?null:Math.min(100,Math.max(0,parseInt(e.target.value)||0));
+  marks[ri][ci]=v;
+  e.target.classList.remove('flash','over');
+  if(v!==null){ e.target.classList.add(v>100?'over':'flash'); setTimeout(function(inp){return function(){inp.classList.remove('flash');};}(e.target),600); }
+  setSaving();
+  clearTimeout(window._t);
+  window._t=setTimeout(function(ri){return function(){refreshRow(ri);refreshPos();setSaved();};}(ri),400);
+}
+
+function refreshRow(ri){
+  var a=avg(marks[ri]); var lv=level(a);
+  var ta=document.getElementById('a'+ri);
+  if(ta){ ta.textContent=a!==null?a:'—'; ta.style.color=a!==null?lvCol(lv):'#94a3b8'; }
+  var tl=document.getElementById('l'+ri);
+  if(tl){ tl.innerHTML='';
+    if(lv){ var sp=document.createElement('span'); sp.className='lv '+lv; sp.textContent=lv; tl.appendChild(sp); }
+    else tl.textContent='—';
+  }
+}
+
+function refreshPos(){
+  var avgs=[]; for(var i=0;i<STUDENTS.length;i++) avgs.push(avg(marks[i]));
+  var sorted=avgs.slice().map(function(a,i){return{a:a,i:i};})
+    .filter(function(x){return x.a!==null;}).sort(function(a,b){return b.a-a.a;});
+  var pos={}; sorted.forEach(function(x,r){pos[x.i]=r+1;});
+  for(var i=0;i<STUDENTS.length;i++){
+    var tp=document.getElementById('p'+i);
+    if(tp) tp.textContent=pos[i]?'#'+pos[i]:'—';
+  }
+  buildKpis(avgs, avgs.map(level));
+}
+
+function buildKpis(avgs, lvls){
+  var withA=avgs.filter(function(a){return a!==null;});
+  var ca=withA.length?Math.round(withA.reduce(function(s,a){return s+a;},0)/withA.length*10)/10:'—';
+  var c={EE:0,ME:0,AE:0,BE:0};
+  lvls.forEach(function(l){if(l)c[l]++;});
+  var row=document.getElementById('kpiRow');
+  row.innerHTML='';
+  function k(v,l,col){
+    var d=document.createElement('div'); d.className='kpi';
+    var vd=document.createElement('div'); vd.className='kpi-val'; vd.textContent=v;
+    if(col) vd.style.color=col;
+    var ld=document.createElement('div'); ld.className='kpi-lbl'; ld.textContent=l;
+    d.appendChild(vd); d.appendChild(ld); row.appendChild(d);
+  }
+  k(STUDENTS.length,'Students',null); k(ca,'Class Avg',null);
+  k(c.EE,'EE','#22c55e'); k(c.ME,'ME','#f59e0b');
+  k(c.AE,'AE','#f97316'); k(c.BE,'BE','#ef4444');
+  var tip=document.createElement('div'); tip.className='tip';
+  tip.textContent='💡 Edit any score — levels recalculate instantly';
+  row.appendChild(tip);
+}
+
+function setSaving(){ document.getElementById('dot').className='dot busy'; document.getElementById('sv-txt').textContent='Saving…'; }
+function setSaved(){ document.getElementById('dot').className='dot'; document.getElementById('sv-txt').textContent='All saved'; }
+
+function resetMarks(){ initMarks(); buildRows(); }
+
+// ANALYSIS
+function buildAnalysis(){
+  var avgs=[],lvls=[];
+  for(var i=0;i<STUDENTS.length;i++){var a=avg(marks[i]);avgs.push(a);lvls.push(level(a));}
+  var c={EE:0,ME:0,AE:0,BE:0};
+  lvls.forEach(function(l){if(l)c[l]++;});
+  var tot=STUDENTS.length||1;
+  var withA=avgs.filter(function(a){return a!==null;});
+  var ca=withA.length?Math.round(withA.reduce(function(s,a){return s+a;},0)/withA.length*10)/10:0;
+  var sAvgs=SUBJECTS.map(function(s,j){
+    var v=marks.map(function(r){return r[j];}).filter(function(x){return x!==null;});
+    return v.length?Math.round(v.reduce(function(a,b){return a+b;},0)/v.length):0;
+  });
+  var maxS=Math.max.apply(null,sAvgs.concat([1]));
+  var ranked=[];
+  for(var i=0;i<STUDENTS.length;i++) if(avgs[i]!==null) ranked.push({name:STUDENTS[i],avg:avgs[i],lv:lvls[i],marks:marks[i]});
+  ranked.sort(function(a,b){return b.avg-a.avg;});
+
+  var grid=document.getElementById('anaGrid');
+  grid.innerHTML='';
+  var cols={EE:'#22c55e',ME:'#f59e0b',AE:'#f97316',BE:'#ef4444'};
+
+  // Level card
+  var lc=document.createElement('div'); lc.className='cc';
+  var lt=document.createElement('div'); lt.className='cc-title'; lt.textContent='Level Distribution'; lc.appendChild(lt);
+  ['EE','ME','AE','BE'].forEach(function(lv){
+    var n=c[lv]; var pct=Math.round(n/tot*100);
+    var row=document.createElement('div'); row.className='bar-row';
+    var lbl=document.createElement('div'); lbl.className='bar-lbl'; lbl.style.color=cols[lv]; lbl.textContent=lv;
+    var trk=document.createElement('div'); trk.className='bar-track';
+    var fil=document.createElement('div'); fil.className='bar-fill'; fil.style.width='0'; fil.style.background=cols[lv]; fil.textContent=n>0?pct+'%':'';
+    trk.appendChild(fil);
+    var cnt=document.createElement('div'); cnt.className='bar-cnt'; cnt.textContent=n+' / '+tot;
+    row.appendChild(lbl); row.appendChild(trk); row.appendChild(cnt); lc.appendChild(row);
+    setTimeout(function(f,p){return function(){f.style.width=p+'%';};}(fil,pct),80);
+  });
+  grid.appendChild(lc);
+
+  // Subject card
+  var sc=document.createElement('div'); sc.className='cc';
+  var st=document.createElement('div'); st.className='cc-title'; st.textContent='Subject Averages — '+ca+'% overall'; sc.appendChild(st);
+  SUBJECTS.forEach(function(s,j){
+    var pct=maxS?Math.round(sAvgs[j]/maxS*100):0;
+    var row=document.createElement('div'); row.className='sbar-row';
+    var lbl=document.createElement('div'); lbl.className='sbar-lbl'; lbl.textContent=s;
+    var trk=document.createElement('div'); trk.className='sbar-track';
+    var fil=document.createElement('div'); fil.className='sbar-fill'; fil.style.width='0';
+    trk.appendChild(fil);
+    var val=document.createElement('div'); val.className='sbar-val'; val.textContent=sAvgs[j];
+    row.appendChild(lbl); row.appendChild(trk); row.appendChild(val); sc.appendChild(row);
+    setTimeout(function(f,p){return function(){f.style.width=p+'%';};}(fil,pct),100);
+  });
+  grid.appendChild(sc);
+
+  // Ranking
+  var rc=document.createElement('div'); rc.className='cc full';
+  var rt=document.createElement('div'); rt.className='cc-title'; rt.textContent='Class Ranking'; rc.appendChild(rt);
+  var tbl=document.createElement('table'); tbl.className='rk-table';
+  var thead=document.createElement('thead');
+  var hr=document.createElement('tr');
+  ['#','Student'].concat(SUBJECTS).concat(['Avg','Level']).forEach(function(h){
+    var th=document.createElement('th'); th.textContent=h; hr.appendChild(th);
+  });
+  thead.appendChild(hr); tbl.appendChild(thead);
+  var tbody=document.createElement('tbody');
+  ranked.forEach(function(r,i){
+    var tr=document.createElement('tr');
+    var pc=i===0?'r1':i===1?'r2':i===2?'r3':'rn';
+    function td(content,isHtml){var d=document.createElement('td');if(isHtml)d.innerHTML=content;else d.textContent=content;return d;}
+    var rn=document.createElement('span'); rn.className='rn '+pc; rn.textContent=i+1;
+    var posCell=document.createElement('td'); posCell.appendChild(rn); tr.appendChild(posCell);
+    tr.appendChild(td(r.name));
+    r.marks.forEach(function(m){
+      var d=document.createElement('td'); d.style.fontFamily='"DM Mono"'; d.style.fontSize='11.5px';
+      d.textContent=m!==null?m:'—'; tr.appendChild(d);
+    });
+    tr.appendChild(td(r.avg));
+    var lvCell=document.createElement('td');
+    var sp=document.createElement('span'); sp.className='lv '+r.lv; sp.textContent=r.lv;
+    lvCell.appendChild(sp); tr.appendChild(lvCell);
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody); rc.appendChild(tbl); grid.appendChild(rc);
+}
+
+// PRINT
+function doPrint(){
+  var rows=[];
+  for(var i=0;i<STUDENTS.length;i++){
+    var a=avg(marks[i]);
+    rows.push({name:STUDENTS[i],marks:marks[i],avg:a,lv:level(a)});
+  }
+  rows.sort(function(a,b){return(b.avg||0)-(a.avg||0);});
+
+  // Build subject headers
+  var ths = "";
+  for(var j=0;j<SUBJECTS.length;j++){
+    ths += "<th>" + SUBJECTS[j] + "</th>";
+  }
+
+  // Build table rows
+  var trs = "";
+  for(var i=0;i<rows.length;i++){
+    var r = rows[i];
+    var cells = "";
+    for(var j=0;j<r.marks.length;j++){
+      cells += "<td>" + (r.marks[j] !== null ? r.marks[j] : "-") + "</td>";
+    }
+    var bg = r.lv==="EE" ? "#d1fae5" : r.lv==="ME" ? "#fef3c7" : r.lv==="AE" ? "#ffedd5" : "#fee2e2";
+    var fg = r.lv==="EE" ? "#065f46" : r.lv==="ME" ? "#92400e" : r.lv==="AE" ? "#9a3412" : "#991b1b";
+    trs += "<tr>"
+      + "<td>" + (i+1) + "</td>"
+      + "<td class=\"nm\">" + r.name + "</td>"
+      + cells
+      + "<td><strong>" + (r.avg !== null ? r.avg : "-") + "</strong></td>"
+      + "<td><span class=\"lv\" style=\"background:" + bg + ";color:" + fg + "\">" + (r.lv || "-") + "</span></td>"
+      + "</tr>";
+  }
+
+  var d = new Date().toLocaleDateString("en-KE",{day:"2-digit",month:"short",year:"numeric"});
+
+  var css = [
+    "body{font-family:Arial,sans-serif;padding:28px;font-size:12px}",
+    "h2{margin-bottom:2px;font-size:18px}",
+    "p{color:#666;font-size:12px;margin-bottom:12px}",
+    ".wm{background:#fef9c3;border:1px solid #fde68a;padding:4px 10px;border-radius:4px;color:#92400e;font-size:11px;display:inline-block;margin-bottom:12px}",
+    "table{width:100%;border-collapse:collapse}",
+    "th{background:#1a56db;color:#fff;padding:7px;font-size:10px;text-align:center}",
+    "th:nth-child(2){text-align:left}",
+    "td{padding:6px 7px;border-bottom:1px solid #e2e8f0;text-align:center}",
+    "td.nm{text-align:left;font-weight:600}",
+    "tr:nth-child(even) td{background:#f8fafc}",
+    ".lv{padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700}",
+    ".ft{margin-top:16px;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}",
+    "@media print{button{display:none}}"
+  ].join("");
+
+  var html = `<!DOCTYPE html>
+\u003chtml>
+\u003chead>
+<title>Demo School Report</title>
+\u003cstyle>${css}<\/style>
+</head>
+\u003cbody>
+<h2>Demo School</h2>
+<p>Grade 8 - North Stream - Term 2, 2026</p>
+<div class="wm">Demo report - not real student data</div>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th style="text-align:left">Student</th>
+${ths}
+<th>Avg</th>
+<th>Level</th>
+</tr>
+</thead>
+<tbody>${trs}</tbody>
+</table>
+<div class="ft">
+<span>CBE Mark Sheet Demo</span>
+<span>${d}</span>
+</div>
+<br>
+<button onclick="window.print()" style="padding:7px 18px;background:#1a56db;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:13px;font-weight:700">
+Print / Save PDF
+</button>
+<\/body>
+<\/html>`;
+
+  var w = window.open("", "_blank");
+  if(!w){ alert("Please allow popups for this site"); return; }
+  w.document.write(html);
+  w.document.close();
+}
+
+// GRADE / STREAM CHANGE
+function getGrade(){ return 'Grade ' + document.getElementById('demoGrade').value; }
+function getStream(){ return document.getElementById('demoStream').value; }
+function getTerm(){ return document.getElementById('demoTerm').value; }
+
+function updateTitles(){
+  var g = getGrade(), s = getStream(), t = getTerm();
+  var mt = document.getElementById('marksTitle');
+  var at = document.getElementById('analysisTitle');
+  var as = document.getElementById('analysisSubTitle');
+  if(mt) mt.textContent = g + ' · ' + s + ' Stream · ' + t + ', 2026';
+  if(at) at.textContent = 'Class Analysis — ' + g + ' ' + s;
+  if(as) as.textContent = g + ' · ' + s + ' · ' + t + ' — change grade/stream above to switch class';
+}
+
+
+
+// TAB SWITCH
+function switchTab(name, btn){
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('pane-marks').style.display=name==='marks'?'block':'none';
+  document.getElementById('pane-analysis').style.display=name==='analysis'?'block':'none';
+  if(name==='analysis') buildAnalysis();
+}
+
+// When grade or stream changes — always rebuild both marks and analysis
+function onDemoChange(){
+  initMarks();
+  buildRows();
+  updateTitles();
+  // If analysis tab is visible, rebuild it too
+  if(document.getElementById('pane-analysis').style.display !== 'none'){
+    buildAnalysis();
+  }
+}
+
+// TOAST
+function showToast(msg, icon){
+  var tc = document.getElementById('tc');
+  if(!tc) return;
+  var t = document.createElement('div');
+  t.className = 'toast';
+  var sp = document.createElement('span');
+  sp.textContent = icon || 'ℹ️';
+  t.appendChild(sp);
+  t.appendChild(document.createTextNode(' ' + msg));
+  tc.appendChild(t);
+  setTimeout(function(){
+    t.style.animation = 'tOut .22s ease forwards';
+    setTimeout(function(){ t.remove(); }, 230);
+  }, 2800);
+}
+
+// START DEMO
+function startDemo(){
+  // Reset to default grade/stream
+  var g = document.getElementById('demoGrade');
+  var s = document.getElementById('demoStream');
+  var t = document.getElementById('demoTerm');
+  if(g) g.value = '8';
+  if(s) s.value = 'North';
+  if(t) t.selectedIndex = 1;
+  initMarks();
+  buildHead();
+  buildRows();
+  updateTitles();
+  // Switch to marks tab
+  var markTab = document.querySelector('.tab');
+  if(markTab) switchTab('marks', markTab);
+  showToast('Demo started — Grade 8 North · Edit any score to try it!', '▶');
+}
+
+// INIT
+initMarks();
+buildHead();
+buildRows();
+</script>
+<div id="tc" style="position:fixed;bottom:18px;right:18px;z-index:999;display:flex;flex-direction:column;gap:5px"></div>
+</body>
+</html>

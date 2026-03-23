@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSI+CiAgPCEtLSBCYWNrZ3JvdW5kIHJvdW5kZWQgcmVjdCAtLT4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0iIzE1NTNkNCIvPgoKICA8IS0tIE1hcmsgc2hlZXQgbGluZXMgLS0+CiAgPCEtLSBIZWFkZXIgYmFyIC0tPgogIDxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjQ0IiBoZWlnaHQ9IjgiIHJ4PSIyLjUiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4yNSkiLz4KCiAgPCEtLSBSb3cgMSAtLT4KICA8cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSIxOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjcpIi8+CiAgPHJlY3QgeD0iMzIiIHk9IjIyIiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjkpIi8+CiAgPHJlY3QgeD0iNDQiIHk9IjIyIiB3aWR0aD0iMTAiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiM0YWRlODAiLz4KCiAgPCEtLSBSb3cgMiAtLT4KICA8cmVjdCB4PSIxMCIgeT0iMzAiIHdpZHRoPSIxOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjcpIi8+CiAgPHJlY3QgeD0iMzIiIHk9IjMwIiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjkpIi8+CiAgPHJlY3QgeD0iNDQiIHk9IjMwIiB3aWR0aD0iMTAiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiNmYWNjMTUiLz4KCiAgPCEtLSBSb3cgMyAtLT4KICA8cmVjdCB4PSIxMCIgeT0iMzgiIHdpZHRoPSIxOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjcpIi8+CiAgPHJlY3QgeD0iMzIiIHk9IjM4IiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjkpIi8+CiAgPHJlY3QgeD0iNDQiIHk9IjM4IiB3aWR0aD0iMTAiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiM0YWRlODAiLz4KCiAgPCEtLSBDQkMgbGV2ZWwgYmFkZ2UgYm90dG9tIHJpZ2h0IC0tPgogIDxyZWN0IHg9IjEwIiB5PSI0NyIgd2lkdGg9IjQ0IiBoZWlnaHQ9IjciIHJ4PSIyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIi8+CiAgPHJlY3QgeD0iMTMiIHk9IjQ5IiB3aWR0aD0iMTQiIGhlaWdodD0iMyIgcng9IjEuNSIgZmlsbD0iIzRhZGU4MCIvPgogIDxyZWN0IHg9IjMwIiB5PSI0OSIgd2lkdGg9IjExIiBoZWlnaHQ9IjMiIHJ4PSIxLjUiIGZpbGw9IiNmYWNjMTUiLz4KICA8cmVjdCB4PSI0NCIgeT0iNDkiIHdpZHRoPSI3IiAgaGVpZ2h0PSIzIiByeD0iMS41IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuNCkiLz4KPC9zdmc+Cg==">
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAbklEQVR4nGNgwAJEg6/8pwXGZhdWMOAOuPPs/39a4FEHYLUMFj+0shQfBqeLQeOAE9f/k4297jWQhQeXAwYKUyUEfp0RJQuPOmD4pIHhkQ0H3AEDngZGHTDqgFEHjDpgwByAr6VMF8tGHTDiHQAABHSndjk9aHUAAAAASUVORK5CYII=">
+<link rel="icon" type="image/png" sizes="16x16" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATElEQVR4nGNgQAKiwVf+E4MZcAGKDbjz7P9/YjBWW4nVjIzBrqGaAeRiuAEnrv/Hib3uNWDF9DPg1xlRrJh+BtAnDMiOxsGVmcgxAAABE20vkMdjNAAAAABJRU5ErkJggg==">
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAADfUlEQVR4nO3csQ0lVRREwU2CpHBJiPAwMJFwECZB4Cz+WnDRp/s11VIFMFfHm9F8+fLBfffDL1/hW59s7qNLH45O6S7PSx+OTukuz0sfjk7pLs9LH45O6S7PSx+OTukuz0sfjk7pLs9LH45O6S7PSx+OTukuz0sfjk7pLs9LH45O6S7P++2Pr1/hW+kuz0sfjk7pLs9LH45O6S7PSx+OTukuz0sfjk7pLs9LH45O6S7PSx+OTukuz0sfjk7pLs9LH45O6S7PSx+OTukuz0sfjk7pLs9LH45OH43un3xUkj4E/19/+8MnQfMCQTNF0EwRNFMEzRRBM0XQTBE0UwTNFEEz5SNB//TrV/6F73//kSNBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8bKPBA3tBM0UQTNF0EwRNFMEzRRBM0XQTBE0UwTNFK++/0N//vwdR4IulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZR8JGtoJmimCZoqgmSJopgiaKYJmiqCZImimCJopXn3/h9I/DX+ZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3jZR4KGdoJmiqCZImimCJopgmaKoJkiaKYImimCZoqgmSJopgiaKYJmiqCZImimCJopgmaKoJkiaKYImimCZoqgmSJopgiaKYJmiqCZImimCJopgmaKoJkiaKYImimCZoqgmSJopgiaKYJmiqCZImimCJopgmaKoJkiaKYImimCZoqgmSJopgiaKYJmiqCZImimCJopgmaKoJkiaKYImimCZoqgmSJopgiaKYJmiqCZImimCJopgmaKoJkiaKZ8+eTSD0enj0b3yaUPR6d0l+elD0endJfnpQ9Hp3SX56UPR6d0l+elD0endJfnpQ9Hp3SX56UPR6d0l+elD0endJfnpQ9Hp3SX56UPR6d0l+elD0endJfnpQ9Hp3SX56UPR6d0l+elD0endJfnpQ9Hp3SX56UPR6d0l+elD0endJfnpQ9Hp3SX56UPR6d0l+elD0endJfnpQ9Hp3SX56UPR6dPNvcXHyZFnnPjo/gAAAAASUVORK5CYII=">
+<meta name="theme-color" content="#1553d4">
+<title>CBE Analysis | Junior School</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Familjen+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#e8ecf4;--surface:#fff;--surf2:#f3f5fa;--border:#dce1ec;
+  --text:#131c2e;--text2:#4f6080;--text3:#9aaabb;
+  --accent:#1a56db;--ah:#1447c0;--alight:#eff4ff;
+  --ee1-bg:#c6f6d5;--ee1-tx:#166534;
+  --ee2-bg:#bbf7d0;--ee2-tx:#15803d;
+  --me1-bg:#fef9c3;--me1-tx:#854d0e;
+  --me2-bg:#fef3c7;--me2-tx:#92400e;
+  --ae1-bg:#ffedd5;--ae1-tx:#9a3412;
+  --ae2-bg:#fed7aa;--ae2-tx:#9a3412;
+  --be1-bg:#fecaca;--be1-tx:#991b1b;
+  --be2-bg:#fca5a5;--be2-tx:#7f1d1d;
+  --sh:0 1px 3px rgba(0,0,0,.05);--sh2:0 8px 24px rgba(0,0,0,.1);
+  --r:10px;--r2:6px;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh}
+
+/* ── HEADER ── */
+header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;box-shadow:var(--sh)
+}
+.logo{display:flex;align-items:center;gap:9px}
+.lm{width:30px;height:30px;background:var(--accent);border-radius:7px;display:grid;place-items:center;color:#fff;font-size:15px}
+.lt{font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;letter-spacing:-.3px}
+.ls{font-size:10px;color:var(--text3)}
+.hdr-r{display:flex;align-items:center;gap:7px}
+
+/* ── TOOLBAR ── */
+.toolbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:8px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  position:sticky;top:52px;z-index:190;box-shadow:var(--sh)
+}
+.fsel{
+  padding:5px 9px;border:1.5px solid var(--border);border-radius:var(--r2);
+  font-family:inherit;font-size:12.5px;color:var(--text);background:var(--surface);
+  cursor:pointer;outline:none;height:32px
+}
+.fsel:focus{border-color:var(--accent)}
+.btn{
+  display:inline-flex;align-items:center;gap:5px;padding:5px 13px;
+  border-radius:var(--r2);font-family:inherit;font-size:12.5px;font-weight:600;
+  cursor:pointer;border:none;transition:all .14s;white-space:nowrap;height:32px
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--ah)}
+.btn-success{background:#059669;color:#fff}
+.btn-success:hover{background:#047857}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--text2)}
+.btn-outline:hover{background:var(--bg);color:var(--text)}
+.btn-danger{background:#dc2626;color:#fff}
+.btn-danger:hover{background:#b91c1c}
+.btn-sm{padding:3px 9px;font-size:11.5px;height:26px}
+.sep{width:1px;height:20px;background:var(--border)}
+.tb-lbl{font-size:11px;color:var(--text3);font-weight:600}
+
+/* ── OUTER ── */
+.outer{padding:14px 20px}
+.info-strip{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.sheet-title{font-family:'Familjen Grotesk',sans-serif;font-size:16px;font-weight:800}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:4px}
+.pill .pv{color:var(--text);font-weight:700}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:2px;margin-bottom:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px;width:fit-content}
+.tab{padding:5px 16px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--text2);transition:all .15s}
+.tab.active{background:var(--accent);color:#fff}
+.tab:hover:not(.active){background:var(--bg);color:var(--text)}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh)}
+.stat-label{font-size:10.5px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.stat-val{font-family:'Familjen Grotesk',sans-serif;font-size:26px;font-weight:800;line-height:1}
+.stat-sub{font-size:10.5px;color:var(--text3);margin-top:3px}
+.stat-card.accent{background:var(--accent);border-color:var(--ah)}
+.stat-card.accent .stat-label,.stat-card.accent .stat-sub{color:rgba(255,255,255,.7)}
+.stat-card.accent .stat-val{color:#fff}
+
+/* ── LEVEL DIST ── */
+.level-dist{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh);margin-bottom:14px}
+.section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px}
+.level-bars{display:flex;flex-direction:column;gap:6px}
+.level-row{display:flex;align-items:center;gap:8px}
+.level-row .lbl{width:80px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px}
+.level-row .bar-wrap{flex:1;height:20px;background:var(--bg);border-radius:4px;overflow:hidden}
+.level-row .bar{height:100%;border-radius:4px;transition:width .4s ease;display:flex;align-items:center;padding:0 6px}
+.level-row .bar-txt{font-size:10px;font-weight:800;color:inherit;white-space:nowrap}
+.level-row .cnt{width:40px;text-align:right;font-size:11px;font-weight:700;color:var(--text2)}
+
+/* ── SUBJECT TABLE ── */
+.analysis-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.analysis-card table{width:100%;border-collapse:collapse}
+.analysis-card th{background:#1e2d4d;color:#c8d8f8;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:8px 10px;text-align:left;border:1px solid #2d3e61}
+.analysis-card td{padding:8px 10px;border:1px solid var(--border);font-size:12.5px;vertical-align:middle}
+.analysis-card tbody tr:hover td{background:var(--alight)}
+.analysis-card tbody tr:nth-child(even) td{background:var(--surf2)}
+
+/* ── STUDENT LIST ── */
+.student-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px}
+.stu-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--sh);cursor:pointer;transition:all .15s}
+.stu-card:hover{border-color:var(--accent);box-shadow:var(--sh2);transform:translateY(-1px)}
+.stu-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.stu-name{font-weight:700;font-size:13px}
+.stu-adm{font-size:10.5px;color:var(--text3)}
+.stu-avg{font-family:'Familjen Grotesk',sans-serif;font-size:22px;font-weight:800;color:var(--accent)}
+.stu-bars{display:flex;gap:2px;height:6px;border-radius:3px;overflow:hidden}
+.stu-bar{height:100%;flex:1;border-radius:1px;transition:opacity .2s}
+
+/* ── RANK TABLE ── */
+.rank-no{font-family:'Familjen Grotesk',sans-serif;font-size:17px;font-weight:800;color:var(--text3);width:32px;text-align:center}
+.rank-no.gold{color:#d97706}
+.rank-no.silver{color:#6b7280}
+.rank-no.bronze{color:#92400e}
+
+/* ── LBADGE ── */
+.lbadge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10.5px;font-weight:800;white-space:nowrap}
+.ee1{background:var(--ee1-bg);color:var(--ee1-tx)}
+.ee2{background:var(--ee2-bg);color:var(--ee2-tx)}
+.me1{background:var(--me1-bg);color:var(--me1-tx)}
+.me2{background:var(--me2-bg);color:var(--me2-tx)}
+.ae1{background:var(--ae1-bg);color:var(--ae1-tx)}
+.ae2{background:var(--ae2-bg);color:var(--ae2-tx)}
+.be1{background:var(--be1-bg);color:var(--be1-tx)}
+.be2{background:var(--be2-bg);color:var(--be2-tx)}
+
+.spin{width:17px;height:17px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .65s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty-msg{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-msg .ei{font-size:36px;margin-bottom:10px}
+
+/* TOAST */
+#tc{position:fixed;top:62px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
+.t{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:var(--r2);font-size:12.5px;font-weight:500;box-shadow:var(--sh2);animation:tin .25s ease;min-width:210px}
+.t.ok {background:#064e3b;color:#ecfdf5;border-left:3px solid #10b981}
+.t.err{background:#7f1d1d;color:#fef2f2;border-left:3px solid #ef4444}
+.t.info{background:#1e3a5f;color:#dbeafe;border-left:3px solid var(--accent)}
+@keyframes tin {from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tout{to{transform:translateX(110%);opacity:0}}
+
+/* DARK */
+body.dark{
+  --bg:#0c0f18;--surface:#141924;--surf2:#1a2030;
+  --border:#252d42;--text:#e0e8f8;--text2:#7a90b8;--text3:#3d4f72;--alight:#172050
+}
+body.dark .analysis-card tbody tr:nth-child(even) td{background:#161d2e}
+body.dark .level-row .bar-wrap{background:#1a2030}
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .2s
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--surface);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.3);
+  width:100%;max-width:720px;max-height:90vh;overflow:auto;
+  transform:scale(.96);transition:transform .2s
+}
+.modal-overlay.open .modal{transform:scale(1)}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:2}
+.modal-title{font-family:'Familjen Grotesk',sans-serif;font-size:17px;font-weight:800}
+.modal-body{padding:20px}
+.close-btn{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text3);padding:2px 6px;border-radius:4px}
+.close-btn:hover{background:var(--bg);color:var(--text)}
+
+/* ── PRINT STYLES ── */
+/* Print is handled via a new window — no @media print needed on main page */
+@media print{
+  /* Fallback: hide UI chrome if somehow printing main page */
+  header,.toolbar,#tc{display:none!important}
+}
+
+/* Page break between reports in bulk print */
+.print-page-break{
+  page-break-after:always;
+  break-after:page;
+}
+
+/* ── PRINT REPORT LAYOUT ── */
+#printArea{display:none} /* content now opens in new window */
+.print-page{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:#fff;color:#000;
+  padding:24px 28px;
+  max-width:800px;
+  margin:0 auto;
+}
+.print-school-header{
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:3px solid #1a56db;padding-bottom:12px;margin-bottom:16px
+}
+.print-school-name{font-family:'Familjen Grotesk',sans-serif;font-size:20px;font-weight:800;color:#1a56db}
+.print-school-sub{font-size:11px;color:#4f6080;margin-top:2px}
+.print-meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.print-meta-box{border:1px solid #dce1ec;border-radius:6px;padding:8px 10px}
+.print-meta-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#9aaabb}
+.print-meta-val{font-size:13px;font-weight:700;color:#131c2e;margin-top:2px}
+.print-section{margin-bottom:16px}
+.print-section-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#4f6080;border-bottom:1px solid #dce1ec;padding-bottom:4px;margin-bottom:8px}
+.print-sub-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.print-sub-table th{background:#1e2d4d;color:#c8d8f8;padding:5px 8px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.print-sub-table td{padding:5px 8px;border-bottom:1px solid #f0f0f0}
+.print-sub-table tr:nth-child(even) td{background:#f8f9fc}
+.print-overall-box{
+  background:linear-gradient(135deg,#1a56db,#1447c0);
+  color:#fff;border-radius:8px;padding:14px 18px;
+  display:flex;align-items:center;gap:24px;margin-bottom:16px
+}
+.print-avg{font-family:'Familjen Grotesk',sans-serif;font-size:42px;font-weight:800;line-height:1}
+.print-avg-lbl{font-size:10px;opacity:.75;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.print-level-big{font-size:20px;font-weight:800}
+.print-pts{font-size:13px;opacity:.85}
+.print-bar-wrap{flex:1}
+.print-bar-track{height:10px;background:rgba(255,255,255,.2);border-radius:5px;overflow:hidden;margin-top:6px}
+.print-bar-fill{height:100%;border-radius:5px;background:#fff}
+.print-class-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.print-compare-box{border:1px solid #dce1ec;border-radius:6px;padding:8px 10px;font-size:11px}
+.print-compare-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#9aaabb;margin-bottom:3px}
+.print-compare-val{font-size:15px;font-weight:800;color:#1a56db}
+.print-remarks{border:1px solid #dce1ec;border-radius:6px;padding:10px 12px;margin-top:10px;min-height:60px}
+.print-remarks-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#9aaabb;margin-bottom:6px}
+.print-footer{border-top:1px solid #dce1ec;padding-top:10px;margin-top:16px;display:flex;justify-content:space-between;font-size:9.5px;color:#9aaabb}
+.print-sig-line{border-top:1px solid #9aaabb;width:120px;margin-top:20px;padding-top:3px;font-size:9px;color:#9aaabb;text-align:center}
+
+/* class report print */
+.print-class-header-box{background:#1e2d4d;color:#c8d8f8;padding:10px 14px;border-radius:6px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.print-rank-table{width:100%;border-collapse:collapse;font-size:11px}
+.print-rank-table th{background:#1e2d4d;color:#c8d8f8;padding:5px 8px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.print-rank-table td{padding:5px 8px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+.print-rank-table tr:nth-child(even) td{background:#f8f9fc}
+.print-rank-no{font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;text-align:center}
+.print-dist-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.print-dist-box{border:1px solid #dce1ec;border-radius:5px;padding:6px 8px;text-align:center}
+.print-dist-count{font-family:'Familjen Grotesk',sans-serif;font-size:20px;font-weight:800}
+.print-dist-lbl{font-size:9px;color:#4f6080;font-weight:700;text-transform:uppercase;margin-top:1px}
+</style>
+</head>
+<body>
+<div id="tc"></div>
+
+<!-- PRINT AREA (hidden until print) -->
+<div id="printArea"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="lm" id="hdrLogo">📈</div>
+    <div>
+      <div class="lt" id="hdrSchoolName">CBE Analysis</div>
+      <div class="ls" id="hdrSchoolSub">Junior School · Kenya CBC</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <button class="btn btn-outline btn-sm" id="themeBtn">🌙</button>
+    <a href="/" class="btn btn-outline btn-sm">📋 Mark Sheet</a>
+  </div>
+</header>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <span class="tb-lbl">Grade</span>
+  <select class="fsel" id="selGrade" onchange="onGradeChange()">
+    <option value="">-- Grade --</option>
+    <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+  </select>
+  <span class="tb-lbl">Stream</span>
+  <select class="fsel" id="selStream" disabled onchange="loadAnalysis()">
+    <option value="">-- Stream --</option>
+  </select>
+  <span class="tb-lbl">Term</span>
+  <select class="fsel" id="selTerm" onchange="loadAnalysis()">
+    <option>Term 1</option><option>Term 2</option><option>Term 3</option>
+  </select>
+  <span class="tb-lbl">Year</span>
+  <input type="number" class="fsel" id="selYear" value="2026" min="2020" max="2040" style="width:68px" onchange="loadAnalysis()">
+  <div class="sep"></div>
+  <button class="btn btn-success" onclick="printClassReport()">🖨️ Class Report</button>
+  <button class="btn btn-primary" id="printAllBtn" onclick="confirmPrintAll()" style="display:none">🖨️ Print All Reports</button>
+</div>
+
+<!-- CONTENT -->
+<div class="outer" id="mainContent">
+  <div class="empty-msg"><div class="ei">📈</div><p>Select <strong>Grade</strong> and <strong>Stream</strong> to view analysis</p></div>
+</div>
+
+<!-- PRINT ALL CONFIRMATION MODAL -->
+<div class="modal-overlay" id="printAllModal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <div class="modal-title">🖨️ Print All Student Reports</div>
+      <button class="close-btn" onclick="closePrintAllModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="printAllSummary"></div>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn btn-outline" onclick="closePrintAllModal()">Cancel</button>
+      <button class="btn btn-primary" id="doPrintAllBtn" onclick="printAllReports()">🖨️ Print All</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="stuModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Student Report</div>
+      <div style="display:flex;gap:7px;align-items:center">
+        <button class="btn btn-primary btn-sm" onclick="printStudentReport()">🖨️ Print</button>
+        <button class="close-btn" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
+  authDomain:"bett-294a2.firebaseapp.com",
+  projectId:"bett-294a2",
+  storageBucket:"bett-294a2.appspot.com",
+  messagingSenderId:"1055511650032",
+  appId:"1:1055511650032:web:7e0f9c28e58515f549ac35"
+});
+const db = firebase.firestore();
+const el = id => document.getElementById(id);
+
+// ── School settings (loaded once on startup) ──
+let schoolSettings = {
+  name: 'Junior School',
+  motto: '',
+  county: '',
+  logoUrl: '',
+  principal: ''
+};
+
+// ── School settings — wait for auth then load ──
+let _analysisSchoolId = null;
+let _analysisRole     = null;
+
+// ── Single auth promise — resolves once Firebase Auth is ready ──
+// All Firestore calls must wait for this before executing
+const _authReady = new Promise(resolve=>{
+  const unsub = firebase.auth().onAuthStateChanged(async u=>{
+    unsub();
+    if(!u){
+      // Not signed in — go to login
+      window.location.href = 'login';
+      resolve(null);
+      return;
+    }
+
+    // Check sessionStorage first (fastest — set by admin.html)
+    const stored = sessionStorage.getItem('cbe_school_id');
+    if(stored){
+      _analysisSchoolId = stored;
+      resolve(stored);
+      return;
+    }
+
+    // Read user profile to get schoolId (handles both admin and teacher)
+    try{
+      const snap = await db.collection('users').doc(u.uid).get();
+      if(snap.exists){
+        const profile = snap.data();
+        _analysisRole = profile.role;
+
+        if(profile.role === 'admin'){
+          // Admin: their uid IS the schoolId
+          _analysisSchoolId = u.uid;
+        } else if(profile.role === 'teacher' && profile.schoolId){
+          // Teacher: schoolId stored in their profile
+          _analysisSchoolId = profile.schoolId;
+        } else {
+          // No valid schoolId found
+          console.warn('[Analysis] Cannot resolve schoolId from profile');
+          window.location.href = 'login';
+          resolve(null);
+          return;
+        }
+        sessionStorage.setItem('cbe_school_id', _analysisSchoolId);
+        resolve(_analysisSchoolId);
+      } else {
+        window.location.href = 'login';
+        resolve(null);
+      }
+    }catch(e){
+      console.warn('[Analysis] Auth profile read failed:', e.message);
+      window.location.href = 'login';
+      resolve(null);
+    }
+  });
+});
+
+// All code that needs schoolId waits for _authReady
+function _getSchoolId(){
+  if(_analysisSchoolId) return Promise.resolve(_analysisSchoolId);
+  return _authReady;
+}
+
+async function loadSchoolSettings(){
+  try{
+    const sid = await _getSchoolId();
+    if(!sid){ console.warn('[Analysis] No schoolId — settings not loaded'); return; }
+    const snap = await db.collection('settings').doc(sid).get();
+    if(snap.exists){
+      applySchoolSettings(snap.data());
+      console.log('[Analysis] Settings loaded:', snap.data().name);
+    }
+  }catch(e){
+    console.warn('[Analysis] Settings load failed:', e.message);
+  }
+}
+
+function applySchoolSettings(s){
+  if(!s) return;
+  schoolSettings = {...schoolSettings, ...s};
+
+  // Header name
+  const nameEl = el('hdrSchoolName');
+  if(nameEl && s.name) nameEl.textContent = s.name + ' · Analysis';
+
+  // Header subtitle
+  const subEl = el('hdrSchoolSub');
+  if(subEl){
+    const parts = [s.county, 'Kenya CBC'].filter(Boolean);
+    subEl.textContent = parts.join(' · ');
+  }
+
+  // Header logo
+  if(s.logoUrl){
+    const lm = el('hdrLogo');
+    if(lm) lm.innerHTML = `<img src="${s.logoUrl}" style="width:100%;height:100%;object-fit:contain;border-radius:inherit" onerror="this.parentElement.innerHTML='📈'">`;
+  }
+
+  // Brand colour
+  if(s.primaryColor){
+    document.documentElement.style.setProperty('--accent', s.primaryColor);
+    document.documentElement.style.setProperty('--ah', s.primaryColor);
+  }
+
+  // Page title
+  if(s.name) document.title = s.name + ' | CBC Analysis';
+}
+
+// Load settings immediately
+// Wait for auth before initialising — prevents permission errors
+_authReady.then(sid=>{
+  if(!sid) return; // redirected to login
+  loadSchoolSettings();
+});
+
+// Subject config — mirrors mark sheet
+const SUBS = [
+  {id:'eng', label:'English',                icon:'📖', parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
+  {id:'kis', label:'Kiswahili/KSL',          icon:'🗣️', parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
+  {id:'math',label:'Mathematics',            icon:'🔢'},
+  {id:'sci', label:'Integrated Science',     icon:'🔬'},
+  {id:'soc', label:'Social Studies',         icon:'🌍'},
+  {id:'re',  label:'Religious Ed.',          icon:'✝️'},
+  {id:'arts',label:'Creative Arts & Sports', icon:'🎨'},
+  {id:'pret',label:'Pre-Technical',          icon:'🔧'},
+  {id:'agri',label:'Agriculture & Nutrition',icon:'🌱'},
+];
+
+const DEFAULT_OOF = 100;
+
+const LEVELS = [
+  {l:'EE1',p:8,c:'ee1',min:90},
+  {l:'EE2',p:7,c:'ee2',min:75},
+  {l:'ME1',p:6,c:'me1',min:58},
+  {l:'ME2',p:5,c:'me2',min:41},
+  {l:'AE1',p:4,c:'ae1',min:31},
+  {l:'AE2',p:3,c:'ae2',min:21},
+  {l:'BE1',p:2,c:'be1',min:11},
+  {l:'BE2',p:1,c:'be2',min:0},
+];
+
+function getLevel(pct){
+  for(const lv of LEVELS) if(pct>=lv.min) return lv;
+  return LEVELS[7];
+}
+
+function toast(msg,type='ok'){
+  const t=document.createElement('div');
+  t.className=`t ${type}`;
+  t.innerHTML=`<span>${type==='ok'?'✅':type==='err'?'❌':'ℹ️'}</span>${msg}`;
+  el('tc').appendChild(t);
+  setTimeout(()=>{t.style.animation='tout .25s ease forwards';setTimeout(()=>t.remove(),280);},2600);
+}
+
+let allResults = [], allStudents = [];
+let currentStudent = null;
+
+// ── Read URL params from admin quick-launch ──
+// Wait for auth before auto-loading so schoolId is ready
+_authReady.then(()=>{
+  const p = new URLSearchParams(window.location.search);
+  const grade  = p.get('grade');
+  const stream = p.get('stream');
+  const term   = p.get('term');
+  const year   = p.get('year');
+  if(grade)  el('selGrade').value = grade;
+  if(term)   el('selTerm').value  = term;
+  if(year)   el('selYear').value  = year;
+  if(grade && stream){
+    const ss = el('selStream');
+    ss.innerHTML = `<option value="${stream}">${stream}</option>`;
+    ss.disabled  = false;
+    ss.value     = stream;
+    loadAnalysis();
+  } else if(grade){
+    // Grade only — trigger stream loading
+    onGradeChange();
+  }
+});
+
+// ── Grade → streams ──
+window.onGradeChange = async function(){
+  const grade=el('selGrade').value, ss=el('selStream');
+  ss.disabled=true; ss.innerHTML='<option value="">Loading…</option>';
+  if(!grade){ss.innerHTML='<option value="">-- Stream --</option>';ss.disabled=false;return;}
+  try{
+    // Wait for schoolId — may not be ready if auth is still resolving
+    const schoolId = await _getSchoolId();
+    console.log('[Analysis] Loading streams for grade', grade, '| schoolId', schoolId);
+    const snap = await db.collection('students')
+      .where('grade','==',grade)
+      .where('schoolId','==',schoolId)
+      .get();
+    const set=new Set();
+    snap.forEach(d=>{const s=d.data();if(s.stream?.trim())set.add(s.stream.trim());});
+    const arr=[...set].sort();
+    if(!arr.length){
+      ss.innerHTML='<option value="">No streams found</option>';
+      ss.disabled=false;
+      toast('No streams found for '+grade+'. Add students in Admission first.','info');
+      return;
+    }
+    ss.innerHTML='<option value="">-- Stream --</option>'+arr.map(s=>`<option>${s}</option>`).join('');
+    ss.disabled=false;
+    if(arr.length===1){ss.value=arr[0];loadAnalysis();}
+  }catch(e){
+    ss.innerHTML='<option value="">-- Stream --</option>';
+    ss.disabled=false;
+    console.error('[Analysis] Failed to load streams:', e.message);
+    toast('Failed to load streams: '+e.message,'err');
+  }
+};
+
+window.loadAnalysis = async function(){
+  const grade=el('selGrade').value, stream=el('selStream').value,
+        term=el('selTerm').value,   year=el('selYear').value;
+  if(!grade||!stream) return;
+
+  el('mainContent').innerHTML=`<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading analysis…</div></div>`;
+
+  try{
+    const schoolId = await _getSchoolId();
+    console.log('[Analysis] Loading analysis | grade', grade, stream, '| school', schoolId);
+    const stuQuery = db.collection('students')
+      .where('grade','==',grade)
+      .where('stream','==',stream)
+      .where('schoolId','==',schoolId);
+    const resQuery = db.collection('results')
+      .where('grade','==',grade)
+      .where('stream','==',stream)
+      .where('term','==',term)
+      .where('year','==',year)
+      .where('schoolId','==',schoolId);
+
+    const [stuSnap, resSnap] = await Promise.all([stuQuery.get(), resQuery.get()]);
+
+    allStudents=[];
+    stuSnap.forEach(d=>allStudents.push({id:d.id,...d.data()}));
+    allStudents.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+
+    allResults=[];
+    resSnap.forEach(d=>allResults.push({id:d.id,...d.data()}));
+
+    renderAnalysis(grade,stream,term,year);
+  }catch(e){
+    el('mainContent').innerHTML=`<div class="empty-msg"><div class="ei">❌</div><p>${e.message}</p></div>`;
+  }
+};
+
+function getSubjectScore(rec, sub){
+  if(!rec) return null;
+  if(sub.parts){
+    const tot = rec[`${sub.id}_tot`];
+    return tot>0?tot:null;
+  } else {
+    const sc = rec[`${sub.id}_score`];
+    return sc>0?sc:null;
+  }
+}
+function getSubjectOof(rec, sub){
+  if(!rec) return DEFAULT_OOF;
+  if(sub.parts){
+    return sub.parts.reduce((a,p)=>a+(rec[`oof_${sub.id}_${p.id}`]||DEFAULT_OOF),0);
+  } else {
+    return rec[`oof_${sub.id}`]||DEFAULT_OOF;
+  }
+}
+
+function renderAnalysis(grade,stream,term,year){
+  const resMap = {};
+  allResults.forEach(r=>resMap[r.studentId]=r);
+  const scored = allStudents.filter(s=>resMap[s.id]?.overallAvg>0);
+
+  if(!scored.length){
+    el('mainContent').innerHTML=`<div class="empty-msg"><div class="ei">📭</div><p>No results saved yet for <strong>${grade} ${stream} – ${term} ${year}</strong></p></div>`;
+    return;
+  }
+
+  // Stats
+  const avgs = scored.map(s=>resMap[s.id].overallAvg);
+  const classAvg = (avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(1);
+  const highest = Math.max(...avgs).toFixed(1);
+  const lowest  = Math.min(...avgs).toFixed(1);
+
+  // Level distribution
+  const levelCounts = {};
+  LEVELS.forEach(l=>levelCounts[l.l]=0);
+  scored.forEach(s=>{const lv=getLevel(resMap[s.id].overallAvg);levelCounts[lv.l]++;});
+
+  // Rank
+  const ranked = [...scored].sort((a,b)=>resMap[b.id].overallAvg-resMap[a.id].overallAvg);
+
+  // Subject averages
+  const subjectStats = SUBS.map(sub=>{
+    const vals = scored
+      .map(s=>{
+        const rec=resMap[s.id];
+        const sc=getSubjectScore(rec,sub);
+        if(sc===null) return null;
+        const oof=getSubjectOof(rec,sub);
+        return (sc/oof)*100;
+      })
+      .filter(v=>v!==null);
+    const avg = vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):null;
+    return {sub, avg, count:vals.length};
+  });
+
+  let html=`
+  <div class="info-strip">
+    <div class="sheet-title">${grade} ${stream} — ${term} ${year} Analysis</div>
+    <div class="pills">
+      <div class="pill">👥 <span class="pv">${allStudents.length}</span> students</div>
+      <div class="pill">✅ <span class="pv">${scored.length}</span> with results</div>
+    </div>
+  </div>
+
+  <div class="tabs no-print">
+    <button class="tab active" onclick="showTab('overview',this)">📊 Overview</button>
+    <button class="tab" onclick="showTab('students',this)">👥 Students</button>
+    <button class="tab" onclick="showTab('ranking',this)">🏆 Ranking</button>
+    <button class="tab" onclick="showTab('subjects',this)">📚 Subjects</button>
+  </div>
+
+  <!-- OVERVIEW TAB -->
+  <div id="tab-overview" class="tab-content">
+    <div class="stat-grid">
+      <div class="stat-card accent">
+        <div class="stat-label">Class Average</div>
+        <div class="stat-val">${classAvg}%</div>
+        <div class="stat-sub">${getLevel(classAvg).l} · ${getLevel(classAvg).p} pts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Highest Score</div>
+        <div class="stat-val" style="color:#059669">${highest}%</div>
+        <div class="stat-sub">${ranked[0]?.name||'—'}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Lowest Score</div>
+        <div class="stat-val" style="color:#dc2626">${lowest}%</div>
+        <div class="stat-sub">${ranked[ranked.length-1]?.name||'—'}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Students</div>
+        <div class="stat-val">${allStudents.length}</div>
+        <div class="stat-sub">${scored.length} with results</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Exceeding (EE)</div>
+        <div class="stat-val" style="color:#166534">${levelCounts['EE1']+levelCounts['EE2']}</div>
+        <div class="stat-sub">${(((levelCounts['EE1']+levelCounts['EE2'])/scored.length)*100).toFixed(0)}% of class</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Meeting (ME)</div>
+        <div class="stat-val" style="color:#854d0e">${levelCounts['ME1']+levelCounts['ME2']}</div>
+        <div class="stat-sub">${(((levelCounts['ME1']+levelCounts['ME2'])/scored.length)*100).toFixed(0)}% of class</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Approaching (AE)</div>
+        <div class="stat-val" style="color:#9a3412">${levelCounts['AE1']+levelCounts['AE2']}</div>
+        <div class="stat-sub">${(((levelCounts['AE1']+levelCounts['AE2'])/scored.length)*100).toFixed(0)}% of class</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Below (BE)</div>
+        <div class="stat-val" style="color:#991b1b">${levelCounts['BE1']+levelCounts['BE2']}</div>
+        <div class="stat-sub">${(((levelCounts['BE1']+levelCounts['BE2'])/scored.length)*100).toFixed(0)}% of class</div>
+      </div>
+    </div>
+
+    <div class="level-dist analysis-card" style="padding:16px">
+      <div class="section-title">CBC Performance Level Distribution</div>
+      <div class="level-bars">
+  `;
+
+  LEVELS.forEach(lv=>{
+    const cnt = levelCounts[lv.l]||0;
+    const pct = scored.length ? (cnt/scored.length)*100 : 0;
+    html+=`
+      <div class="level-row">
+        <div class="lbl"><span class="lbadge ${lv.c}">${lv.l}</span></div>
+        <div class="bar-wrap">
+          <div class="bar ${lv.c}" style="width:${pct}%">
+            ${pct>8?`<span class="bar-txt">${pct.toFixed(0)}%</span>`:''}
+          </div>
+        </div>
+        <div class="cnt">${cnt} <span style="font-size:9.5px;color:var(--text3)">/${scored.length}</span></div>
+      </div>`;
+  });
+
+  html+=`</div></div>
+
+    <div class="analysis-card">
+      <div style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Subject Performance Overview</div>
+      <table>
+        <thead><tr>
+          <th>Subject</th>
+          <th style="text-align:center">Class Avg %</th>
+          <th style="text-align:center">Level</th>
+          <th style="text-align:center">Students</th>
+          <th style="text-align:center">Performance Bar</th>
+        </tr></thead>
+        <tbody>`;
+
+  subjectStats.forEach(({sub,avg,count})=>{
+    if(avg===null){
+      html+=`<tr><td>${sub.icon} ${sub.label}</td><td colspan="4" style="color:var(--text3);font-size:11px;text-align:center">No data</td></tr>`;
+      return;
+    }
+    const lv=getLevel(Number(avg));
+    html+=`<tr>
+      <td style="font-weight:600">${sub.icon} ${sub.label}</td>
+      <td style="text-align:center;font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;color:var(--accent)">${avg}%</td>
+      <td style="text-align:center"><span class="lbadge ${lv.c}">${lv.l}</span></td>
+      <td style="text-align:center;color:var(--text2)">${count}</td>
+      <td style="padding:4px 10px">
+        <div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden">
+          <div style="height:100%;width:${avg}%;border-radius:4px" class="${lv.c}"></div>
+        </div>
+      </td>
+    </tr>`;
+  });
+  html+=`</tbody></table></div>
+  </div><!-- /tab-overview -->
+
+  <!-- STUDENTS TAB -->
+  <div id="tab-students" class="tab-content" style="display:none">
+    <div class="student-grid">`;
+
+  ranked.forEach((s,i)=>{
+    const rec=resMap[s.id];
+    const avg=Number(rec.overallAvg).toFixed(1);
+    const lv=getLevel(Number(avg));
+    // subject bars
+    const bars = SUBS.map(sub=>{
+      const sc=getSubjectScore(rec,sub);
+      const oof=getSubjectOof(rec,sub);
+      if(sc===null) return `<div class="stu-bar" style="background:var(--border)"></div>`;
+      const pct=(sc/oof)*100;
+      const slv=getLevel(pct);
+      return `<div class="stu-bar ${slv.c}" title="${sub.label}: ${pct.toFixed(0)}%"></div>`;
+    }).join('');
+
+    html+=`<div class="stu-card" onclick="openStudent('${s.id}')">
+      <div class="stu-top">
+        <div>
+          <div class="stu-name">${s.name}</div>
+          <div class="stu-adm">${s.admissionNumber||'—'} · Rank #${i+1}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="stu-avg">${avg}%</div>
+          <span class="lbadge ${lv.c}" style="margin-top:2px">${lv.l} · ${lv.p}pts</span>
+        </div>
+      </div>
+      <div class="stu-bars">${bars}</div>
+    </div>`;
+  });
+
+  html+=`</div></div><!-- /tab-students -->
+
+  <!-- RANKING TAB -->
+  <div id="tab-ranking" class="tab-content" style="display:none">
+  <div class="analysis-card">
+    <div style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Class Ranking — ${grade} ${stream}</div>
+    <table>
+      <thead><tr>
+        <th style="width:44px;text-align:center">#</th>
+        <th>Student</th>
+        <th style="text-align:center">Adm No.</th>
+        <th style="text-align:center">Overall %</th>
+        <th style="text-align:center">Level</th>
+        <th style="text-align:center">Points</th>
+        <th style="text-align:center">Action</th>
+      </tr></thead>
+      <tbody>`;
+
+  ranked.forEach((s,i)=>{
+    const rec=resMap[s.id];
+    const avg=Number(rec.overallAvg).toFixed(1);
+    const lv=getLevel(Number(avg));
+    const rankClass = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    html+=`<tr>
+      <td><div class="rank-no ${rankClass}">${i+1}</div></td>
+      <td style="font-weight:600">${s.name}</td>
+      <td style="text-align:center;font-size:10.5px;color:var(--text2)">${s.admissionNumber||'—'}</td>
+      <td style="text-align:center;font-family:'Familjen Grotesk',sans-serif;font-size:16px;font-weight:800;color:var(--accent)">${avg}%</td>
+      <td style="text-align:center"><span class="lbadge ${lv.c}">${lv.l}</span></td>
+      <td style="text-align:center;font-weight:800">${lv.p}</td>
+      <td style="text-align:center"><button class="btn btn-outline btn-sm" onclick="openStudent('${s.id}')">View</button></td>
+    </tr>`;
+  });
+
+  html+=`</tbody></table></div></div><!-- /tab-ranking -->
+
+  <!-- SUBJECTS TAB -->
+  <div id="tab-subjects" class="tab-content" style="display:none">`;
+
+  SUBS.forEach(sub=>{
+    const subVals = scored.map(s=>{
+      const rec=resMap[s.id];
+      const sc=getSubjectScore(rec,sub);
+      if(sc===null) return null;
+      const oof=getSubjectOof(rec,sub);
+      return {name:s.name,sc,oof,pct:(sc/oof)*100,rec,sid:s.id};
+    }).filter(v=>v!==null);
+
+    if(!subVals.length) return;
+
+    subVals.sort((a,b)=>b.pct-a.pct);
+    const subAvg=(subVals.reduce((a,b)=>a+b.pct,0)/subVals.length).toFixed(1);
+    const subLv=getLevel(Number(subAvg));
+
+    html+=`<div class="analysis-card" style="margin-bottom:12px">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700;font-size:13px">${sub.icon} ${sub.label}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-family:'Familjen Grotesk',sans-serif;font-size:18px;font-weight:800;color:var(--accent)">${subAvg}%</span>
+          <span class="lbadge ${subLv.c}">${subLv.l}</span>
+        </div>
+      </div>
+      <table>
+        <thead><tr>
+          <th style="width:28px;text-align:center">#</th>
+          <th>Student</th>
+          <th style="text-align:center">Score</th>
+          <th style="text-align:center">%</th>
+          <th style="text-align:center">Level</th>
+          <th style="text-align:center;min-width:120px">Bar</th>
+        </tr></thead>
+        <tbody>`;
+
+    subVals.forEach((v,i)=>{
+      const lv=getLevel(v.pct);
+      html+=`<tr>
+        <td style="text-align:center;font-size:10.5px;color:var(--text3);font-weight:700">${i+1}</td>
+        <td style="font-weight:600">${v.name}</td>
+        <td style="text-align:center">${v.sc}/${v.oof}</td>
+        <td style="text-align:center;font-weight:700;color:var(--accent)">${v.pct.toFixed(1)}%</td>
+        <td style="text-align:center"><span class="lbadge ${lv.c}">${lv.l}</span></td>
+        <td style="padding:4px 10px">
+          <div style="height:7px;background:var(--bg);border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${v.pct}%;border-radius:3px" class="${lv.c}"></div>
+          </div>
+        </td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  });
+
+  html+=`</div><!-- /tab-subjects -->`;
+  el('mainContent').innerHTML=html;
+
+  // Store for print
+  window._printData = {grade,stream,term,year,ranked,resMap,scored,classAvg,levelCounts,subjectStats};
+
+  // Show Print All button only when there are results
+  const btn = el('printAllBtn');
+  if(btn) btn.style.display = scored.length ? 'inline-flex' : 'none';
+}
+
+// ── Tab switching ──
+window.showTab = function(name, btn){
+  document.querySelectorAll('.tab-content').forEach(el=>el.style.display='none');
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  el('tab-'+name).style.display='';
+  btn.classList.add('active');
+};
+
+// ── Student Modal ──
+window.openStudent = function(sid){
+  const s = allStudents.find(x=>x.id===sid);
+  const rec = allResults.find(r=>r.studentId===sid);
+  if(!s||!rec) return;
+  currentStudent = {s,rec};
+
+  const avg=Number(rec.overallAvg).toFixed(1);
+  const lv=getLevel(Number(avg));
+  const resMap={};
+  allResults.forEach(r=>resMap[r.studentId]=r);
+  const ranked=[...allStudents.filter(st=>resMap[st.id]?.overallAvg>0)].sort((a,b)=>resMap[b.id].overallAvg-resMap[a.id].overallAvg);
+  const rank=ranked.findIndex(x=>x.id===sid)+1;
+  const totalEnrolled = allStudents.length;  // total students in class (incl. those without results)
+  const totalScored   = ranked.length;       // students with actual results
+  const pd=window._printData;
+
+  let body=`
+    <div class="print-overall-box">
+      <div>
+        <div class="print-avg-lbl">Overall Average</div>
+        <div class="print-avg">${avg}%</div>
+      </div>
+      <div>
+        <div class="print-avg-lbl">CBC Level</div>
+        <div class="print-level-big">${lv.l}</div>
+        <div class="print-pts">${lv.p} Points</div>
+      </div>
+      <div class="print-bar-wrap">
+        <div style="font-size:10px;opacity:.75;margin-bottom:3px">Class Position</div>
+        <div class="print-bar-track"><div class="print-bar-fill" style="width:${avg}%"></div></div>
+        <div style="font-size:11px;font-weight:800;color:#1e293b;margin-top:5px">
+          ${rank}<span style="font-size:9px;font-weight:600;color:#64748b"> / ${totalEnrolled} students</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="print-meta-grid">
+      <div class="print-meta-box"><div class="print-meta-lbl">Name</div><div class="print-meta-val">${s.name}</div></div>
+      <div class="print-meta-box"><div class="print-meta-lbl">Adm No.</div><div class="print-meta-val">${s.admissionNumber||'—'}</div></div>
+      <div class="print-meta-box"><div class="print-meta-lbl">Grade & Stream</div><div class="print-meta-val">${rec.grade} ${rec.stream}</div></div>
+      <div class="print-meta-box"><div class="print-meta-lbl">Term / Year</div><div class="print-meta-val">${rec.term} / ${rec.year}</div></div>
+      <div class="print-meta-box" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd">
+        <div class="print-meta-lbl" style="color:#1e40af">Class Position</div>
+        <div class="print-meta-val" style="color:#1e40af;font-size:18px">${rank} <span style="font-size:11px;font-weight:600;color:#3b82f6">of ${totalEnrolled} students</span></div>
+      </div>
+    </div>
+
+    <div class="print-section">
+      <div class="print-section-title">Subject Scores</div>
+      <table class="print-sub-table">
+        <thead><tr>
+          <th>Subject</th>`;
+
+  if(SUBS.some(s=>s.parts)){
+    body+=`<th style="text-align:center">Part 1</th><th style="text-align:center">Part 2</th>`;
+  }
+  body+=`<th style="text-align:center">Score</th><th style="text-align:center">Out Of</th><th style="text-align:center">%</th><th style="text-align:center">Level</th></tr></thead><tbody>`;
+
+  SUBS.forEach(sub=>{
+    const sc=getSubjectScore(rec,sub);
+    const oof=getSubjectOof(rec,sub);
+    if(sc===null&&!SUBS.find(x=>x.id===sub.id&&x.parts)){
+      body+=`<tr><td>${sub.icon} ${sub.label}</td>`;
+      if(SUBS.some(s=>s.parts)) body+=`<td colspan="2" style="text-align:center;color:#9aaabb">—</td>`;
+      body+=`<td colspan="4" style="text-align:center;color:#9aaabb">No data</td></tr>`;
+      return;
+    }
+    const pct=sc!==null?(sc/oof)*100:0;
+    const slv=getLevel(pct);
+    body+=`<tr><td style="font-weight:600">${sub.icon} ${sub.label}</td>`;
+    if(sub.parts){
+      sub.parts.forEach(p=>{
+        const ps=rec[`${sub.id}_${p.id}`]||'—';
+        const po=rec[`oof_${sub.id}_${p.id}`]||DEFAULT_OOF;
+        body+=`<td style="text-align:center">${ps}<span style="font-size:9px;color:#9aaabb">/${po}</span></td>`;
+      });
+    } else if(SUBS.some(s=>s.parts)){
+      body+=`<td colspan="2" style="text-align:center;color:#9aaabb">—</td>`;
+    }
+    body+=`<td style="text-align:center;font-weight:700">${sc!==null?sc:'—'}</td>
+           <td style="text-align:center;color:#4f6080">${oof}</td>
+           <td style="text-align:center;font-weight:700;color:#1a56db">${sc!==null?pct.toFixed(1)+'%':'—'}</td>
+           <td style="text-align:center"><span class="lbadge ${slv.c}">${slv.l}</span></td>
+           </tr>`;
+  });
+
+  body+=`</tbody></table></div>`;
+
+  // Class comparison
+  if(pd){
+    body+=`<div class="print-class-compare">
+      <div class="print-compare-box"><div class="print-compare-lbl">Class Average</div><div class="print-compare-val">${pd.classAvg}%</div></div>
+      <div class="print-compare-box"><div class="print-compare-lbl">Student Average</div><div class="print-compare-val">${avg}%</div></div>
+    </div>`;
+  }
+
+  // Remarks
+  body+=`<div class="print-remarks" style="margin-top:10px">
+    <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#9aaabb;margin-bottom:6px">Class Teacher's Remarks</div>
+    <div style="border-bottom:1px dashed #dce1ec;height:24px;margin-bottom:6px"></div>
+    <div style="border-bottom:1px dashed #dce1ec;height:24px"></div>
+  </div>
+  <div style="display:flex;gap:20px;margin-top:14px">
+    <div class="print-sig-line">Class Teacher</div>
+    <div class="print-sig-line">Head Teacher</div>
+    <div class="print-sig-line">Parent/Guardian</div>
+  </div>`;
+
+  el('modalTitle').textContent=`${s.name} — Report Card`;
+  el('modalBody').innerHTML=body;
+  el('stuModal').classList.add('open');
+};
+
+window.closeModal = function(){
+  el('stuModal').classList.remove('open');
+  currentStudent=null;
+};
+el('stuModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+// ── Confirm Print All modal ──
+function confirmPrintAll(){
+  const pd = window._printData;
+  if(!pd || !pd.scored.length){ toast('No results to print','err'); return; }
+  const {grade,stream,term,year,scored,ranked,classAvg} = pd;
+  const total = scored.length;
+  const noResults = allStudents.length - total;
+
+  el('printAllSummary').innerHTML = `
+    <div style="background:var(--alight);border:1px solid #c7d9ff;border-radius:var(--r2);padding:14px 16px;margin-bottom:14px">
+      <div style="font-family:'Familjen Grotesk',sans-serif;font-size:22px;font-weight:800;color:var(--accent)">${total} Report${total>1?'s':''} Ready</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px">${grade} ${stream} &nbsp;·&nbsp; ${term} ${year}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+      <div style="border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Students</div>
+        <div style="font-family:'Familjen Grotesk',sans-serif;font-size:24px;font-weight:800;color:#059669">${total}</div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Class Avg</div>
+        <div style="font-family:'Familjen Grotesk',sans-serif;font-size:24px;font-weight:800;color:var(--accent)">${classAvg}%</div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Skipped</div>
+        <div style="font-family:'Familjen Grotesk',sans-serif;font-size:24px;font-weight:800;color:${noResults>0?'#d97706':'#9aaabb'}">${noResults}</div>
+      </div>
+    </div>
+    ${noResults > 0 ? `<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:var(--r2);padding:9px 12px;font-size:12px;color:#92400e;margin-bottom:12px">
+      ⚠️ ${noResults} enrolled student${noResults>1?'s':''} have no marks saved — they will be skipped.
+    </div>` : ''}
+    <div style="font-size:12px;color:var(--text2);line-height:1.7;border-top:1px solid var(--border);padding-top:12px">
+      Reports will be sorted by <strong>class position (rank)</strong>.<br>
+      Each report includes: subject scores, overall %, CBC level, class position, class comparison and signature lines.<br>
+      Each student gets their own page.
+    </div>`;
+
+  el('printAllModal').classList.add('open');
+}
+
+function closePrintAllModal(){
+  el('printAllModal').classList.remove('open');
+}
+
+function printAllReports(){
+  const pd = window._printData;
+  if(!pd) return;
+  closePrintAllModal();
+
+  const {ranked, resMap, classAvg} = pd;
+  const total = pd.scored.length > 0 ? allStudents.length : ranked.length; // total enrolled
+
+  let allHtml = '';
+  ranked.forEach((s, i) => {
+    const rec = resMap[s.id];
+    if(!rec || !rec.overallAvg) return;
+    const avg  = Number(rec.overallAvg).toFixed(1);
+    const lv   = getLevel(Number(avg));
+    const rank = i + 1;
+
+    allHtml += buildStudentPrintHtml(s, rec, avg, lv, rank, total, pd);
+
+    // Page break between reports (not after last)
+    if(i < ranked.length - 1){
+      allHtml += '<div style="page-break-after:always;break-after:page"></div>';
+    }
+  });
+
+  triggerPrint(`<div id="all-reports">${allHtml}</div>`);
+  toast(`Opening ${total} reports for print…`, 'info');
+}
+
+// ── Print helper — opens a clean new window for reliable preview ──
+function triggerPrint(html){
+  // Collect all <style> and <link rel=stylesheet> from current page
+  const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+    .map(node => node.outerHTML).join('\n');
+
+  const fullHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Print Report</title>
+${styles}
+<style>
+  /* Print window overrides */
+  body{
+    background:#fff!important;
+    color:#000!important;
+    font-family:'Plus Jakarta Sans',sans-serif;
+    margin:0;padding:0;
+  }
+  @media print{
+    body{margin:0;padding:0}
+    .print-page{padding:20px 24px}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+  /* Hide the print/close bar when printing */
+  @media print{#_printBar{display:none!important}}
+  #_printBar{
+    position:sticky;top:0;z-index:999;
+    background:#1e2d4d;color:#c8d8f8;
+    padding:10px 20px;
+    display:flex;align-items:center;justify-content:space-between;
+    font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;
+    gap:10px;
+  }
+  #_printBar button{
+    padding:6px 16px;border-radius:5px;border:none;cursor:pointer;
+    font-family:inherit;font-size:12.5px;font-weight:700;
+  }
+  .pb-print{background:#059669;color:#fff}
+  .pb-print:hover{background:#047857}
+  .pb-close{background:rgba(255,255,255,.15);color:#c8d8f8}
+  .pb-close:hover{background:rgba(255,255,255,.25)}
+</style>
+</head>
+<body>
+<div id="_printBar">
+  <span>📄 Print Preview — Check the content below then click Print</span>
+  <div style="display:flex;gap:8px">
+    <button class="pb-print" onclick="window.print()">🖨️ Print / Save PDF</button>
+    <button class="pb-close" onclick="window.close()">✕ Close</button>
+  </div>
+</div>
+${html}
+</body>
+</html>`;
+
+  const w = window.open('', '_blank', 'width=900,height=700');
+  if(!w){ toast('Pop-up blocked! Allow pop-ups for this site to print.','err'); return; }
+  w.document.open();
+  w.document.write(fullHtml);
+  w.document.close();
+
+  // Wait for fonts/images then focus (user clicks Print button inside new window)
+  w.onload = function(){ w.focus(); };
+}
+
+// ── Print Student Report ──
+window.printStudentReport = function(){
+  if(!currentStudent) return;
+  const {s,rec}=currentStudent;
+  const avg=Number(rec.overallAvg).toFixed(1);
+  const lv=getLevel(Number(avg));
+  const pd=window._printData;
+  const resMap=pd?pd.resMap:{};
+  const ranked=pd?pd.ranked:[];
+  const rank=ranked.findIndex(x=>x.id===s.id)+1;
+
+  const printHtml=buildStudentPrintHtml(s,rec,avg,lv,rank,allStudents.length,pd);
+  triggerPrint(printHtml);
+};
+
+function buildStudentPrintHtml(s,rec,avg,lv,rank,total,pd){
+  const logoHtml = schoolSettings.logoUrl
+    ? `<img src="${schoolSettings.logoUrl}" style="width:52px;height:52px;object-fit:contain;border-radius:6px;margin-right:12px;vertical-align:middle" onerror="this.style.display='none'">`
+    : '📊 ';
+  let h=`<div class="print-page">
+    <div class="print-school-header">
+      <div style="display:flex;align-items:center">
+        ${schoolSettings.logoUrl ? `<img src="${schoolSettings.logoUrl}" style="width:52px;height:52px;object-fit:contain;border-radius:6px;margin-right:12px" onerror="this.style.display='none'">` : ''}
+        <div>
+          <div class="print-school-name">${schoolSettings.name || 'Junior School'}</div>
+          <div class="print-school-sub">${[schoolSettings.motto, schoolSettings.county, 'Kenya CBC'].filter(Boolean).join(' · ')}</div>
+          <div class="print-school-sub" style="margin-top:2px">${rec.grade} ${rec.stream} &nbsp;|&nbsp; Academic Report</div>
+        </div>
+      </div>
+      <div style="text-align:right;font-size:11px;color:#4f6080">
+        <div>${rec.term} ${rec.year}</div>
+        <div style="font-size:9.5px;color:#9aaabb;margin-top:2px">Generated: ${new Date().toLocaleDateString()}</div>
+      </div>
+    </div>
+
+    <div class="print-overall-box">
+      <div>
+        <div class="print-avg-lbl">Overall Average</div>
+        <div class="print-avg">${avg}%</div>
+      </div>
+      <div>
+        <div class="print-avg-lbl">CBC Level</div>
+        <div class="print-level-big">${lv.l}</div>
+        <div class="print-pts">${lv.p} Points</div>
+      </div>
+      <div class="print-bar-wrap">
+        <div style="font-size:10px;opacity:.75;margin-bottom:3px">Class Performance</div>
+        <div class="print-bar-track"><div class="print-bar-fill" style="width:${avg}%"></div></div>
+        <div style="font-size:10px;opacity:.7;margin-top:5px">Rank #${rank} of ${total}</div>
+      </div>
+    </div>
+
+    <div class="print-meta-grid">
+      <div class="print-meta-box"><div class="print-meta-lbl">Student Name</div><div class="print-meta-val">${s.name}</div></div>
+      <div class="print-meta-box"><div class="print-meta-lbl">Adm Number</div><div class="print-meta-val">${s.admissionNumber||'—'}</div></div>
+      <div class="print-meta-box"><div class="print-meta-lbl">Grade & Stream</div><div class="print-meta-val">${rec.grade} ${rec.stream}</div></div>
+      <div class="print-meta-box"><div class="print-meta-lbl">Term / Year</div><div class="print-meta-val">${rec.term} / ${rec.year}</div></div>
+    </div>
+
+    <div class="print-section">
+      <div class="print-section-title">Subject Performance Breakdown</div>
+      <table class="print-sub-table">
+        <thead><tr>
+          <th>Subject</th>
+          <th style="text-align:center">Score</th>
+          <th style="text-align:center">Out Of</th>
+          <th style="text-align:center">%</th>
+          <th style="text-align:center">Level</th>
+          <th style="text-align:center">Points</th>
+        </tr></thead>
+        <tbody>`;
+
+  let totalPts=0, subCount=0;
+  SUBS.forEach(sub=>{
+    const sc=getSubjectScore(rec,sub);
+    const oof=getSubjectOof(rec,sub);
+    if(sc===null) return;
+    const pct=(sc/oof)*100;
+    const slv=getLevel(pct);
+    totalPts+=slv.p; subCount++;
+    h+=`<tr>
+      <td style="font-weight:600">${sub.icon} ${sub.label}</td>
+      <td style="text-align:center;font-weight:700">${sc}</td>
+      <td style="text-align:center;color:#4f6080">${oof}</td>
+      <td style="text-align:center;font-weight:700;color:#1a56db">${pct.toFixed(1)}%</td>
+      <td style="text-align:center"><span class="lbadge ${slv.c}">${slv.l}</span></td>
+      <td style="text-align:center;font-weight:800">${slv.p}</td>
+    </tr>`;
+  });
+  h+=`</tbody>
+        <tfoot>
+          <tr style="background:#1e2d4d">
+            <td colspan="5" style="color:#c8d8f8;font-weight:700;font-size:11px;text-align:right;padding:6px 8px">Overall Average / Total Points</td>
+            <td style="color:#34d399;font-family:'Familjen Grotesk',sans-serif;font-size:16px;font-weight:800;text-align:center">${avg}% / ${totalPts}pts</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>`;
+
+  if(pd){
+    const classLv=getLevel(Number(pd.classAvg));
+    const diff=(Number(avg)-Number(pd.classAvg)).toFixed(1);
+    const diffSign=diff>0?'+':'';
+    h+=`<div class="print-section">
+      <div class="print-section-title">Comparison with Class</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <div class="print-compare-box"><div class="print-compare-lbl">Class Average</div><div class="print-compare-val">${pd.classAvg}% <span class="lbadge ${classLv.c}" style="font-size:9px">${classLv.l}</span></div></div>
+        <div class="print-compare-box"><div class="print-compare-lbl">Student Average</div><div class="print-compare-val">${avg}% <span class="lbadge ${lv.c}" style="font-size:9px">${lv.l}</span></div></div>
+        <div class="print-compare-box"><div class="print-compare-lbl">Difference</div><div class="print-compare-val" style="color:${diff>=0?'#059669':'#dc2626'}">${diffSign}${diff}%</div></div>
+      </div>
+    </div>`;
+  }
+
+  h+=`<div class="print-section">
+      <div class="print-section-title">Remarks &amp; Signature</div>
+      <div class="print-remarks">
+        <div class="print-remarks-lbl">Class Teacher's Remarks</div>
+        <div style="border-bottom:1px dashed #dce1ec;height:28px;margin-bottom:8px"></div>
+        <div style="border-bottom:1px dashed #dce1ec;height:28px"></div>
+      </div>
+      <div style="display:flex;gap:28px;margin-top:18px">
+        <div class="print-sig-line">Class Teacher</div>
+        <div class="print-sig-line">Head Teacher</div>
+        <div class="print-sig-line">Parent/Guardian</div>
+        <div class="print-sig-line">Date</div>
+      </div>
+    </div>
+
+    <div class="print-footer">
+      <div>${schoolSettings.name || 'CBE Mark Sheet System'} · ${schoolSettings.county || 'Kenya CBC'}</div>
+      <div>Printed: ${new Date().toLocaleString()}</div>
+    </div>
+  </div>`;
+  return h;
+}
+
+// ── Print Class Report ──
+window.printClassReport = function(){
+  const pd=window._printData;
+  if(!pd||!pd.ranked.length){toast('Load analysis first','err');return;}
+  const {grade,stream,term,year,ranked,resMap,scored,classAvg,levelCounts,subjectStats}=pd;
+
+  let h=`<div class="print-page" style="max-width:900px">
+    <div class="print-school-header">
+      <div style="display:flex;align-items:center">
+        ${schoolSettings.logoUrl ? `<img src="${schoolSettings.logoUrl}" style="width:52px;height:52px;object-fit:contain;border-radius:6px;margin-right:12px" onerror="this.style.display='none'">` : ''}
+        <div>
+          <div class="print-school-name">${schoolSettings.name || 'Junior School'}</div>
+          <div class="print-school-sub">${[schoolSettings.motto, schoolSettings.county, 'Kenya CBC'].filter(Boolean).join(' · ')}</div>
+          <div class="print-school-sub" style="margin-top:2px">${grade} ${stream} &nbsp;|&nbsp; Class Performance Report</div>
+        </div>
+      </div>
+      <div style="text-align:right;font-size:11px;color:#4f6080">
+        <div>${term} ${year}</div>
+        <div style="font-size:9.5px;color:#9aaabb;margin-top:2px">Generated: ${new Date().toLocaleDateString()}</div>
+      </div>
+    </div>
+
+    <div class="print-class-header-box">
+      <div>
+        <div style="font-size:10px;opacity:.7">Class Summary</div>
+        <div style="font-family:'Familjen Grotesk',sans-serif;font-size:24px;font-weight:800">${grade} ${stream}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:10px;opacity:.7">Class Average</div>
+        <div style="font-family:'Familjen Grotesk',sans-serif;font-size:28px;font-weight:800">${classAvg}%</div>
+        <span class="lbadge ${getLevel(Number(classAvg)).c}">${getLevel(Number(classAvg)).l}</span>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:10px;opacity:.7">Students with results</div>
+        <div style="font-family:'Familjen Grotesk',sans-serif;font-size:28px;font-weight:800">${scored.length}</div>
+        <div style="font-size:10px;opacity:.7">of ${allStudents.length} enrolled</div>
+      </div>
+    </div>
+
+    <div class="print-section">
+      <div class="print-section-title">CBC Level Distribution</div>
+      <div class="print-dist-grid">`;
+
+  LEVELS.forEach(lv=>{
+    const cnt=levelCounts[lv.l]||0;
+    const pct=scored.length?(cnt/scored.length*100).toFixed(0):0;
+    h+=`<div class="print-dist-box">
+      <div class="lbadge ${lv.c}" style="margin-bottom:4px">${lv.l}</div>
+      <div class="print-dist-count ${lv.c}" style="background:none">${cnt}</div>
+      <div class="print-dist-lbl">${pct}%</div>
+    </div>`;
+  });
+
+  h+=`</div></div>
+
+    <div class="print-section">
+      <div class="print-section-title">Class Ranking</div>
+      <table class="print-rank-table">
+        <thead><tr>
+          <th style="width:36px;text-align:center">#</th>
+          <th>Student Name</th>
+          <th style="text-align:center">Adm No.</th>
+          <th style="text-align:center">Overall %</th>
+          <th style="text-align:center">Level</th>
+          <th style="text-align:center">Points</th>`;
+
+  SUBS.forEach(sub=>{ h+=`<th style="text-align:center;font-size:8.5px">${sub.icon}</th>`; });
+  h+=`</tr></thead><tbody>`;
+
+  ranked.forEach((s,i)=>{
+    const rec=resMap[s.id];
+    const avg=Number(rec.overallAvg).toFixed(1);
+    const lv=getLevel(Number(avg));
+    h+=`<tr>
+      <td><div class="print-rank-no" style="color:${i<3?['#d97706','#6b7280','#92400e'][i]:'#9aaabb'}">${i+1}</div></td>
+      <td style="font-weight:600;font-size:11px">${s.name}</td>
+      <td style="text-align:center;font-size:10px;color:#4f6080">${s.admissionNumber||'—'}</td>
+      <td style="text-align:center;font-weight:800;color:#1a56db">${avg}%</td>
+      <td style="text-align:center"><span class="lbadge ${lv.c}">${lv.l}</span></td>
+      <td style="text-align:center;font-weight:800">${lv.p}</td>`;
+
+    SUBS.forEach(sub=>{
+      const sc=getSubjectScore(rec,sub);
+      const oof=getSubjectOof(rec,sub);
+      if(sc===null){ h+=`<td style="text-align:center;color:#ccc;font-size:10px">—</td>`; return; }
+      const pct=(sc/oof)*100;
+      const slv=getLevel(pct);
+      h+=`<td style="text-align:center"><span class="lbadge ${slv.c}" style="font-size:9px;padding:1px 4px">${slv.l}</span></td>`;
+    });
+    h+=`</tr>`;
+  });
+
+  h+=`</tbody></table></div>
+
+    <div class="print-section">
+      <div class="print-section-title">Subject Performance Summary</div>
+      <table class="print-rank-table">
+        <thead><tr>
+          <th>Subject</th>
+          <th style="text-align:center">Class Avg %</th>
+          <th style="text-align:center">Level</th>
+          <th style="text-align:center">Students</th>
+          <th style="text-align:center">Highest %</th>
+          <th style="text-align:center">Lowest %</th>
+        </tr></thead>
+        <tbody>`;
+
+  subjectStats.forEach(({sub,avg,count})=>{
+    if(avg===null){ h+=`<tr><td>${sub.icon} ${sub.label}</td><td colspan="5" style="text-align:center;color:#9aaabb">No data</td></tr>`; return; }
+    const lv=getLevel(Number(avg));
+    const subPcts=scored.map(s=>{
+      const rec=resMap[s.id];
+      const sc=getSubjectScore(rec,sub);
+      if(sc===null) return null;
+      return (sc/getSubjectOof(rec,sub))*100;
+    }).filter(v=>v!==null);
+    const hi=Math.max(...subPcts).toFixed(1);
+    const lo=Math.min(...subPcts).toFixed(1);
+    h+=`<tr>
+      <td style="font-weight:600">${sub.icon} ${sub.label}</td>
+      <td style="text-align:center;font-weight:800;color:#1a56db">${avg}%</td>
+      <td style="text-align:center"><span class="lbadge ${lv.c}">${lv.l}</span></td>
+      <td style="text-align:center">${count}</td>
+      <td style="text-align:center;color:#059669;font-weight:700">${hi}%</td>
+      <td style="text-align:center;color:#dc2626;font-weight:700">${lo}%</td>
+    </tr>`;
+  });
+
+  h+=`</tbody></table></div>
+
+    <div style="display:flex;gap:28px;margin-top:20px">
+      <div class="print-sig-line">Class Teacher</div>
+      <div class="print-sig-line">Head Teacher</div>
+      <div class="print-sig-line">Date</div>
+    </div>
+
+    <div class="print-footer">
+      <div>${schoolSettings.name || 'CBE Mark Sheet System'} · ${schoolSettings.county || 'Kenya CBC'}</div>
+      <div>${schoolSettings.principal ? 'Principal: ' + schoolSettings.principal + ' &nbsp;|&nbsp; ' : ''}Printed: ${new Date().toLocaleString()}</div>
+    </div>
+  </div>`;
+
+  triggerPrint(h);
+};
+
+// ── Dark mode ──
+el('themeBtn').addEventListener('click',function(){
+  document.body.classList.toggle('dark');
+  this.textContent=document.body.classList.contains('dark')?'☀️':'🌙';
+  localStorage.setItem('cbe_theme',document.body.classList.contains('dark')?'dark':'light');
+});
+if(localStorage.getItem('cbe_theme')==='dark'){
+  document.body.classList.add('dark');
+  el('themeBtn').textContent='☀️';
+}
+</script>
+</body>
+</html>

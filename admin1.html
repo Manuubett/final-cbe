@@ -539,9 +539,9 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
       <span class="admin-badge">ADMIN</span>
       <span id="adminName" style="font-size:11.5px;color:var(--text2);font-weight:600"></span>
       <a href="settings.html" class="btn btn-outline btn-sm">⚙️ Settings</a>
-      <a href="admission.html" class="btn btn-outline btn-sm">🎓 Admission</a>
-      <a href="marksheet.html" class="btn btn-outline btn-sm">📊 Mark Sheet</a>
-      <a href="analysis.html" class="btn btn-outline btn-sm">📈 Analysis</a>
+      <a href="admission" class="btn btn-outline btn-sm">🎓 Admission</a>
+      <a href="marksheet" class="btn btn-outline btn-sm">📊 Mark Sheet</a>
+      <a href="analysis" class="btn btn-outline btn-sm">📈 Analysis</a>
       <button class="btn btn-outline btn-sm" style="color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="doLogout()">🚪 Sign Out</button>
     </div>
   </header>
@@ -865,6 +865,7 @@ auth.onAuthStateChanged(async u => {
     _schoolId = u.uid;
     window._schoolId = u.uid;
     sessionStorage.setItem('cbe_school_id', u.uid);
+    localStorage.setItem('cbe_user_role', 'admin'); // remembered for return visits
     _schoolName = profile.fullName ? '' : ''; // populated by applySchoolSettings below
     el('adminName').textContent = '👤 ' + (profile.fullName || profile.email || '');
 
@@ -903,6 +904,9 @@ async function doLogout(){
   if(_ownerMsgUnsub){ _ownerMsgUnsub(); _ownerMsgUnsub=null; }
   await _endSession().catch(()=>{});
   _schoolId=null; window._schoolId=null;
+  localStorage.removeItem('cbe_user_role');
+  localStorage.removeItem('cbe_pending_uid');
+  localStorage.removeItem('cbe_pending_email');
   sessionStorage.removeItem('cbe_school_id');
   _redirecting = false; // reset flag so redirect works
   await auth.signOut();
@@ -1000,7 +1004,7 @@ function openAnalysisFor(grade, stream){
   const term = new Date().getMonth() < 4 ? 'Term 1' : new Date().getMonth() < 8 ? 'Term 2' : 'Term 3';
   const year = new Date().getFullYear();
   const params = new URLSearchParams({grade,stream,term,year});
-  window.open(`analysis.html?${params}`, '_blank');
+  window.open(`analysis?${params}`, '_blank');
 }
 
 // ── Pending Teacher Approvals Banner ──
@@ -1538,7 +1542,7 @@ function updateRegLink(){
   let base = el('regBaseUrl').value.trim();
   if(!base) return;
   if(!base.endsWith('/')) base += '/';
-  const link = base + 'login.html?sid=' + _schoolId;
+  const link = base + 'login?sid=' + _schoolId;
   el('regLinkText').value = link;
 }
 

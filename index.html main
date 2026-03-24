@@ -258,7 +258,7 @@ h1{animation:fadeUp .5s .1s both}
   // Check localStorage for known role — fastest path, no network needed
   var role = localStorage.getItem('cbe_user_role');
   if(role === 'admin'){
-    window.location.replace('admin.html'); return;
+    window.location.replace('admin1.html'); return;
   }
   if(role === 'teacher'){
     window.location.replace('login.html'); return;
@@ -282,7 +282,7 @@ h1{animation:fadeUp .5s .1s both}
               var role = snap.data().role;
               if(role === 'admin'){
                 localStorage.setItem('cbe_user_role','admin');
-                window.location.replace('admin.html');
+                window.location.replace('admin1.html');
               } else if(role === 'teacher'){
                 localStorage.setItem('cbe_user_role','teacher');
                 window.location.replace('login.html');
@@ -529,7 +529,7 @@ h1{animation:fadeUp .5s .1s both}
     <span class="foot-sep">·</span>
     <a class="foot-link" href="login.html">Teacher Login</a>
     <span class="foot-sep">·</span>
-    <a class="foot-link" href="admin.html">Admin</a>
+    <a class="foot-link" href="admin1.html">Admin</a>
   </div>
 </footer>
 

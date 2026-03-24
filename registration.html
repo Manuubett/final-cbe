@@ -277,7 +277,7 @@ select.inp{cursor:pointer;padding-left:12px}
         <div class="payment-details">
           <div class="pd-title">💳 M-Pesa Payment</div>
           <div class="pd-row"><span class="pd-label">Till Number</span><span class="pd-value">4585402</span></div>
-          <div class="pd-row"><span class="pd-label">Business Name</span><span style="font-size:13px;font-weight:700;color:#15803d">Bettt</span></div>
+          <div class="pd-row"><span class="pd-label">Business</span><span style="font-size:13px;font-weight:700;color:#15803d">CBE Mark Sheet</span></div>
           <div class="pd-row"><span class="pd-label">Amount</span><span class="pd-value">Ksh 2,599</span></div>
         </div>
 
@@ -725,25 +725,20 @@ async function submitDetails(){
       createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // OneSignal push notification to owner
-    // Sends to all subscribed devices (your phone/browser)
+    // Save notification request to Firestore
+    // The owner app reads this and triggers OneSignal from there
     try{
-      await fetch('https://onesignal.com/api/v1/notifications', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Basic REPLACE_WITH_YOUR_ONESIGNAL_REST_API_KEY'
-        },
-        body: JSON.stringify({
-          app_id: '141d7cd0-8727-4066-a62c-8e0da7f85762',
-          included_segments: ['Total Subscriptions'],
-          headings: { en: '🏫 New School Registration' },
-          contents: { en: d.name + ' (' + (d.county||'') + ') is awaiting your approval.' },
-          url: 'https://bett-owner.netlify.app',
-          priority: 10
-        })
+      await db.collection('notifications').add({
+        type: 'new_registration',
+        title: '🏫 New School Registration',
+        message: d.name + ' (' + (d.county||'') + ') is awaiting your approval.',
+        schoolName: d.name,
+        county: d.county||'',
+        phone: d.phone||'',
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
-    }catch(_){}  // Never block submission if notification fails
+    }catch(_){}
 
     localStorage.removeItem(SAVE_KEY);
     el('subRef').textContent=uid.slice(0,16).toUpperCase();

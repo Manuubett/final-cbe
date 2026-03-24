@@ -163,18 +163,7 @@ select.inp{cursor:pointer;padding-left:12px}
 @keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes tout{to{transform:translateX(110%);opacity:0}}
 </style>
-<!-- OneSignal Push Notifications -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  OneSignalDeferred.push(async function(OneSignal) {
-    await OneSignal.init({
-      appId: "141d7cd0-8727-4066-a62c-8e0da7f85762",
-      notifyButton: { enable: false },
-      allowLocalhostAsSecureOrigin: true,
-    });
-  });
-</script>
+
 </head>
 <body>
 <div id="tc"></div>
@@ -725,20 +714,12 @@ async function submitDetails(){
       createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // Save notification request to Firestore
-    // The owner app reads this and triggers OneSignal from there
-    try{
-      await db.collection('notifications').add({
-        type: 'new_registration',
-        title: '🏫 New School Registration',
-        message: d.name + ' (' + (d.county||'') + ') is awaiting your approval.',
-        schoolName: d.name,
-        county: d.county||'',
-        phone: d.phone||'',
-        status: 'pending',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }catch(_){}
+    // Send push notification via Netlify serverless function (no CORS issues)
+    sendPushNotification(
+      '🏫 New School Registration',
+      d.name + ' (' + (d.county||'') + ') is awaiting your approval.',
+      'https://bett-owner.netlify.app'
+    );
 
     localStorage.removeItem(SAVE_KEY);
     el('subRef').textContent=uid.slice(0,16).toUpperCase();

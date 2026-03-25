@@ -396,7 +396,7 @@ const auth = firebase.auth();
 const el = id => document.getElementById(id);
 
 // ── State ──
-let streams = { 'Grade 7':[], 'Grade 8':[], 'Grade 9':[] };
+let streams = { 'Grade 1':[], 'Grade 2':[], 'Grade 3':[], 'Grade 4':[], 'Grade 5':[], 'Grade 6':[], 'Grade 7':[], 'Grade 8':[], 'Grade 9':[] };
 let logoBase64 = null; // for file upload preview only
 let currentLogoUrl = '';
 
@@ -423,8 +423,7 @@ auth.onAuthStateChanged(async u => {
     buildCountyDropdown(); // ← added: populate county dropdown
     // ── ADDITIONS (do not affect existing functionality) ──
     _currentUid = u.uid; // must be set BEFORE loadSettings so path is correct
-    window._schoolId = u.uid; // expose for school-settings.js
-    localStorage.setItem('cbe_current_uid', u.uid);
+    window._schoolId = u.uid; // session-scoped only — never persisted to localStorage
     loadSettings();
     checkFirstSetup(snap.data());          // show setup banner if needed
     listenOwnerMessages(u.uid);            // real-time owner message listener
@@ -463,7 +462,7 @@ function onColorHexInput(val){
 
 // ── Build streams grid ──
 function buildStreamsGrid(){
-  const grades = ['Grade 7','Grade 8','Grade 9'];
+  const grades = ['Grade 1','Grade 2','Grade 3','Grade 4','Grade 5','Grade 6','Grade 7','Grade 8','Grade 9'];
   el('streamsGrid').innerHTML = grades.map(g=>`
     <div class="grade-row">
       <div class="grade-row-head">
@@ -602,7 +601,7 @@ async function loadSettings(){
     }
 
     if(s.streams && typeof s.streams === 'object'){
-      streams = { 'Grade 7':[], 'Grade 8':[], 'Grade 9':[], ...s.streams };
+      streams = { 'Grade 1':[], 'Grade 2':[], 'Grade 3':[], 'Grade 4':[], 'Grade 5':[], 'Grade 6':[], 'Grade 7':[], 'Grade 8':[], 'Grade 9':[], ...s.streams };
     }
     buildStreamsGrid();
     updatePreview();
@@ -638,20 +637,20 @@ async function saveSettings(){
       updatedAt:   firebase.firestore.FieldValue.serverTimestamp()
     };
 
-    // Save to THIS school's own settings doc — keyed by admin uid
+    // Save settings
     await db.collection('settings').doc(_currentUid).set(data, {merge:true});
 
-    // Clear cache so all pages pick up new settings
+    // Clear cache
     localStorage.removeItem('cbe_school_settings');
     syncStreamsCache();
 
+    // 🔥 MARK SETUP COMPLETE LOCALLY (for modal)
+    localStorage.setItem('cbe_school_setup_done', 'true');
+
     toast('✅ Settings saved — redirecting to dashboard…');
 
-    // ── Stamp school name into approvedSchools so owner always sees real name ──
-    // Done on EVERY save so it stays in sync when school updates their name
+    // ── Sync to approvedSchools ──
     if(_currentUid){
-      // Write school info to approvedSchools — owner sees this as a new request
-      // detectedAt only set if doc doesn't exist yet (preserve original timestamp)
       db.collection('approvedSchools').doc(_currentUid).get().then(doc => {
         const payload = {
           schoolName: data.name,
@@ -662,15 +661,16 @@ async function saveSettings(){
           status:     doc.exists && doc.data().status ? doc.data().status : 'pending',
           updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
         };
-        // Only set detectedAt on first creation
+
         if(!doc.exists || !doc.data().detectedAt){
           payload.detectedAt = firebase.firestore.FieldValue.serverTimestamp();
         }
+
         return db.collection('approvedSchools').doc(_currentUid).set(payload, {merge:true});
       }).catch(()=>{});
     }
 
-    // ── Mark schoolSetupDone (always, not just first time) ──
+    // ── Update user profile ──
     if(_currentUid){
       try{
         await db.collection('users').doc(_currentUid).update({
@@ -681,31 +681,43 @@ async function saveSettings(){
         });
       }catch(_){}
 
-      // Log first setup to owner
+      // Log first setup
       if(_isFirstSetup){
         db.collection('ownerLog').add({
-          type:'school_setup', message:'New school setup: '+data.name,
-          school:data.name, county:data.county||'',
-          adminUid:_currentUid, color:'green',
+          type:'school_setup',
+          message:'New school setup: '+data.name,
+          school:data.name,
+          county:data.county||'',
+          adminUid:_currentUid,
+          color:'green',
           createdAt:firebase.firestore.FieldValue.serverTimestamp()
         }).catch(()=>{});
+
         _isFirstSetup = false;
         el('setupBanner').style.display = 'none';
       }
     }
 
-    // ── Always redirect to admin after save ──
-    setTimeout(()=>{ window.location.href='admin.html'; }, 1000);
+    // 🔥 SMALL DELAY → ENSURE localStorage SAVED BEFORE REDIRECT
+    setTimeout(()=>{ 
+      window.location.href='admin.html'; 
+    }, 800);
 
   }catch(e){
     toast('Save failed: '+e.message,'err');
   }
+
   btn.disabled = false;
   txt.innerHTML = '💾 Save Settings';
 }
 
 // ── Logout ──
 async function doLogout(){
+  // Clear all school-specific cache on logout
+  Object.keys(localStorage)
+    .filter(k=>k.startsWith('cbe_school_settings_'))
+    .forEach(k=>localStorage.removeItem(k));
+  localStorage.removeItem('cbe_current_uid');
   await auth.signOut();
   window.location.href = 'admin.html';
 }

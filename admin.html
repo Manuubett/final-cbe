@@ -870,7 +870,8 @@ auth.onAuthStateChanged(async u => {
     el('adminName').textContent = '👤 ' + (profile.fullName || profile.email || '');
 
     // 4. Show dashboard IMMEDIATELY — don't wait for settings
-    show('Dash');
+   show('Dash');
+checkSchoolSetup();
 
     // 5. Load data in parallel — non-blocking
     loadTeachers();
@@ -927,6 +928,17 @@ let   _idleTimer = null, _warnTimer = null, _warnEl = null;
 function clearSessionCache(){
   ['cbe_streams','cbe_streams_ts'].forEach(k=>localStorage.removeItem(k));
 }
+
+async function checkSchoolSetup(){
+  const doc = await db.collection('users').doc(_currentUid).get();
+
+  if(!doc.exists || !doc.data().schoolSetupDone){
+    document.getElementById('setupOverlay').classList.add('open');
+  } else {
+    localStorage.setItem('cbe_school_setup_done', 'true');
+  }
+}
+
 
 // ── Create warning banner (injected into DOM) ──
 function createWarnBanner(){
@@ -1724,5 +1736,23 @@ async function _endSession(){
 }
 </script>
 <script src="school-settings.js"></script>
+
+<!-- FORCE SETUP MODAL -->
+<div class="overlay" id="setupOverlay">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <div class="modal-title">🏫 Setup Required</div>
+    </div>
+    <div class="modal-body" style="text-align:center">
+      <div style="font-size:32px;margin-bottom:10px">⚙️</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.6">
+        You must set up your school details before using the system.
+      </p>
+    </div>
+    <div class="modal-foot">
+      <a href="settings.html" class="btn btn-primary">⚙️ Go to Settings</a>
+    </div>
+  </div>
+</div>
 </body>
 </html>

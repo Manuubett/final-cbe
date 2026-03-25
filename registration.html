@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSI+CiAgPCEtLSBCYWNrZ3JvdW5kIHJvdW5kZWQgcmVjdCAtLT4KICA8cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0iIzE1NTNkNCIvPgoKICA8IS0tIE1hcmsgc2hlZXQgbGluZXMgLS0+CiAgPCEtLSBIZWFkZXIgYmFyIC0tPgogIDxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjQ0IiBoZWlnaHQ9IjgiIHJ4PSIyLjUiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4yNSkiLz4KCiAgPCEtLSBSb3cgMSAtLT4KICA8cmVjdCB4PSIxMCIgeT0iMjIiIHdpZHRoPSIxOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjcpIi8+CiAgPHJlY3QgeD0iMzIiIHk9IjIyIiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjkpIi8+CiAgPHJlY3QgeD0iNDQiIHk9IjIyIiB3aWR0aD0iMTAiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiM0YWRlODAiLz4KCiAgPCEtLSBSb3cgMiAtLT4KICA8cmVjdCB4PSIxMCIgeT0iMzAiIHdpZHRoPSIxOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjcpIi8+CiAgPHJlY3QgeD0iMzIiIHk9IjMwIiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjkpIi8+CiAgPHJlY3QgeD0iNDQiIHk9IjMwIiB3aWR0aD0iMTAiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiNmYWNjMTUiLz4KCiAgPCEtLSBSb3cgMyAtLT4KICA8cmVjdCB4PSIxMCIgeT0iMzgiIHdpZHRoPSIxOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjcpIi8+CiAgPHJlY3QgeD0iMzIiIHk9IjM4IiB3aWR0aD0iOCIgaGVpZ2h0PSI0IiByeD0iMiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjkpIi8+CiAgPHJlY3QgeD0iNDQiIHk9IjM4IiB3aWR0aD0iMTAiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiM0YWRlODAiLz4KCiAgPCEtLSBDQkMgbGV2ZWwgYmFkZ2UgYm90dG9tIHJpZ2h0IC0tPgogIDxyZWN0IHg9IjEwIiB5PSI0NyIgd2lkdGg9IjQ0IiBoZWlnaHQ9IjciIHJ4PSIyIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMTIpIi8+CiAgPHJlY3QgeD0iMTMiIHk9IjQ5IiB3aWR0aD0iMTQiIGhlaWdodD0iMyIgcng9IjEuNSIgZmlsbD0iIzRhZGU4MCIvPgogIDxyZWN0IHg9IjMwIiB5PSI0OSIgd2lkdGg9IjExIiBoZWlnaHQ9IjMiIHJ4PSIxLjUiIGZpbGw9IiNmYWNjMTUiLz4KICA8cmVjdCB4PSI0NCIgeT0iNDkiIHdpZHRoPSI3IiAgaGVpZ2h0PSIzIiByeD0iMS41IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuNCkiLz4KPC9zdmc+Cg==">
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAbklEQVR4nGNgwAJEg6/8pwXGZhdWMOAOuPPs/39a4FEHYLUMFj+0shQfBqeLQeOAE9f/k4297jWQhQeXAwYKUyUEfp0RJQuPOmD4pIHhkQ0H3AEDngZGHTDqgFEHjDpgwByAr6VMF8tGHTDiHQAABHSndjk9aHUAAAAASUVORK5CYII=">
+<link rel="icon" type="image/png" sizes="16x16" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAATElEQVR4nGNgQAKiwVf+E4MZcAGKDbjz7P9/YjBWW4nVjIzBrqGaAeRiuAEnrv/Hib3uNWDF9DPg1xlRrJh+BtAnDMiOxsGVmcgxAAABE20vkMdjNAAAAABJRU5ErkJggg==">
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAADfUlEQVR4nO3csQ0lVRREwU2CpHBJiPAwMJFwECZB4Cz+WnDRp/s11VIFMFfHm9F8+fLBfffDL1/hW59s7qNLH45O6S7PSx+OTukuz0sfjk7pLs9LH45O6S7PSx+OTukuz0sfjk7pLs9LH45O6S7PSx+OTukuz0sfjk7pLs9LH45O6S7PSx+OTukuz0sfjk7pLs9LH45OH43un3xUkj4E/19/+8MnQfMCQTNF0EwRNFMEzRRBM0XQTBE0UwTNFEEz5SNB//TrV/6F73//kSNBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8TJBF0pH8bKPBA3tBM0UQTNF0EwRNFMEzRRBM0XQTBE0UwTNFK++/0N//vwdR4IulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZYIulI7iZR8JGtoJmimCZoqgmSJopgiaKYJmiqCZImimCJopXn3/h9I/DX+ZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3iZoAulo3jZR4KGdoJmiqCZImimCJopgmaKoJkiaKYImimCZoqgmSJopgiaKYJmiqCZImimCJopgmaKoJkiaKYImimCZoqgmSJopgiaKYJmiqCZImimCJopgmaKoJkiaKYImimCZoqgmSJopgiaKYJmiqCZImimCJopgmaKoJkiaKYImimCZoqgmSJopgiaKYJmiqCZImimCJopgmaKoJkiaKYImimCZoqgmSJopgiaKYJmiqCZImimCJopgmaKoJkiaKZ8+eTSD0enj0b3yaUPR6d0l+elD0endJfnpQ9Hp3SX56UPR6d0l+elD0endJfnpQ9Hp3SX56UPR6d0l+elD0endJfnpQ9Hp3SX56UPR6d0l+elD0endJfnpQ9Hp3SX56UPR6d0l+elD0endJfnpQ9Hp3SX56UPR6d0l+elD0endJfnpQ9Hp3SX56UPR6d0l+elD0endJfnpQ9Hp0+2dxcfJkWec+Oj+AAAAABJRU5ErkJggg==">
+<meta name="theme-color" content="#1553d4">
+<title>Get Started | CBE Mark Sheet System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Familjen+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#e8ecf4;--surface:#fff;--surf2:#f3f5fa;--border:#dce1ec;
+  --text:#131c2e;--text2:#4f6080;--text3:#9aaabb;
+  --accent:#1a56db;--ah:#1447c0;--alight:#eff4ff;
+  --green:#059669;--green-bg:#d1fae5;--green-tx:#065f46;
+  --amber:#d97706;--amber-bg:#fef3c7;--amber-tx:#92400e;
+  --red:#dc2626;--red-bg:#fee2e2;--red-tx:#991b1b;
+  --sh:0 1px 3px rgba(0,0,0,.06);--sh2:0 8px 28px rgba(0,0,0,.12);
+  --r:10px;--r2:6px;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:32px 32px;opacity:.4;pointer-events:none}
+
+.page{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:28px 20px 60px}
+
+/* HEADER */
+.hd{text-align:center;margin-bottom:24px}
+.hd-logo{width:50px;height:50px;background:var(--accent);border-radius:12px;display:grid;place-items:center;font-size:24px;margin:0 auto 12px;box-shadow:0 4px 14px rgba(26,86,219,.3)}
+.hd-title{font-family:'Familjen Grotesk',sans-serif;font-size:22px;font-weight:800;margin-bottom:4px}
+.hd-sub{font-size:12.5px;color:var(--text2)}
+
+/* STEP INDICATOR */
+.steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:22px}
+.stp{display:flex;align-items:center;gap:6px}
+.stp-num{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;transition:all .2s}
+.stp.done .stp-num{background:var(--green);color:#fff}
+.stp.active .stp-num{background:var(--accent);color:#fff;box-shadow:0 0 0 3px var(--alight)}
+.stp.wait .stp-num{background:var(--border);color:var(--text3)}
+.stp-lbl{font-size:11px;font-weight:600;color:var(--text3);white-space:nowrap}
+.stp.active .stp-lbl{color:var(--accent);font-weight:700}
+.stp.done .stp-lbl{color:var(--green-tx)}
+.stp-line{width:32px;height:1.5px;background:var(--border);margin:0 4px;flex-shrink:0;transition:background .3s}
+.stp.done+.stp-line,.done-line{background:var(--green)}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh2);overflow:hidden;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.card-head{padding:14px 22px;background:var(--surf2);border-bottom:1px solid var(--border)}
+.card-head-title{font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;display:flex;align-items:center;gap:7px}
+.card-head-sub{font-size:11.5px;color:var(--text3);margin-top:2px}
+.card-body{padding:22px}
+
+/* SCREEN display */
+.screen{display:none}.screen.active{display:block}
+
+/* PAYMENT SCREEN */
+.price-hero{text-align:center;padding:20px 0 16px}
+.price-badge{display:inline-block;background:var(--alight);color:var(--accent);border:1px solid #c7d9ff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:14px;letter-spacing:.3px}
+.price-amount{font-family:'Familjen Grotesk',sans-serif;font-size:42px;font-weight:800;color:var(--text);line-height:1}
+.price-period{font-size:13px;color:var(--text3);margin-top:4px}
+.features{display:flex;flex-direction:column;gap:8px;margin:18px 0}
+.feat{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
+.feat-icon{width:24px;height:24px;border-radius:6px;background:var(--green-bg);display:grid;place-items:center;font-size:13px;flex-shrink:0}
+.divider{height:1px;background:var(--border);margin:18px 0}
+.payment-details{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;border-radius:var(--r2);padding:14px 16px;margin-bottom:18px}
+.pd-title{font-size:11px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.pd-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px}
+.pd-row:last-child{margin-bottom:0}
+.pd-label{color:#166534;font-weight:600}
+.pd-value{font-family:'Familjen Grotesk',sans-serif;font-weight:800;color:#15803d;font-size:15px}
+.notice{background:var(--amber-bg);border:1px solid #fcd34d;border-radius:var(--r2);padding:10px 14px;font-size:12px;color:var(--amber-tx);line-height:1.6;margin-bottom:18px}
+
+/* ACCOUNT SCREEN */
+.field{margin-bottom:16px}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.field .hint{font-size:11px;color:var(--text3);margin-top:4px}
+.inp-wrap{position:relative}
+.inp-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.45}
+.inp{width:100%;height:40px;padding:0 12px 0 34px;border:1.5px solid var(--border);border-radius:var(--r2);font-family:inherit;font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+.inp::placeholder{color:var(--text3)}
+.inp.no-icon{padding-left:12px}
+.eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;color:var(--text3)}
+.inp.has-eye{padding-right:36px}
+.pw-strength{height:3px;border-radius:2px;margin-top:6px;transition:all .3s;background:var(--border)}
+.pw-strength.weak{background:var(--red);width:33%}
+.pw-strength.fair{background:var(--amber);width:66%}
+.pw-strength.strong{background:var(--green);width:100%}
+
+/* DETAILS SCREEN */
+.sec-div{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);padding-bottom:6px;margin:18px 0 14px}
+.sec-div:first-child{margin-top:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+select.inp{cursor:pointer;padding-left:12px}
+.autosave-bar{display:none;align-items:center;gap:6px;font-size:11.5px;color:var(--green-tx);margin-bottom:16px;background:var(--green-bg);padding:6px 12px;border-radius:5px;border:1px solid #a7f3d0}
+.autosave-bar.show{display:flex}
+.save-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:dotpulse 2s infinite}
+@keyframes dotpulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* SUBMITTED SCREEN */
+.sub-center{text-align:center;padding:20px 10px}
+.sub-icon{font-size:54px;margin-bottom:14px}
+.sub-title{font-family:'Familjen Grotesk',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px}
+.sub-msg{font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:20px}
+.sub-ref{background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 16px;font-family:monospace;font-size:13px;color:var(--accent);font-weight:700;margin-bottom:6px;word-break:break-all}
+.sub-ref-lbl{font-size:11px;color:var(--text3);margin-bottom:16px}
+.wa-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#16a34a;color:#fff;border-radius:var(--r2);font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;text-decoration:none;box-shadow:0 4px 14px rgba(22,163,74,.3);transition:all .15s}
+.wa-btn:hover{transform:translateY(-1px)}
+
+/* OWNER MESSAGE BANNER (shown when owner responds) */
+.owner-banner{display:none;border-radius:var(--r2);padding:12px 16px;margin-bottom:20px;border:1.5px solid}
+.owner-banner.show{display:flex;align-items:flex-start;gap:10px}
+.owner-banner.approved{background:var(--green-bg);border-color:#6ee7b7}
+.owner-banner.pending{background:var(--amber-bg);border-color:#fcd34d}
+.owner-banner.rejected{background:var(--red-bg);border-color:#fca5a5}
+.ob-icon{font-size:18px;flex-shrink:0}
+.ob-body{flex:1}
+.ob-title{font-weight:800;font-size:13px;margin-bottom:3px}
+.ob-msg{font-size:12px;line-height:1.6;color:var(--text2)}
+.ob-wa{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:5px 14px;background:#16a34a;color:#fff;border-radius:5px;font-weight:700;font-size:12px;text-decoration:none}
+
+/* BUTTONS */
+.btn-primary{width:100%;height:44px;background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;border:none;border-radius:var(--r2);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s;box-shadow:0 4px 14px rgba(26,86,219,.3);margin-top:6px}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn-outline{width:100%;height:40px;background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:var(--r2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .14s;margin-top:8px}
+.btn-outline:hover{background:var(--bg)}
+.spin-sm{width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ALERT */
+.alert{display:none;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:var(--r2);font-size:12px;font-weight:500;line-height:1.5;margin-bottom:14px}
+.alert.show{display:flex}
+.alert.err{background:var(--red-bg);border:1px solid #fca5a5;color:var(--red-tx)}
+
+/* FOOTER */
+.footer{text-align:center;font-size:12px;color:var(--text3);margin-top:18px;line-height:1.8}
+.footer a{color:var(--accent);text-decoration:none;font-weight:600}
+
+/* LOGIN SCREEN */
+#screen0 .btn-outline{display:flex;align-items:center;justify-content:center;height:40px;width:100%;background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:var(--r2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .14s}
+#screen0 .btn-outline:hover{background:var(--bg)}
+
+/* TOAST */
+#tc{position:fixed;top:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
+.t{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:var(--r2);font-size:12.5px;font-weight:500;box-shadow:var(--sh2);animation:tin .25s ease;min-width:210px}
+.t.ok{background:#064e3b;color:#ecfdf5;border-left:3px solid #10b981}
+.t.err{background:#7f1d1d;color:#fef2f2;border-left:3px solid #ef4444}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tout{to{transform:translateX(110%);opacity:0}}
+</style>
+</head>
+<body>
+<div id="tc"></div>
+
+<div class="page">
+
+  <div class="hd">
+    <div class="hd-logo">🏫</div>
+    <div class="hd-title">CBE Mark Sheet System</div>
+    <div class="hd-sub">Kenya CBE · Junior School (Grades 1–9)</div>
+  </div>
+
+  <!-- PAGE LOADER — shown while checking if returning user -->
+  <div id="pageInitLoader" style="text-align:center;padding:40px 20px">
+    <div style="width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .6s linear infinite;margin:0 auto 12px"></div>
+    <div style="font-size:12px;color:var(--text3);font-weight:600">Loading…</div>
+  </div>
+
+  <!-- STEP INDICATORS -->
+  <div class="steps" id="stepsBar" style="display:none">
+    <div class="stp active" id="stp1"><div class="stp-num">1</div><div class="stp-lbl">Pricing</div></div>
+    <div class="stp-line" id="line1"></div>
+    <div class="stp wait" id="stp2"><div class="stp-num">2</div><div class="stp-lbl">Create Account</div></div>
+    <div class="stp-line" id="line2"></div>
+    <div class="stp wait" id="stp3"><div class="stp-num">3</div><div class="stp-lbl">School Details</div></div>
+  </div>
+
+  <!-- OWNER BANNER — shows when owner sends response -->
+  <div class="owner-banner" id="ownerBanner">
+    <div class="ob-icon" id="obIcon">📩</div>
+    <div class="ob-body">
+      <div class="ob-title" id="obTitle">Message from Administrator</div>
+      <div class="ob-msg" id="obMsg">—</div>
+      <a class="ob-wa" href="https://wa.me/254704518130" target="_blank">💬 WhatsApp</a>
+    </div>
+  </div>
+
+  <!-- ══ STEP 0: RETURNING USER LOGIN ══ -->
+  <div class="screen" id="screen0">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-title">🔑 Welcome Back</div>
+        <div class="card-head-sub">Sign in to your existing school account</div>
+      </div>
+      <div class="card-body">
+        <div class="alert err" id="loginErr"><span>⚠️</span><span id="loginErrMsg"></span></div>
+        <div class="field">
+          <label>Email Address</label>
+          <div class="inp-wrap"><span class="inp-icon">✉️</span><input class="inp" id="liEmail" type="email" placeholder="admin@school.ac.ke" autocomplete="email"></div>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="inp-wrap">
+            <span class="inp-icon">🔑</span>
+            <input class="inp has-eye" id="liPass" type="password" placeholder="••••••••" autocomplete="current-password">
+            <button class="eye-btn" onclick="toggleEye('liPass',this)" tabindex="-1">👁️</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+          <input type="checkbox" id="rememberMe" style="width:15px;height:15px;cursor:pointer;accent-color:var(--accent)">
+          <label for="rememberMe" style="font-size:12.5px;color:var(--text2);cursor:pointer;font-weight:600">Remember me on this device</label>
+        </div>
+        <button class="btn-primary" id="loginBtn" onclick="doLogin()">
+          <span id="loginBtnTxt">Sign In →</span>
+        </button>
+        <button class="btn-outline" onclick="localStorage.removeItem('cbe_reg_uid');localStorage.removeItem('cbe_reg_email');goToStep(1);" style="margin-top:8px">
+          New school? Register here →
+        </button>
+        
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 1: STARTUP OFFER ══ -->
+  <div class="screen" id="screen1">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-title">⚡ System Setup &amp; Onboarding</div>
+        <div class="card-head-sub">One-time fee to get your school fully set up on CBE Mark Sheet</div>
+      </div>
+      <div class="card-body">
+        <div class="price-hero">
+          <div class="price-badge">ONE-TIME SETUP FEE</div>
+          <div class="price-amount">Ksh 3,499</div>
+          <div class="price-period">Paid once · No recurring charges</div>
+        </div>
+
+        <div class="features">
+          <div class="feat"><div class="feat-icon">✅</div>Full system setup for your school</div>
+          <div class="feat"><div class="feat-icon">✅</div>CBC Mark Sheet — Grades 1,2,3,4,5,6 7, 8 &amp; 9</div>
+          <div class="feat"><div class="feat-icon">✅</div>All CBC subjects built in</div>
+          <div class="feat"><div class="feat-icon">✅</div>Student performance analysis &amp; reports</div>
+          <div class="feat"><div class="feat-icon">✅</div>Unlimited teachers &amp; streams</div>
+          <div class="feat"><div class="feat-icon">✅</div>Print-ready branded report cards</div>
+          <div class="feat"><div class="feat-icon">✅</div>Admin &amp; teacher accounts with role control</div>
+          <div class="feat"><div class="feat-icon">✅</div>Real-time cloud sync across all devices</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="payment-details">
+          <div class="pd-title">💳 M-Pesa Payment</div>
+          <div class="pd-row"><span class="pd-label">Till Number</span><span class="pd-value">4585402</span></div>
+          <div class="pd-row"><span class="pd-label">Business</span><span style="font-size:13px;font-weight:700;color:#15803d"></span></div>
+          <div class="pd-row"><span class="pd-label">Amount</span><span class="pd-value">Ksh 3,499</span></div>
+        </div>
+
+        <div class="notice">
+          💡 Pay via M-Pesa then click the WhatsApp button below to send your confirmation. Your account will be activated within minutes.
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+          <a href="https://wa.me/254704518130?text=Hello%2C%20I%20would%20like%20to%20register%20my%20school%20on%20CBE%20Mark%20Sheet%20System.%20Kindly%20guide%20me%20on%20the%20setup%20fee%20payment." target="_blank" rel="noopener"
+            style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:#25d366;color:#fff;border-radius:20px;text-decoration:none;font-size:13px;font-weight:700">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.858L.057 23.428a.5.5 0 0 0 .609.602l5.805-1.524A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.897 0-3.67-.52-5.186-1.426l-.372-.22-3.844 1.008 1.027-3.742-.242-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            Chat on WhatsApp
+          </a>
+        </div>
+
+        <button class="btn-primary" onclick="agreeAndProceed()">
+          Proceed to Registration →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 2: CREATE ACCOUNT ══ -->
+  <div class="screen" id="screen2">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-title">👤 Create Your Admin Account</div>
+        <div class="card-head-sub">These credentials will be used to log in to the system</div>
+      </div>
+      <div class="card-body">
+        <div class="alert err" id="acctErr"><span>⚠️</span><span id="acctErrMsg"></span></div>
+
+        <div class="field">
+          <label>Full Name <span style="color:var(--red)">*</span></label>
+          <div class="inp-wrap"><span class="inp-icon">👤</span><input class="inp" id="aName" placeholder="e.g. Jane Mwangi" autocomplete="name"></div>
+        </div>
+        <div class="field">
+          <label>Email Address <span style="color:var(--red)">*</span></label>
+          <div class="inp-wrap"><span class="inp-icon">✉️</span><input class="inp" id="aEmail" type="email" placeholder="admin@school.ac.ke" autocomplete="email"></div>
+          <div class="hint">This will be your login email — use a school email if possible</div>
+        </div>
+        <div class="field">
+          <label>Password <span style="color:var(--red)">*</span></label>
+          <div class="inp-wrap">
+            <span class="inp-icon">🔑</span>
+            <input class="inp has-eye" id="aPass" type="password" placeholder="Min 8 characters" autocomplete="new-password" oninput="checkPwStrength(this.value)">
+            <button class="eye-btn" onclick="toggleEye('aPass',this)" tabindex="-1">👁️</button>
+          </div>
+          <div class="pw-strength" id="pwStrength"></div>
+          <div class="hint" id="pwHint">Use at least 8 characters with numbers and symbols</div>
+        </div>
+        <div class="field">
+          <label>Confirm Password <span style="color:var(--red)">*</span></label>
+          <div class="inp-wrap"><span class="inp-icon">🔑</span><input class="inp has-eye" id="aPass2" type="password" placeholder="Repeat password" autocomplete="new-password"><button class="eye-btn" onclick="toggleEye('aPass2',this)" tabindex="-1">👁️</button></div>
+        </div>
+
+        <button class="btn-primary" id="acctBtn" onclick="createAccount()">
+          <span id="acctBtnTxt">Create Account →</span>
+        </button>
+        <button class="btn-outline" onclick="goToStep(1)">← Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 3: SCHOOL DETAILS ══ -->
+  <div class="screen" id="screen3">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-title">🏫 School Details</div>
+        <div class="card-head-sub">Progress is auto-saved — you can leave and return</div>
+      </div>
+      <div class="card-body">
+        <div class="autosave-bar" id="savebar"><div class="save-dot"></div>Progress saved — return anytime</div>
+
+        <div class="sec-div">School Identity</div>
+        <div class="field">
+          <label>School Name <span style="color:var(--red)">*</span></label>
+          <input class="inp no-icon" id="sName" placeholder="e.g. Embu Junior School" oninput="autoSave()">
+        </div>
+        <div class="grid2">
+          <div class="field"><label>Short Name</label><input class="inp no-icon" id="sShort" placeholder="e.g. EJS" oninput="autoSave()"></div>
+          <div class="field"><label>Motto</label><input class="inp no-icon" id="sMotto" placeholder="Excellence in Learning" oninput="autoSave()"></div>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label>County <span style="color:var(--red)">*</span></label>
+            <select class="inp" id="sCounty" onchange="onCountyChange();autoSave()"><option value="">-- Select County --</option></select>
+          </div>
+          <div class="field">
+            <label>Sub-County</label>
+            <select class="inp" id="sSubCounty" onchange="autoSave()"><option value="">-- Select Sub-County --</option></select>
+          </div>
+        </div>
+
+        <div class="sec-div">Contact</div>
+        <div class="grid2">
+          <div class="field"><label>Principal <span style="color:var(--red)">*</span></label><input class="inp no-icon" id="sPrincipal" placeholder="Mr. James Mwangi" oninput="autoSave()"></div>
+          <div class="field"><label>Phone <span style="color:var(--red)">*</span></label><input class="inp no-icon" id="sPhone" type="tel" placeholder="0712 345 678" oninput="autoSave()"></div>
+        </div>
+
+        <div class="sec-div">School Info</div>
+        <div class="grid2">
+          <div class="field">
+            <label>Streams per grade</label>
+            <select class="inp" id="sStreams" onchange="autoSave()"><option value="1">1 stream</option><option value="2">2 streams</option><option value="3">3 streams</option><option value="4">4+</option></select>
+          </div>
+          <div class="field">
+            <label>Approx. students</label>
+            <select class="inp" id="sStudents" onchange="autoSave()"><option value="<100">Less than 100</option><option value="100-300">100–300</option><option value="300-500">300–500</option><option value="500+">500+</option></select>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="submitBtn" onclick="submitDetails()">
+          <span id="submitTxt">📤 Submit for Approval</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SUBMITTED — WAITING FOR APPROVAL ══ -->
+  <div class="screen" id="screen4">
+    <div class="card">
+      <div class="card-body">
+        <div class="sub-center">
+          <div class="sub-icon">⏳</div>
+          <div class="sub-title">Awaiting Approval</div>
+          <div class="sub-msg">
+            Your registration has been submitted.<br><br>
+            To activate your account, pay the <strong>Ksh 3,499 setup fee</strong> via M-Pesa Till <strong>4585402</strong> (CBE Mark Sheet), then tap the button below to send your confirmation.
+          </div>
+
+          <!-- Waiting indicator -->
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin:16px 0;padding:12px 16px;background:var(--amber-bg);border:1px solid #fcd34d;border-radius:var(--r2);font-size:13px;color:var(--amber-tx)">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--amber);animation:dotpulse 2s infinite;flex-shrink:0"></div>
+            This page updates automatically when your account is approved
+          </div>
+
+          <div class="sub-ref" id="subRef">—</div>
+          <div class="sub-ref-lbl">Your reference number</div>
+
+          <div style="margin:20px 0;font-size:13px;color:var(--text2)">Have a question or need faster activation?</div>
+
+          <a href="https://wa.me/254704518130?text=Hello%2C%20I%20have%20registered%20my%20school%20on%20CBE%20Mark%20Sheet%20System%20and%20paid%20the%20Ksh%202%2C599%20setup%20fee%20via%20M-Pesa%20Till%204585402.%20Please%20activate%20my%20account." target="_blank" rel="noopener"
+            style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#25d366;color:#fff;border-radius:var(--r2);text-decoration:none;font-size:14px;font-weight:700;margin-bottom:16px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.858L.057 23.428a.5.5 0 0 0 .609.602l5.805-1.524A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.897 0-3.67-.52-5.186-1.426l-.372-.22-3.844 1.008 1.027-3.742-.242-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            Send M-Pesa Confirmation
+          </a>
+
+          <div style="font-size:12px;color:var(--text3);margin-top:8px">
+            Already approved? <a href="admin" style="color:var(--accent);font-weight:600">Sign in →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Already registered? <a href="#" onclick="goToStep(0);return false">Sign in here →</a>
+    &nbsp;·&nbsp; New school? <a href="#" onclick="localStorage.removeItem('cbe_reg_uid');localStorage.removeItem('cbe_reg_email');goToStep(1);return false">Register →</a><br>
+    CBE Mark Sheet System · Kenya CBE Junior School
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
+  authDomain:"bett-294a2.firebaseapp.com",
+  projectId:"bett-294a2",
+  storageBucket:"bett-294a2.appspot.com",
+  messagingSenderId:"1055511650032",
+  appId:"1:1055511650032:web:7e0f9c28e58515f549ac35"
+});
+const db=firebase.firestore(), auth=firebase.auth();
+const el=id=>document.getElementById(id);
+// ========== TELEGRAM NOTIFICATION SYSTEM ==========
+// REPLACE WITH YOUR ACTUAL TOKEN AND CHAT ID:
+const TELEGRAM_BOT_TOKEN = '8330719079:AAE4KnGBfgIbCxk1jDStmfGTvcwVsYi2Gh4';  // ← From @BotFather
+const TELEGRAM_CHAT_ID = '6851953474';      // ← From @userinfobot
+
+class TelegramNotifier {
+  constructor() {
+    this.botToken = TELEGRAM_BOT_TOKEN;
+    this.chatId = TELEGRAM_CHAT_ID;
+    this.apiUrl = `https://api.telegram.org/bot${this.botToken}`;
+  }
+  
+  async sendMessage(message, parseMode = 'HTML') {
+    if (!this.botToken) {
+      console.warn('⚠️ Telegram bot token not set');
+      return false;
+    }
+    try {
+      const response = await fetch(`${this.apiUrl}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: this.chatId,
+          text: message,
+          parse_mode: parseMode,
+          disable_web_page_preview: false
+        })
+      });
+      const result = await response.json();
+      if (result.ok) {
+        console.log('✅ Telegram notification sent');
+        return true;
+      } else {
+        console.error('Telegram API error:', result);
+        return false;
+      }
+    } catch (error) {
+      console.error('Telegram send failed:', error);
+      return false;
+    }
+  }
+  
+  async sendNewRegistrationNotification(regData) {
+    const { 
+      schoolName, county, subCounty, principal, 
+      phone, streams, students, email, uid 
+    } = regData;
+    
+    const message = `
+🆕 <b>🏫 NEW SCHOOL REGISTRATION</b> 🆕
+
+<b>School:</b> ${schoolName}
+<b>📍 County:</b> ${county || 'Not specified'}${subCounty ? ` (${subCounty})` : ''}
+<b>👤 Principal:</b> ${principal || 'Not specified'}
+<b>📞 Phone:</b> ${phone || 'Not provided'}
+<b>✉️ Email:</b> ${email || 'Not provided'}
+<b>📊 Streams:</b> ${streams || 'Not specified'}
+<b>👥 Students:</b> ${students || 'Not specified'}
+
+<b>⏰ Time:</b> ${new Date().toLocaleString('en-KE')}
+<b>🆔 Reference:</b> <code>${uid?.slice(0, 12) || 'N/A'}</code>
+
+<a href="https://bett.website/owner">🔗 CLICK TO REVIEW & APPROVE →</a>
+
+<i>Payment Status: Pending</i>
+    `.trim();
+    
+    return this.sendMessage(message);
+  }
+  
+  async test() {
+    const testMessage = `
+🔔 <b>TELEGRAM BOT TEST</b> 🔔
+
+✅ Your CBE Telegram bot is working!
+
+<b>Time:</b> ${new Date().toLocaleString('en-KE')}
+<b>Status:</b> Ready to receive school registration notifications
+
+<i>You will be notified instantly when a school submits their registration.</i>
+    `.trim();
+    return this.sendMessage(testMessage);
+  }
+}
+
+// Initialize Telegram bot
+let telegramBot = null;
+async function submitDetails(){
+  const d=readDetails();
+  if(!d.name){toast('School name is required','err');el('sName').focus();return;}
+  if(!d.county){toast('Please select your county','err');return;}
+  if(!d.principal){toast('Principal name is required','err');el('sPrincipal').focus();return;}
+  if(!d.phone){toast('Phone number is required','err');el('sPhone').focus();return;}
+
+  const uid = _createdUid || auth.currentUser?.uid;
+  if(!uid){toast('Session expired — please create account again','err');goToStep(2);return;}
+  if(!auth.currentUser){
+    toast('Not authenticated — please create your account first','err');
+    goToStep(2); return;
+  }
+
+  const btn=el('submitBtn'),txt=el('submitTxt');
+  btn.disabled=true; txt.innerHTML='<div class="spin-sm"></div> Submitting…';
+  log('info','Submitting school details',d.name);
+
+  try{
+    // Save school settings
+    await db.collection('settings').doc(uid).set({
+      ...d, schoolId:uid,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+
+    // Create/update approvedSchools doc
+    const existingSnap = await db.collection('approvedSchools').doc(uid).get();
+    if(!existingSnap.exists){
+      await db.collection('approvedSchools').doc(uid).set({
+        uid, schoolName:d.name,
+        county:d.county, subCounty:d.subCounty||'',
+        principal:d.principal, phone:d.phone,
+        status:'pending',
+        detectedAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } else {
+      await db.collection('approvedSchools').doc(uid).update({
+        schoolName:d.name,
+        county:d.county, subCounty:d.subCounty||'',
+        principal:d.principal, phone:d.phone,
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    // 📢 SEND TELEGRAM NOTIFICATION - ADD THIS BLOCK
+    const email = auth.currentUser?.email || '';
+    const regData = {
+      schoolName: d.name,
+      county: d.county,
+      subCounty: d.subCounty,
+      principal: d.principal,
+      phone: d.phone,
+      streams: d.streams,
+      students: d.students,
+      email: email,
+      uid: uid
+    };
+    
+    if (telegramBot) {
+      const sent = await telegramBot.sendNewRegistrationNotification(regData);
+      if (sent) {
+        log('info', 'Telegram notification sent for', d.name);
+      } else {
+        log('warn', 'Telegram notification failed for', d.name);
+      }
+    } else {
+      log('warn', 'Telegram bot not initialized');
+    }
+
+    // Notify owner (keep your existing ownerLog)
+    await db.collection('ownerLog').add({
+      type:'new_registration',
+      message:'New school registration awaiting approval: '+d.name+' ('+d.county+')',
+      school:d.name, county:d.county||'',
+      principal:d.principal||'', phone:d.phone||'',
+      color:'amber',
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    localStorage.removeItem(SAVE_KEY);
+    el('subRef').textContent=uid.slice(0,16).toUpperCase();
+    log('info','Registration submitted successfully');
+
+    // Listen for owner response
+    listenForOwnerResponse(uid);
+    goToStep(4);
+    el('stepsBar').style.display='none';
+
+  }catch(e){
+    log('error','Submit failed',e.message);
+    toast('Submit failed: '+e.message,'err');
+    btn.disabled=false;
+    txt.textContent='📤 Submit for Approval';
+  }
+}
+function initTelegram() {
+  if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID) {
+    telegramBot = new TelegramNotifier();
+    console.log('✅ Telegram bot initialized');
+    return true;
+  }
+  console.warn('⚠️ Telegram bot not configured');
+  return false;
+}
+
+// Call this on page load
+initTelegram();
+// Add this function after initTelegram()
+async function testTelegramBot() {
+  if (!telegramBot) {
+    if (!initTelegram()) {
+      toast('⚠️ Telegram not configured. Please add your bot token and chat ID first.', 'err');
+      return;
+    }
+  }
+  
+  toast('📤 Sending test notification...', 'ok');
+  const success = await telegramBot.test();
+  
+  if (success) {
+    toast('✅ Test notification sent! Check your Telegram.', 'ok');
+  } else {
+    toast('❌ Failed to send. Check your token and internet connection.', 'err');
+  }
+}
+// ── Logger ──
+function log(level,msg,data){
+  const fn=level==='error'?console.error:level==='warn'?console.warn:console.log;
+  fn('[CBE Register]',msg,data||'');
+}
+
+// ── Toast ──
+function toast(msg,type='ok'){
+  const t=document.createElement('div');t.className=`t ${type}`;
+  t.innerHTML=`<span>${type==='ok'?'✅':'❌'}</span>${msg}`;
+  el('tc').appendChild(t);
+  setTimeout(()=>{t.style.animation='tout .25s ease forwards';setTimeout(()=>t.remove(),280);},3200);
+}
+
+// ── State ──
+let currentStep=1, _createdUid=null, _regUnsub=null;
+const SAVE_KEY='cbe_reg_details';
+
+// ── Returning user login ──
+async function doLogin(){
+  el('loginErr').classList.remove('show');
+  const email=el('liEmail').value.trim();
+  const pass=el('liPass').value;
+  const remember=el('rememberMe').checked;
+  if(!email||!pass){
+    el('loginErrMsg').textContent='Email and password are required.';
+    el('loginErr').classList.add('show'); return;
+  }
+  const btn=el('loginBtn'),txt=el('loginBtnTxt');
+  btn.disabled=true; txt.innerHTML='<div class="spin-sm"></div> Signing in…';
+  try{
+    const persistence = remember
+      ? firebase.auth.Auth.Persistence.LOCAL
+      : firebase.auth.Auth.Persistence.SESSION;
+    await auth.setPersistence(persistence);
+    await auth.signInWithEmailAndPassword(email, pass);
+    localStorage.setItem('cbe_reg_email', email);
+    // onAuthStateChanged will handle redirect
+  }catch(e){
+    btn.disabled=false; txt.textContent='Sign In →';
+    const msg = e.code==='auth/user-not-found'||e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'
+      ? 'Incorrect email or password.'
+      : e.code==='auth/too-many-requests' ? 'Too many attempts. Try again later.'
+      : e.message;
+    el('loginErrMsg').textContent=msg;
+    el('loginErr').classList.add('show');
+    log('warn','Login failed',e.code);
+  }
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const lp=el('liPass');
+  if(lp) lp.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+});
+
+// ── Step 1 agree — just move to account creation ──
+function agreeAndProceed(){
+  log('info','User agreed to pricing');
+  goToStep(2);
+}
+
+// ── Step navigation ──
+function goToStep(n){
+  const loader = el('pageInitLoader');
+  if(loader) loader.style.display='none';
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  el('screen'+n).classList.add('active');
+  currentStep=n;
+  const stepsBar = el('stepsBar');
+  if(stepsBar) stepsBar.style.display = (n>=1&&n<=3) ? 'flex' : 'none';
+  updateStepBar(n);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateStepBar(n){
+  [1,2,3].forEach(i=>{
+    const stp=el('stp'+i);
+    stp.className='stp '+(i<n?'done':i===n?'active':'wait');
+  });
+  [1,2].forEach(i=>{
+    const line=el('line'+i);
+    line.className='stp-line'+(i<n?' done-line':'');
+  });
+}
+
+// ── Eye toggle ──
+function toggleEye(id,btn){
+  const inp=el(id);
+  inp.type=inp.type==='password'?'text':'password';
+  btn.textContent=inp.type==='password'?'👁️':'🙈';
+}
+
+// ── Password strength ──
+function checkPwStrength(val){
+  const bar=el('pwStrength'),hint=el('pwHint');
+  if(!val){bar.className='pw-strength';return;}
+  const strong=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(val);
+  const fair=/^(?=.*[a-zA-Z])(?=.*\d).{8,}$/.test(val);
+  if(strong){bar.className='pw-strength strong';hint.textContent='Strong password ✅';}
+  else if(fair){bar.className='pw-strength fair';hint.textContent='Fair — add symbols for stronger';}
+  else{bar.className='pw-strength weak';hint.textContent='Weak — add numbers and symbols';}
+}
+
+// ── Create account ──
+async function createAccount(){
+  el('acctErr').classList.remove('show');
+  const name=el('aName').value.trim();
+  const email=el('aEmail').value.trim();
+  const pass=el('aPass').value;
+  const pass2=el('aPass2').value;
+
+  if(!name||!email||!pass){el('acctErrMsg').textContent='All fields are required.';el('acctErr').classList.add('show');return;}
+  if(pass.length<8){el('acctErrMsg').textContent='Password must be at least 8 characters.';el('acctErr').classList.add('show');return;}
+  if(pass!==pass2){el('acctErrMsg').textContent='Passwords do not match.';el('acctErr').classList.add('show');return;}
+
+  const btn=el('acctBtn'),txt=el('acctBtnTxt');
+  btn.disabled=true; txt.innerHTML='<div class="spin-sm"></div> Creating account…';
+  log('info','Creating account',email);
+
+  try{
+    const cred = await auth.createUserWithEmailAndPassword(email,pass);
+    _createdUid = cred.user.uid;
+
+    localStorage.setItem('cbe_reg_uid',   cred.user.uid);
+    localStorage.setItem('cbe_reg_email', email);
+
+    // Create user doc in Firestore with status 'pending'
+    await db.collection('users').doc(_createdUid).set({
+      fullName:name, email,
+      role:'admin', status:'pending',
+      schoolId:_createdUid,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Log to ownerLog
+    db.collection('ownerLog').add({
+      type:'pricing_agreed',
+      message:'New admin account created — awaiting school details',
+      color:'blue',
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(()=>{});
+
+    log('info','Account created',_createdUid);
+    toast('Account created! Now fill in your school details.');
+    goToStep(3);
+    restoreSchoolDetails();
+
+  }catch(e){
+    log('error','Account creation failed',e.message);
+    btn.disabled=false;
+    txt.textContent='Create Account →';
+    const msg=e.code==='auth/email-already-in-use'
+      ?'This email is already registered. <a href="admin.html" style="color:var(--red-tx);font-weight:700">Sign in instead →</a>'
+      :e.code==='auth/invalid-email'?'Invalid email address.'
+      :e.message;
+    el('acctErrMsg').innerHTML=msg;
+    el('acctErr').classList.add('show');
+  }
+}
+
+// ── Auto-save school details to localStorage ──
+function autoSave(){
+  try{
+    localStorage.setItem(SAVE_KEY,JSON.stringify(readDetails()));
+    el('savebar').classList.add('show');
+  }catch(_){}
+}
+
+function readDetails(){
+  return{
+    name:el('sName').value.trim(),
+    shortName:el('sShort').value.trim(),
+    motto:el('sMotto').value.trim(),
+    county:el('sCounty').value,
+    subCounty:el('sSubCounty').value,
+    principal:el('sPrincipal').value.trim(),
+    phone:el('sPhone').value.trim(),
+    streams:el('sStreams').value,
+    students:el('sStudents').value,
+  };
+}
+
+function restoreSchoolDetails(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return;
+    const d=JSON.parse(raw);
+    if(d.name)      el('sName').value=d.name;
+    if(d.shortName) el('sShort').value=d.shortName;
+    if(d.motto)     el('sMotto').value=d.motto;
+    if(d.principal) el('sPrincipal').value=d.principal;
+    if(d.phone)     el('sPhone').value=d.phone;
+    if(d.streams)   el('sStreams').value=d.streams;
+    if(d.students)  el('sStudents').value=d.students;
+    if(d.county){
+      el('sCounty').value=d.county;
+      onCountyChange();
+      setTimeout(()=>{ if(d.subCounty) el('sSubCounty').value=d.subCounty; },60);
+    }
+    if(Object.values(d).some(v=>v)) el('savebar').classList.add('show');
+    log('info','School details restored from localStorage');
+  }catch(_){}
+}
+
+// ── Listen for owner to approve/message ──
+function listenForOwnerResponse(uid){
+  if(_regUnsub) _regUnsub();
+  log('info','Starting approval listener for',uid);
+
+  _regUnsub=db.collection('approvedSchools').doc(uid)
+    .onSnapshot(snap=>{
+      if(!snap.exists) return;
+      const d=snap.data();
+      log('info','Approval status update received',d.status);
+
+      if(d.status==='approved'){
+        // ✅ AUTO-REDIRECT to admin dashboard
+        log('info','APPROVED — redirecting to admin.html');
+        
+        // Update the waiting screen to show success
+        const icon=el('screen4')?.querySelector('.sub-icon');
+        if(icon) icon.textContent='🎉';
+        const title=el('screen4')?.querySelector('.sub-title');
+        if(title) title.textContent='Approved!';
+        const msg=el('screen4')?.querySelector('.sub-msg');
+        if(msg) msg.innerHTML='Your school has been approved! Redirecting to your dashboard...';
+
+        // Redirect after 1.5 seconds
+        setTimeout(()=>{ 
+          window.location.href = 'admin.html';
+        }, 1500);
+        return;
+      }
+
+      if(d.status==='suspended'){
+        showOwnerBanner('rejected',
+          '🚫 Registration Not Approved',
+          d.message||'Your registration was not approved. Please contact us on WhatsApp if you believe this is an error.',
+          'https://wa.me/254704518130'
+        );
+        return;
+      }
+
+      // Pending with a new message from owner
+      if(d.message && d.message.trim()){
+        showOwnerBanner('pending','📩 Message from Administrator',d.message,d.contact||'https://wa.me/254704518130');
+      }
+    }, e=>log('error','Approval listener error',e.message));
+}
+
+function showOwnerBanner(type,title,msg,contact){
+  el('obIcon').textContent=type==='approved'?'✅':'📩';
+  el('obTitle').textContent=title;
+  el('obMsg').textContent=msg;
+  const banner=el('ownerBanner');
+  banner.className=`owner-banner show ${type}`;
+  if(contact){
+    const wa=banner.querySelector('.ob-wa');
+    if(wa) wa.href=contact;
+  }
+}
+
+// ── Auth state — handle all scenarios ──
+async function checkReturningUser(){
+  const savedEmail = localStorage.getItem('cbe_reg_email');
+  const savedUid   = localStorage.getItem('cbe_reg_uid');
+
+  if(savedEmail || savedUid){
+    log('info','Returning user detected — showing login screen');
+    goToStep(0);
+    const emailEl = el('liEmail');
+    if(emailEl && savedEmail) emailEl.value = savedEmail;
+    return;
+  }
+
+  log('info','New visitor — showing pricing screen');
+  goToStep(1);
+}
+
+// Run immediately on load
+checkReturningUser();
+
+// CRITICAL FIX: Handle authenticated users properly
+auth.onAuthStateChanged(async u=>{
+  if(!u){
+    // Not logged in — show appropriate screen based on step
+    if(currentStep === 0) return; // stay on login screen
+    if(currentStep >= 2 && currentStep <= 4){
+      // User was in registration flow but got logged out
+      log('warn','User logged out during registration flow');
+      goToStep(0);
+    }
+    return;
+  }
+
+  log('info','User authenticated on register page',u.email);
+  _createdUid=u.uid;
+
+  try{
+    // First check user role in users collection
+    const userSnap = await db.collection('users').doc(u.uid).get();
+    
+    if(userSnap.exists){
+      const userProfile = userSnap.data();
+      
+      // TEACHER FLOW: If user is a teacher
+      if(userProfile.role === 'teacher'){
+        log('info','Teacher user detected', userProfile.status);
+        
+        if(userProfile.status === 'active'){
+          // Approved teacher — redirect to marksheet
+          log('info','Approved teacher — redirecting to marksheet.html');
+          window.location.href = 'marksheet.html';
+          return;
+        } else if(userProfile.status === 'pending'){
+          // Pending teacher — show waiting message and sign out
+          toast('⏳ Your teacher account is pending approval. Please wait for the administrator.', 'info');
+          await auth.signOut();
+          goToStep(0);
+          return;
+        } else if(userProfile.status === 'suspended'){
+          toast('🚫 Your account has been suspended. Contact the administrator.', 'err');
+          await auth.signOut();
+          goToStep(0);
+          return;
+        }
+      }
+      
+      // ADMIN FLOW: Check approvedSchools
+      const snap = await db.collection('approvedSchools').doc(u.uid).get();
+
+      if(snap.exists){
+        const d = snap.data();
+
+        if(d.status === 'approved'){
+          // ✅ APPROVED ADMIN — redirect immediately
+          log('info','Approved admin — redirecting to admin.html');
+          window.location.href = 'admin.html';
+          return;
+        }
+
+        if(d.status === 'suspended'){
+          // Blocked — show message and sign out
+          el('subRef').textContent = u.uid.slice(0,16).toUpperCase();
+          goToStep(4);
+          el('stepsBar').style.display = 'none';
+          listenForOwnerResponse(u.uid);
+          showOwnerBanner('rejected','🚫 Registration Not Approved',
+            d.message || 'Your registration was not approved. Contact us on WhatsApp.',
+            'https://wa.me/254704518130');
+          return;
+        }
+
+        // Pending — show waiting screen, listen for approval
+        log('info','Admin is pending — showing waiting screen');
+        el('subRef').textContent = u.uid.slice(0,16).toUpperCase();
+        goToStep(4);
+        el('stepsBar').style.display = 'none';
+        listenForOwnerResponse(u.uid);
+        if(d.message && d.message.trim()){
+          showOwnerBanner('pending','📩 Message from Administrator',d.message,d.contact || 'https://wa.me/254704518130');
+        }
+        return;
+      }
+
+      // No approvedSchools doc — check if they have settings
+      const settSnap = await db.collection('settings').doc(u.uid).get();
+      if(!settSnap.exists || !settSnap.data().name){
+        // Has account but no school details yet
+        log('info','Admin has no school details — go to step 3');
+        goToStep(3);
+        restoreSchoolDetails();
+      } else {
+        // Has settings but never submitted? This shouldn't happen, but just in case
+        log('info','Admin has settings but no approvedSchools doc — go to step 4');
+        goToStep(4);
+        listenForOwnerResponse(u.uid);
+      }
+    } else {
+      // User exists in Auth but not in users collection — shouldn't happen
+      log('warn','User authenticated but no profile found', u.uid);
+      await auth.signOut();
+      goToStep(0);
+    }
+
+  } catch(e){ 
+    log('error','Auth state check failed',e.message);
+    // On error, show login screen
+    goToStep(0);
+  }
+});
+
+// ── Kenya Counties ──
+const COUNTIES={
+  "Baringo":["Baringo Central","Baringo North","Baringo South","Eldama Ravine","Mogotio","Tiaty"],
+  "Bomet":["Bomet Central","Bomet East","Chepalungu","Konoin","Sotik"],
+  "Bungoma":["Bumula","Kabuchai","Kanduyi","Kimilili","Mt. Elgon","Sirisia","Tongaren","Webuye East","Webuye West"],
+  "Busia":["Budalangi","Butula","Funyula","Nambale","Teso North","Teso South"],
+  "Elgeyo-Marakwet":["Keiyo North","Keiyo South","Marakwet East","Marakwet West"],
+  "Embu":["Manyatta","Mbeere North","Mbeere South","Runyenjes"],
+  "Garissa":["Dadaab","Fafi","Garissa Township","Hulugho","Ijara","Lagdera"],
+  "Homa Bay":["Kabondo Kasipul","Karachuonyo","Kasipul","Mbita","Ndhiwa","Rangwe","Suba North","Suba South"],
+  "Isiolo":["Garbatulla","Isiolo","Merti"],
+  "Kajiado":["Isinya","Kajiado Central","Kajiado East","Kajiado North","Loitokitok","Mashuuru"],
+  "Kakamega":["Butere","Ikolomani","Khwisero","Likuyani","Lugari","Lurambi","Malava","Matungu","Mumias East","Mumias West","Navakholo","Shinyalu"],
+  "Kericho":["Ainamoi","Belgut","Bureti","Kipkelion East","Kipkelion West","Soin Sigowet"],
+  "Kiambu":["Gatundu North","Gatundu South","Githunguri","Juja","Kabete","Kiambaa","Kiambu","Kikuyu","Limuru","Ruiru","Thika Town","Lari"],
+  "Kilifi":["Ganze","Kaloleni","Kilifi North","Kilifi South","Magarini","Malindi","Rabai"],
+  "Kirinyaga":["Gichugu","Kirinyaga Central","Mwea","Ndia"],
+  "Kisii":["Bobasi","Bomachoge Borabu","Bomachoge Chache","Bonchari","Kitutu Chache North","Kitutu Chache South","Nyaribari Chache","Nyaribari Masaba","South Mugirango"],
+  "Kisumu":["Kisumu Central","Kisumu East","Kisumu West","Muhoroni","Nyakach","Nyando","Seme"],
+  "Kitui":["Kitui Central","Kitui East","Kitui Rural","Kitui South","Kitui West","Mwingi Central","Mwingi North","Mwingi West"],
+  "Kwale":["Kinango","Lunga Lunga","Msambweni","Matuga"],
+  "Laikipia":["Laikipia East","Laikipia North","Laikipia West","Nyahururu","Ol Jorok","Ol Kalou"],
+  "Lamu":["Lamu East","Lamu West"],
+  "Machakos":["Kathiani","Machakos Town","Masinga","Matungulu","Mavoko","Mwala","Yatta"],
+  "Makueni":["Kaiti","Kibwezi East","Kibwezi West","Kilome","Makueni","Mbooni"],
+  "Mandera":["Banissa","Lafey","Mandera East","Mandera North","Mandera South","Mandera West"],
+  "Marsabit":["Laisamis","Moyale","North Horr","Saku"],
+  "Meru":["Buuri","Igembe Central","Igembe North","Igembe South","Imenti North","Imenti South","Tigania East","Tigania West"],
+  "Migori":["Awendo","Kuria East","Kuria West","Mabera","Ntimaru","Nyatike","Rongo","Suna East","Suna West","Uriri"],
+  "Mombasa":["Changamwe","Jomvu","Kisauni","Likoni","Mvita","Nyali"],
+  "Murang'a":["Gatanga","Kahuro","Kandara","Kangema","Kigumo","Kiharu","Mathioya","Murang'a South"],
+  "Nairobi":["Dagoretti North","Dagoretti South","Embakasi Central","Embakasi East","Embakasi North","Embakasi South","Embakasi West","Githurai","Kamukunji","Kasarani","Kibra","Lang'ata","Makadara","Mathare","Roysambu","Ruaraka","Starehe","Westlands"],
+  "Nakuru":["Bahati","Gilgil","Kuresoi North","Kuresoi South","Molo","Nakuru Town East","Nakuru Town West","Naivasha","Njoro","Rongai","Subukia"],
+  "Nandi":["Aldai","Chesumei","Emgwen","Mosop","Nandi Hills","Tindiret"],
+  "Narok":["Kilgoris","Narok East","Narok North","Narok South","Narok West","Transmara East","Transmara West"],
+  "Nyamira":["Borabu","Manga","Masaba North","Nyamira North","Nyamira South"],
+  "Nyandarua":["Kinangop","Kipipiri","Ndaragwa","Ol Kalou","Ol Joro Orok"],
+  "Nyeri":["Kieni","Mathira","Mukurweini","Nyeri Town","Othaya","Tetu"],
+  "Samburu":["Samburu East","Samburu North","Samburu West"],
+  "Siaya":["Alego Usonga","Bondo","Gem","Rarieda","Ugenya","Ugunja"],
+  "Taita-Taveta":["Mwatate","Taveta","Voi","Wundanyi"],
+  "Tana River":["Bura","Galole","Garsen"],
+  "Tharaka-Nithi":["Chuka","Igambang'ombe","Maara","Tharaka North","Tharaka South"],
+  "Trans Nzoia":["Cherangany","Endebess","Kiminini","Kwanza","Saboti"],
+  "Turkana":["Kibish","Loima","Turkana Central","Turkana East","Turkana North","Turkana South","Turkana West"],
+  "Uasin Gishu":["Ainabkoi","Kapseret","Kesses","Moiben","Soy","Turbo"],
+  "Vihiga":["Emuhaya","Hamisi","Luanda","Sabatia","Vihiga"],
+  "Wajir":["Eldas","Tarbaj","Wajir East","Wajir North","Wajir South","Wajir West"],
+  "West Pokot":["Central Pokot","North Pokot","Pokot South","West Pokot"]
+};
+
+(function buildCounties(){
+  const sel=el('sCounty');
+  Object.keys(COUNTIES).sort().forEach(c=>{
+    const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);
+  });
+})();
+
+function onCountyChange(){
+  const subs=COUNTIES[el('sCounty').value]||[];
+  const sel=el('sSubCounty');
+  sel.innerHTML='<option value="">-- Select Sub-County --</option>';
+  subs.forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);});
+}
+</script>
+</body>
+</html>

@@ -1,8 +1,22 @@
+<!--
+  CBE Mark Sheet System
+  Copyright © 2026 Bett Emanuel — https://bett.website
+  All rights reserved. Unauthorized copying, modification or distribution
+  of this software is strictly prohibited.
+  Contact: wa.me/254704518130
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Favicon -->
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#1a56db">
 <title>CBE Mark Sheet | Junior School</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Familjen+Grotesk:wght@700;800&display=swap" rel="stylesheet">
@@ -322,10 +336,10 @@ body.dark .si.over-limit{background:#450a0a !important}
   <span class="tb-lbl">Grade</span>
   <select class="fsel" id="selGrade" onchange="onGradeChange()">
     <option value="">-- Grade --</option>
-    <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+    <option>Grade 1</option><option>Grade 2</option><option>Grade 3</option><option>Grade 4</option><option>Grade 5</option><option>Grade 6</option><option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
   </select>
 
-  <span class="tb-lbl">Stream</span>
+  <span class="tb-lbl" id="streamLabel">Stream</span>
   <select class="fsel" id="selStream" disabled onchange="loadStudents()">
     <option value="">-- Stream --</option>
   </select>
@@ -369,7 +383,7 @@ body.dark .si.over-limit{background:#450a0a !important}
   </div>
   <div class="sheet-card">
     <div class="tbl-scroll" id="tblWrap">
-      <div class="empty-msg"><div class="ei">📋</div><p>Select <strong>Grade</strong> and <strong>Stream</strong> above</p></div>
+      <div class="empty-msg"><div class="ei">📋</div><p id="sheetHint">Select <strong>Grade</strong> to begin</p></div>
     </div>
   </div>
 </div>
@@ -398,11 +412,51 @@ let students=[], savedMap={}, savedCount=0, allInputs=[], loadLock=false;
 // ── Teacher profile: {role, grade, stream} loaded from Firestore 'users' collection ──
 let currentUser = null;
 
+// ── Streams enabled flag (read from Firestore settings) ──
+let streamsEnabled = true;
+let _settingsReady = false;
+let _settingsResolve = null;
+const _settingsPromise = new Promise(res => { _settingsResolve = res; });
+
+async function loadStreamsEnabledSetting(schoolId){
+  try{
+    const cached = localStorage.getItem('cbe_streams_enabled');
+    if(cached !== null){ streamsEnabled = cached === 'true'; applyStreamMode(); }
+    const snap = await db.collection('settings').doc(schoolId).get();
+    if(snap.exists && snap.data().streamsEnabled !== undefined){
+      streamsEnabled = snap.data().streamsEnabled;
+      localStorage.setItem('cbe_streams_enabled', streamsEnabled ? 'true' : 'false');
+      applyStreamMode();
+    }
+  }catch(e){ console.warn('[Marksheet] streams setting error:', e.message); }
+  finally{ if(!_settingsReady){ _settingsReady=true; _settingsResolve(); } }
+}
+
+function applyStreamMode(){
+  const streamLabel = document.getElementById('streamLabel');
+  const streamSel   = document.getElementById('selStream');
+  if(!streamsEnabled){
+    // Hide stream label and selector for no-stream schools
+    if(streamLabel) streamLabel.style.display = 'none';
+    if(streamSel){
+      streamSel.style.display = 'none';
+      streamSel.value         = '';
+      streamSel.disabled      = true;
+    }
+  } else {
+    if(streamLabel) streamLabel.style.display = '';
+    if(streamSel){
+      streamSel.style.display = '';
+      streamSel.disabled      = false;
+    }
+  }
+}
+
 // Called once auth resolves
 async function initUser(fbUser){
   if(!fbUser){
     // Not signed in — redirect to login page
-    window.location.href = 'login.html';
+    window.location.href = 'login';
     return;
   }
   try{
@@ -410,7 +464,7 @@ async function initUser(fbUser){
     if(!snap.exists){
       // Profile not saved yet or deleted — sign out and go back to login
       await auth.signOut();
-      window.location.href = 'login.html';
+      window.location.href = 'login';
       return;
     }
     currentUser = snap.data();
@@ -419,21 +473,38 @@ async function initUser(fbUser){
     // ── Status gate — block suspended or pending accounts ──
     if(currentUser.status === 'suspended'){
       await auth.signOut();
-      window.location.href = 'login.html?reason=suspended';
+      window.location.href = 'login?reason=suspended';
       return;
     }
     if(currentUser.status === 'pending'){
       await auth.signOut();
-      window.location.href = 'login.html?reason=pending';
+      window.location.href = 'login?reason=pending';
       return;
     }
 
-    // Load school settings using the teacher's schoolId — not shared cache
+    // Store schoolId first
     if(currentUser.schoolId){
-      loadSchoolBranding(currentUser.schoolId).catch(()=>{});
-      // Store in sessionStorage so analysis/admission pages can use it
       sessionStorage.setItem('cbe_school_id', currentUser.schoolId);
       window._schoolId = currentUser.schoolId;
+    }
+
+    // Load branding (non-blocking)
+    if(currentUser.schoolId){
+      loadSchoolBranding(currentUser.schoolId).catch(()=>{});
+    }
+
+    // CRITICAL: await streams setting BEFORE locking selectors or loading students
+    // Without this await, streamsEnabled is still true when lockTeacherSelectors runs,
+    // causing no-stream schools to wait for a stream that will never come.
+    if(currentUser.schoolId){
+      try{
+        await loadStreamsEnabledSetting(currentUser.schoolId);
+      }catch(_){
+        // If settings fail, default to no-streams-required to avoid blank screen
+        _settingsReady = true; _settingsResolve();
+      }
+    } else {
+      _settingsReady = true; _settingsResolve();
     }
 
     // Show name + class in header
@@ -443,11 +514,14 @@ async function initUser(fbUser){
     if(nameEl) nameEl.textContent = '👤 ' + (currentUser.fullName || 'Teacher');
     const classEl = el('hdrUserClass');
     if(currentUser.role === 'teacher'){
-      if(classEl) classEl.textContent = (currentUser.grade||'') + ' · ' + (currentUser.stream||'');
-      lockTeacherSelectors();
+      if(classEl) classEl.textContent = (currentUser.grade||'') + (currentUser.stream?' · '+currentUser.stream:'');
+      lockTeacherSelectors(); // streamsEnabled is now definitely correct
+      // Always call loadStudents — grade is locked in, stream is either set or blank
       loadStudents();
     } else {
       if(classEl) classEl.textContent = (currentUser.role||'admin').toUpperCase();
+      // Admin: apply stream mode to show/hide stream selector correctly
+      applyStreamMode();
     }
   }catch(e){
     toast(`Auth error: ${e.message}`,'err');
@@ -507,29 +581,174 @@ function lockTeacherSelectors(){
   sg.value     = grade;
   sg.disabled  = true;
 
-  ss.innerHTML = `<option value="${stream}">${stream}</option>`;
-  ss.value     = stream;
-  ss.disabled  = false;
-  ss.style.pointerEvents = 'none';
-  ss.style.opacity       = '0.7';
+  // Streams disabled for this school — hide selector, load by grade only
+  if(!streamsEnabled){
+    ss.style.display = 'none';
+    ss.value         = '';
+    ss.disabled      = true;
+    const lbl = document.getElementById('streamLabel');
+    if(lbl) lbl.style.display = 'none';
+    // loadStudents() is called by initUser after this returns
+    return;
+  }
+
+  // School uses streams
+  if(stream){
+    ss.innerHTML = `<option value="${stream}">${stream}</option>`;
+    ss.value     = stream;
+    ss.disabled  = true;
+    ss.style.display        = '';
+    ss.style.pointerEvents  = 'none';
+    ss.style.opacity        = '0.7';
+  } else {
+    // No stream assigned yet — let teacher pick
+    ss.innerHTML = '<option value="">-- Stream --</option>';
+    ss.disabled  = false;
+    ss.style.display       = '';
+    ss.style.pointerEvents = '';
+    ss.style.opacity       = '';
+  }
 }
 
 auth.onAuthStateChanged(initUser);
 
-// ── Subject config ──
-// parts[] → sub-scores that SUM to make the subject total
-// Each part & single subject has its own "out of" cell
-const SUBS = [
-  {id:'eng', label:'English',                icon:'📖',gc:'g-eng', sc:'s-eng', parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
-  {id:'kis', label:'Kiswahili/KSL',          icon:'🗣️',gc:'g-kis', sc:'s-kis', parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
-  {id:'math',label:'Mathematics',            icon:'🔢',gc:'g-math',sc:'s-math'},
-  {id:'sci', label:'Integrated Science',     icon:'🔬',gc:'g-sci', sc:'s-sci'},
-  {id:'soc', label:'Social Studies',         icon:'🌍',gc:'g-soc', sc:'s-soc'},
-  {id:'re',  label:'Religious Ed.',          icon:'✝️',gc:'g-re',  sc:'s-re'},
-  {id:'arts',label:'Creative Arts & Sports', icon:'🎨',gc:'g-arts',sc:'s-arts'},
-  {id:'pret',label:'Pre-Technical',          icon:'🔧',gc:'g-pret',sc:'s-pret'},
-  {id:'agri',label:'Agriculture & Nutrition',icon:'🌱',gc:'g-agri',sc:'s-agri'},
+// ══════════════════════════════════════════════
+// CROSS-PAGE COMMUNICATION
+// Listens for student changes written by the Admission page via localStorage.
+// When a relevant change is detected (same grade/stream as currently loaded),
+// a non-intrusive banner appears offering to reload the student list.
+// ══════════════════════════════════════════════
+(function(){
+  // Create the refresh banner element once
+  function ensureRefreshBanner(){
+    if(document.getElementById('_admissionUpdateBar')) return;
+    const bar = document.createElement('div');
+    bar.id = '_admissionUpdateBar';
+    bar.style.cssText = `
+      display:none;position:fixed;bottom:44px;left:50%;transform:translateX(-50%);z-index:997;
+      background:#1e3a5f;color:#dbeafe;border:1px solid var(--accent);
+      padding:9px 18px;border-radius:8px;font-size:12.5px;font-weight:600;
+      box-shadow:0 4px 20px rgba(0,0,0,.25);cursor:pointer;
+      display:none;align-items:center;gap:10px;white-space:nowrap;
+    `;
+    bar.innerHTML = `
+      <span>🔄</span>
+      <span id="_admUpdateMsg">Students updated in Admission — reload?</span>
+      <button id="_admUpdateBtn" onclick="_reloadFromAdmission()"
+        style="background:var(--accent);color:#fff;border:none;border-radius:4px;
+               padding:4px 12px;cursor:pointer;font-weight:700;font-size:12px;">
+        Reload
+      </button>
+      <button onclick="_dismissAdmUpdate()"
+        style="background:rgba(255,255,255,.1);color:#dbeafe;border:none;border-radius:4px;
+               padding:4px 8px;cursor:pointer;font-size:12px;">
+        ✕
+      </button>`;
+    document.body.appendChild(bar);
+  }
+
+  window._reloadFromAdmission = function(){
+    _dismissAdmUpdate();
+    loadStudents();
+    // Also refresh streams dropdown for admins
+    if(currentUser?.role !== 'teacher'){
+      onGradeChange();
+    }
+    toast('Student list refreshed from Admission','info');
+  };
+
+  window._dismissAdmUpdate = function(){
+    const bar = document.getElementById('_admissionUpdateBar');
+    if(bar) bar.style.display = 'none';
+  };
+
+  function showAdmissionUpdateBanner(msg){
+    ensureRefreshBanner();
+    const bar = document.getElementById('_admissionUpdateBar');
+    const msgEl = document.getElementById('_admUpdateMsg');
+    if(msgEl) msgEl.textContent = msg || 'Students updated — reload list?';
+    if(bar) bar.style.display = 'flex';
+  }
+
+  // Listen for localStorage writes from the admission page
+  window.addEventListener('storage', function(e){
+    if(e.key !== 'cbe_students_updated') return;
+    if(!e.newValue) return;
+    try{
+      const signal = JSON.parse(e.newValue);
+      // Only react if we share the same schoolId
+      const mySchoolId = currentUser?.schoolId || sessionStorage.getItem('cbe_school_id');
+      if(signal.schoolId && mySchoolId && signal.schoolId !== mySchoolId) return;
+
+      const curGrade  = el('selGrade')?.value  || '';
+      const curStream = el('selStream')?.value || '';
+
+      // If the affected grade/stream matches what's currently on screen, prompt reload
+      if(!curGrade || !students.length){
+        // Nothing loaded yet — just refresh the streams dropdown silently
+        if(curGrade && currentUser?.role !== 'teacher') onGradeChange();
+        return;
+      }
+
+      const affectsCurrentView =
+        !signal.grade  ||  signal.grade  === curGrade  &&
+        (!signal.stream || signal.stream === curStream);
+
+      if(affectsCurrentView){
+        const who = signal.grade ? `${signal.grade}${signal.stream?' '+signal.stream:''}` : 'a class';
+        showAdmissionUpdateBanner(`Admission updated ${who} — reload list?`);
+      } else if(!signal.grade){
+        showAdmissionUpdateBanner('Student roster changed in Admission — reload list?');
+      }
+    }catch(_){}
+  });
+})();
+
+// ── Subject config — grade-based ──
+// Grade 1-3: Lower Primary (activity-based, simpler subjects)
+// Grade 4-6: Upper Primary (subject-based with sub-scores)
+// Grade 7-9: Junior Secondary (full subject set)
+
+const SUBS_LOWER = [ // Grade 1–3
+  {id:'math', label:'Mathematical Activities', icon:'🔢', gc:'g-math', sc:'s-math'},
+  {id:'eng',  label:'English Activities',      icon:'📖', gc:'g-eng',  sc:'s-eng' },
+  {id:'kis',  label:'Kiswahili Activities',    icon:'🗣️', gc:'g-kis',  sc:'s-kis' },
+  {id:'int',  label:'Integrated Activities',   icon:'🌈', gc:'g-sci',  sc:'s-sci' },
 ];
+
+const SUBS_UPPER = [ // Grade 4–6
+  {id:'math', label:'Mathematics',             icon:'🔢', gc:'g-math', sc:'s-math'},
+  {id:'eng',  label:'English',                 icon:'📖', gc:'g-eng',  sc:'s-eng',  parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
+  {id:'kis',  label:'Kiswahili',               icon:'🗣️', gc:'g-kis',  sc:'s-kis',  parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
+  {id:'sci',  label:'Science & Technology',    icon:'🔬', gc:'g-sci',  sc:'s-sci' },
+  {id:'re',   label:'CRE',                     icon:'✝️', gc:'g-re',   sc:'s-re'  },
+  {id:'soc',  label:'Social Studies',          icon:'🌍', gc:'g-soc',  sc:'s-soc' },
+  {id:'arts', label:'Creative Arts & Sports',  icon:'🎨', gc:'g-arts', sc:'s-arts'},
+  {id:'agri', label:'Agriculture & Nutrition', icon:'🌱', gc:'g-agri', sc:'s-agri'},
+];
+
+const SUBS_JUNIOR = [ // Grade 7–9
+  {id:'eng',  label:'English',                 icon:'📖', gc:'g-eng',  sc:'s-eng',  parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
+  {id:'kis',  label:'Kiswahili/KSL',           icon:'🗣️', gc:'g-kis',  sc:'s-kis',  parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
+  {id:'math', label:'Mathematics',             icon:'🔢', gc:'g-math', sc:'s-math'},
+  {id:'sci',  label:'Integrated Science',      icon:'🔬', gc:'g-sci',  sc:'s-sci' },
+  {id:'soc',  label:'Social Studies',          icon:'🌍', gc:'g-soc',  sc:'s-soc' },
+  {id:'re',   label:'Religious Ed.',           icon:'✝️', gc:'g-re',   sc:'s-re'  },
+  {id:'arts', label:'Creative Arts & Sports',  icon:'🎨', gc:'g-arts', sc:'s-arts'},
+  {id:'pret', label:'Pre-Technical',           icon:'🔧', gc:'g-pret', sc:'s-pret'},
+  {id:'agri', label:'Agriculture & Nutrition', icon:'🌱', gc:'g-agri', sc:'s-agri'},
+];
+
+// Returns the correct subject array for a given grade string e.g. "Grade 4"
+function getSubs(gradeStr){
+  const n = parseInt((gradeStr||'').replace(/\D/g,''))||0;
+  if(n >= 1 && n <= 3) return SUBS_LOWER;
+  if(n >= 4 && n <= 6) return SUBS_UPPER;
+  return SUBS_JUNIOR; // 7-9
+}
+
+// SUBS is always the current grade's subjects (set when table renders)
+let SUBS = SUBS_JUNIOR;
 
 // Default "out of" values — teacher can edit in table
 const DEFAULT_OOF = 100;
@@ -563,7 +782,19 @@ function toast(msg,type='ok'){
 window.onGradeChange = async function(){
   // Teachers can't change grade — selectors are locked
   if(currentUser?.role === 'teacher') return;
-  const grade=el('selGrade').value, ss=el('selStream');
+  const grade=el('selGrade').value;
+
+  // ── No-stream school: skip stream picker, load directly by grade ──
+  if(!streamsEnabled){
+    if(!grade){
+      el('tblWrap').innerHTML=`<div class="empty-msg"><div class="ei">📋</div><p>Select a <strong>Grade</strong> to load students</p></div>`;
+      return;
+    }
+    loadStudents();  // loads by grade only — no stream needed
+    return;
+  }
+
+  const ss=el('selStream');
   ss.disabled=true; ss.innerHTML='<option value="">Loading…</option>';
   el('tblWrap').innerHTML=`<div class="empty-msg"><div class="ei">📋</div><p>Loading streams…</p></div>`;
   if(!grade){ss.innerHTML='<option value="">-- Stream --</option>';ss.disabled=false;return;}
@@ -583,9 +814,8 @@ window.onGradeChange = async function(){
   // ── 2. Always also fetch live from Firestore to catch new streams ──
   try{
     const _sid = currentUser?.schoolId || sessionStorage.getItem('cbe_school_id');
-    const snap=await (_sid
-      ? db.collection('students').where('grade','==',grade).where('schoolId','==',_sid)
-      : db.collection('students').where('grade','==',grade)).get();
+    if(!_sid){ ss.innerHTML='<option value="">Not authenticated</option>'; return; }
+    const snap=await db.collection('students').where('grade','==',grade).where('schoolId','==',_sid).get();
     const set=new Set(arr); // seed with cached
     snap.forEach(d=>{const s=d.data();if(s.stream?.trim())set.add(s.stream.trim());});
     arr=[...set].sort();
@@ -612,35 +842,46 @@ window.onGradeChange = async function(){
 
 // ── Load students ──
 window.loadStudents = async function(){
-  const grade=el('selGrade').value, stream=el('selStream').value,
-        term=el('selTerm').value,   year=el('selYear').value;
-  if(!grade||!stream) return;
+  const grade=el('selGrade').value,
+        term=el('selTerm').value, year=el('selYear').value;
+  // Wait for stream settings to resolve before reading streamsEnabled
+  if(!_settingsReady) await _settingsPromise;
+  const stream = streamsEnabled ? (el('selStream').value||'') : '';
+  // Grade is always required; stream only required when streams are enabled
+  if(!grade) return;
+  if(streamsEnabled && !stream) return;
   if(loadLock) return;
   loadLock=true;
 
-  el('tblWrap').innerHTML=`<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading ${grade} ${stream}…</div></div>`;
+  el('tblWrap').innerHTML=`<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading ${grade}${stream?' '+stream:''}…</div></div>`;
 
   try{
     const _sid = currentUser?.schoolId || sessionStorage.getItem('cbe_school_id');
-    const stuRef = db.collection('students').where('grade','==',grade).where('stream','==',stream);
-    const snap = await (_sid ? stuRef.where('schoolId','==',_sid) : stuRef).get();
+    if(!_sid){ el('tblWrap').innerHTML=`<div class="empty-msg"><div class="ei">🔒</div><p>Not authenticated</p></div>`; loadLock=false; return; }
+    let studQuery = db.collection('students').where('grade','==',grade).where('schoolId','==',_sid);
+    if(stream) studQuery = studQuery.where('stream','==',stream);
+    const snap = await studQuery.get();
     students=[];
     snap.forEach(d=>students.push({id:d.id,...d.data()}));
     students.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
 
     savedMap={}; savedCount=0;
-    const resRef = db.collection('results')
-      .where('grade','==',grade).where('stream','==',stream)
-      .where('term','==',term).where('year','==',year);
-    const rs = await (_sid ? resRef.where('schoolId','==',_sid) : resRef).get();
+    // When streams are disabled, results are stored with stream='' 
+    let rsQuery = db.collection('results')
+      .where('grade','==',grade)
+      .where('term','==',term).where('year','==',year)
+      .where('schoolId','==',_sid);
+    if(stream) rsQuery = rsQuery.where('stream','==',stream);
+    const rs = await rsQuery.get();
     rs.forEach(d=>{savedMap[d.data().studentId]={id:d.id,...d.data()};savedCount++;});
 
     el('pilS').textContent=students.length;
     el('pilSv').textContent=savedCount;
-    el('sheetTitle').textContent=`${grade} ${stream} — ${term} ${year}`;
+    el('sheetTitle').textContent=stream ? `${grade} ${stream} — ${term} ${year}` : `${grade} — ${term} ${year}`;
 
     if(!students.length){
-      el('tblWrap').innerHTML=`<div class="empty-msg"><div class="ei">👥</div><p>No students in <strong>${grade} ${stream}</strong></p></div>`;
+      const loc=stream?`${grade} ${stream}`:grade;
+      el('tblWrap').innerHTML=`<div class="empty-msg"><div class="ei">👥</div><p>No students in <strong>${loc}</strong>. Admit them first via the Admission page.</p></div>`;
       loadLock=false; return;
     }
     renderTable();
@@ -652,6 +893,8 @@ window.loadStudents = async function(){
 
 // ── Render table ──
 function renderTable(){
+  // Update SUBS for the currently selected grade
+  SUBS = getSubs(el('selGrade')?.value || '');
   // Collect saved oof values if any (from previously saved record)
   const anyRec = Object.values(savedMap)[0];
 
@@ -1133,7 +1376,7 @@ async function _saveRowSilent(sid){
 
   const payload = {
     studentId:sid, studentName:s.name, admissionNumber:s.admissionNumber||'',
-    grade:el('selGrade').value, stream:el('selStream').value,
+    grade:el('selGrade').value, stream:streamsEnabled?el('selStream').value:'',
     term:el('selTerm').value,   year:el('selYear').value,
     schoolId:    currentUser?.schoolId   || sessionStorage.getItem('cbe_school_id') || '',
     teacherId:   currentUser?.uid        || '',
@@ -1191,7 +1434,7 @@ window.saveRow=async function(sid){
   if(btn){btn.disabled=true;btn.textContent='…';}
   const payload={
     studentId:sid, studentName:s.name, admissionNumber:s.admissionNumber||'',
-    grade:el('selGrade').value, stream:el('selStream').value,
+    grade:el('selGrade').value, stream:streamsEnabled?el('selStream').value:'',
     term:el('selTerm').value,   year:el('selYear').value,
     schoolId:    currentUser?.schoolId   || sessionStorage.getItem('cbe_school_id') || '',
     teacherId:   currentUser?.uid        || '',
@@ -1296,7 +1539,7 @@ async function doLogout(){
   try{
     clearSessionCache();
     await auth.signOut();
-    window.location.href = 'login.html';
+    window.location.href = 'login';
   }catch(e){
     toast('Sign out failed: '+e.message,'err');
   }

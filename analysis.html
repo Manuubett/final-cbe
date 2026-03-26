@@ -310,8 +310,12 @@ body.dark .level-row .bar-wrap{background:#1a2030}
 </div>
 
 <!-- CONTENT -->
-<div class="outer" id="mainContent">
-  <div class="empty-msg"><div class="ei">📈</div><p>Select <strong>Grade</strong> and <strong>Stream</strong> to view analysis</p></div>
+<div class="outer" style="padding-bottom:0;padding-top:14px;padding-left:20px;padding-right:20px">
+  <!-- School branding strip — populated by applySchoolSettings, persists across analysis loads -->
+  <div id="schoolBrandingStrip" style="display:none;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:14px;box-shadow:var(--sh)"></div>
+</div>
+<div class="outer" id="mainContent" style="padding-top:0">
+  <div class="empty-msg"><div class="ei">📈</div><p>Select a <strong>Grade</strong> to view analysis — stream is optional</p></div>
 </div>
 
 <!-- PRINT ALL CONFIRMATION MODAL -->
@@ -368,6 +372,11 @@ let schoolSettings = {
   logoUrl: '',
   principal: ''
 };
+
+// Promise that resolves once school settings are loaded — print functions await this
+let _schoolSettingsReady = false;
+let _schoolSettingsResolve = null;
+const _schoolSettingsPromise = new Promise(res => { _schoolSettingsResolve = res; });
 
 // ── School settings — wait for auth then load ──
 let _analysisSchoolId = null;
@@ -444,6 +453,8 @@ async function loadSchoolSettings(){
     }
   }catch(e){
     console.warn('[Analysis] Settings load failed:', e.message);
+  } finally {
+    if(!_schoolSettingsReady){ _schoolSettingsReady=true; _schoolSettingsResolve(); }
   }
 }
 
@@ -455,10 +466,10 @@ function applySchoolSettings(s){
   const nameEl = el('hdrSchoolName');
   if(nameEl && s.name) nameEl.textContent = s.name + ' · Analysis';
 
-  // Header subtitle
+  // Header subtitle — include motto if present
   const subEl = el('hdrSchoolSub');
   if(subEl){
-    const parts = [s.county, 'Kenya CBC'].filter(Boolean);
+    const parts = [s.motto, s.county, 'Kenya CBC'].filter(Boolean);
     subEl.textContent = parts.join(' · ');
   }
 
@@ -476,6 +487,23 @@ function applySchoolSettings(s){
 
   // Page title
   if(s.name) document.title = s.name + ' | CBC Analysis';
+
+  // School branding strip (shown above analysis content)
+  const strip = el('schoolBrandingStrip');
+  if(strip){
+    const logoHtml = s.logoUrl
+      ? `<img src="${s.logoUrl}" style="width:44px;height:44px;object-fit:contain;border-radius:6px;flex-shrink:0" onerror="this.style.display='none'">`
+      : `<div style="width:44px;height:44px;background:var(--accent);border-radius:8px;display:grid;place-items:center;color:#fff;font-size:20px;flex-shrink:0">📈</div>`;
+    strip.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px">
+        ${logoHtml}
+        <div>
+          <div style="font-family:'Familjen Grotesk',sans-serif;font-size:16px;font-weight:800;color:var(--text)">${s.name || 'Junior School'}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:1px">${[s.motto, s.county, 'Kenya CBC'].filter(Boolean).join(' · ')}</div>
+        </div>
+      </div>`;
+    strip.style.display = 'flex';
+  }
 }
 
 // Load settings immediately
@@ -485,18 +513,52 @@ _authReady.then(sid=>{
   loadSchoolSettings();
 });
 
-// Subject config — mirrors mark sheet
-const SUBS = [
-  {id:'eng', label:'English',                icon:'📖', parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
-  {id:'kis', label:'Kiswahili/KSL',          icon:'🗣️', parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
-  {id:'math',label:'Mathematics',            icon:'🔢'},
-  {id:'sci', label:'Integrated Science',     icon:'🔬'},
-  {id:'soc', label:'Social Studies',         icon:'🌍'},
-  {id:'re',  label:'Religious Ed.',          icon:'✝️'},
-  {id:'arts',label:'Creative Arts & Sports', icon:'🎨'},
-  {id:'pret',label:'Pre-Technical',          icon:'🔧'},
-  {id:'agri',label:'Agriculture & Nutrition',icon:'🌱'},
-];
+// ── Grade-based subject config ──
+// Each grade group has its own subject list matching the CBC curriculum
+
+const SUBS_BY_GROUP = {
+  // Grade 1–3: Lower Primary
+  '1-3': [
+    {id:'math', label:'Mathematical Activities',  icon:'🔢'},
+    {id:'eng',  label:'English',                  icon:'📖'},
+    {id:'kis',  label:'Kiswahili',                icon:'🗣️'},
+    {id:'intg', label:'Integrated Activities',    icon:'🌈'},
+  ],
+  // Grade 4–6: Upper Primary
+  '4-6': [
+    {id:'math', label:'Mathematics',              icon:'🔢'},
+    {id:'eng',  label:'English',                  icon:'📖', parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
+    {id:'kis',  label:'Kiswahili',                icon:'🗣️', parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
+    {id:'sci',  label:'Science and Technology',   icon:'🔬'},
+    {id:'cre',  label:'CRE',                      icon:'✝️'},
+    {id:'soc',  label:'Social Studies',           icon:'🌍'},
+    {id:'arts', label:'Creative Art and Sport',   icon:'🎨'},
+    {id:'agri', label:'Agriculture and Nutrition',icon:'🌱'},
+  ],
+  // Grade 7–9: Junior Secondary
+  '7-9': [
+    {id:'eng',  label:'English',                  icon:'📖', parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
+    {id:'kis',  label:'Kiswahili/KSL',            icon:'🗣️', parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
+    {id:'math', label:'Mathematics',              icon:'🔢'},
+    {id:'sci',  label:'Integrated Science',       icon:'🔬'},
+    {id:'soc',  label:'Social Studies',           icon:'🌍'},
+    {id:'re',   label:'Religious Ed.',            icon:'✝️'},
+    {id:'arts', label:'Creative Arts & Sports',   icon:'🎨'},
+    {id:'pret', label:'Pre-Technical',            icon:'🔧'},
+    {id:'agri', label:'Agriculture & Nutrition',  icon:'🌱'},
+  ],
+};
+
+// Returns the correct subject list for a given grade string (e.g. "Grade 4")
+function getSubsForGrade(grade){
+  const num = parseInt((grade||'').replace(/\D/g,''),10);
+  if(num >= 1 && num <= 3)  return SUBS_BY_GROUP['1-3'];
+  if(num >= 4 && num <= 6)  return SUBS_BY_GROUP['4-6'];
+  return SUBS_BY_GROUP['7-9']; // default to 7-9
+}
+
+// Active SUBS — updated whenever grade changes; used throughout rendering
+let SUBS = SUBS_BY_GROUP['7-9'];
 
 const DEFAULT_OOF = 100;
 
@@ -538,6 +600,9 @@ _authReady.then(()=>{
   if(grade)  el('selGrade').value = grade;
   if(term)   el('selTerm').value  = term;
   if(year)   el('selYear').value  = year;
+  if(grade){
+    SUBS = getSubsForGrade(grade); // set correct subjects before any render
+  }
   if(grade && stream){
     const ss = el('selStream');
     const sw = el('streamWrap');
@@ -556,6 +621,10 @@ _authReady.then(()=>{
 window.onGradeChange = async function(){
   const grade=el('selGrade').value, ss=el('selStream');
   const streamWrap=el('streamWrap');
+
+  // Update active subjects for this grade immediately
+  SUBS = getSubsForGrade(grade);
+
   ss.disabled=true; ss.innerHTML='<option value="">Loading…</option>';
   if(!grade){
     ss.innerHTML='<option value="">-- Stream --</option>';
@@ -603,17 +672,17 @@ window.loadAnalysis = async function(){
   const grade=el('selGrade').value, stream=el('selStream').value,
         term=el('selTerm').value,   year=el('selYear').value;
 
-  // Need at least a grade; stream is optional (schools without streams have value='')
-  // But do not fire if grade is blank
   if(!grade) return;
 
-  // If stream dropdown is visible (has real options) and nothing is chosen yet, wait
+  // Update active subjects whenever analysis loads
+  SUBS = getSubsForGrade(grade);
+
+  // If stream dropdown is visible (has real options) and nothing chosen yet, wait
   const streamWrap=el('streamWrap');
   const streamVisible = streamWrap && streamWrap.style.display !== 'none';
   if(streamVisible && !stream) return;
 
   el('mainContent').innerHTML=`<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading analysis…</div></div>`;
-
   try{
     const schoolId = await _getSchoolId();
     const hasStream = Boolean(stream);
@@ -637,12 +706,15 @@ window.loadAnalysis = async function(){
 
     allStudents=[];
     stuSnap.forEach(d=>allStudents.push({id:d.id,...d.data()}));
-    // When no stream, only include students who have no stream assigned (or blank)
-    if(!hasStream){
-      allStudents = allStudents.filter(s=>!s.stream?.trim());
-    } else {
+
+    // Stream filtering:
+    // - If stream selected → show only that stream's students
+    // - If no stream (school has no streams) → show ALL students in grade
+    if(hasStream){
       allStudents = allStudents.filter(s=>(s.stream||'').trim()===stream);
     }
+    // else: no stream filter — include all students in the grade
+
     allStudents.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
 
     allResults=[];
@@ -1135,9 +1207,10 @@ function closePrintAllModal(){
   el('printAllModal').classList.remove('open');
 }
 
-function printAllReports(){
+async function printAllReports(){
   const pd = window._printData;
   if(!pd) return;
+  if(!_schoolSettingsReady) await _schoolSettingsPromise;
   closePrintAllModal();
 
   const {ranked, resMap, classAvg} = pd;
@@ -1232,8 +1305,9 @@ ${html}
 }
 
 // ── Print Student Report ──
-window.printStudentReport = function(){
+window.printStudentReport = async function(){
   if(!currentStudent) return;
+  if(!_schoolSettingsReady) await _schoolSettingsPromise;
   const {s,rec}=currentStudent;
   const avg=Number(rec.overallAvg).toFixed(1);
   const lv=getLevel(Number(avg));
@@ -1368,7 +1442,8 @@ function buildStudentPrintHtml(s,rec,avg,lv,rank,total,pd){
 }
 
 // ── Print Class Report ──
-window.printClassReport = function(){
+window.printClassReport = async function(){
+  if(!_schoolSettingsReady) await _schoolSettingsPromise;
   const pd=window._printData;
   if(!pd||!pd.ranked.length){toast('Load analysis first','err');return;}
   const {grade,stream,classLabel,term,year,ranked,resMap,scored,classAvg,levelCounts,subjectStats}=pd;

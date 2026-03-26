@@ -1,0 +1,39 @@
+# CBE Mark Sheet System — https://bett.website
+# Robots.txt — controls search engine crawling
+
+User-agent: *
+
+# ── Public pages — allow indexing ──
+Allow: /
+Allow: /register
+Allow: /demo
+
+# ── Internal app pages — block from indexing ──
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /marksheet
+Disallow: /marksheet.html
+Disallow: /admission
+Disallow: /admission.html
+Disallow: /analysis
+Disallow: /analysis.html
+Disallow: /settings
+Disallow: /settings.html
+Disallow: /approval
+Disallow: /approval.html
+
+# ── Owner/system pages — block completely ──
+Disallow: /owner
+Disallow: /owner.html
+Disallow: /db-cleaner
+Disallow: /db-cleaner.html
+Disallow: /notify-test
+Disallow: /notify-test.html
+
+# ── Static/config files ──
+Disallow: /netlify/
+Disallow: /firestore.rules
+Disallow: /firestore.indexes.json
+
+# Sitemap location
+Sitemap: https://bett.website/sitemap.xml

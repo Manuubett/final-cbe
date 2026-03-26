@@ -331,8 +331,8 @@ body.dark .si.over-limit{background:#450a0a !important}
   </div>
 </header>
 
-<!-- TOOLBAR -->
-<div class="toolbar">
+<!-- TOOLBAR — admin mode (shown by default, hidden for teachers) -->
+<div class="toolbar" id="toolbarAdmin">
   <span class="tb-lbl">Grade</span>
   <select class="fsel" id="selGrade" onchange="onGradeChange()">
     <option value="">-- Grade --</option>
@@ -359,6 +359,28 @@ body.dark .si.over-limit{background:#450a0a !important}
   </span>
 </div>
 
+<!-- TOOLBAR — teacher mode (auto-detected, no manual selection allowed) -->
+<div class="toolbar" id="toolbarTeacher" style="display:none">
+  <div style="display:flex;align-items:center;gap:8px;background:var(--alight);border:1px solid #c7d9ff;border-radius:var(--r2);padding:5px 12px;">
+    <span style="font-size:13px">🔒</span>
+    <span style="font-size:12px;font-weight:700;color:var(--accent)" id="teacherClassBadge">—</span>
+  </div>
+  <!-- Hidden inputs for teacher — values set programmatically from profile, never editable -->
+  <input type="hidden" id="selGrade" value="">
+  <input type="hidden" id="selStream" value="">
+  <span class="tb-lbl">Term</span>
+  <select class="fsel" id="selTerm" onchange="loadStudents()">
+    <option>Term 1</option><option>Term 2</option><option>Term 3</option>
+  </select>
+  <span class="tb-lbl">Year</span>
+  <input type="number" class="fsel" id="selYear" value="2026" min="2020" max="2040" style="width:68px;" onchange="loadStudents()">
+  <div class="sep"></div>
+  <button class="btn btn-success" onclick="saveAll()">💾 Save All</button>
+  <span style="margin-left:auto;font-size:10.5px;color:var(--text3);">
+    ✏️ Edit <span style="color:#fbbf24;font-weight:700;">Out Of</span> row to set max marks &nbsp;|&nbsp; ⌨️ Tab · Enter · Arrows
+  </span>
+</div>
+
 <!-- LEGEND -->
 <div class="legend">
   <strong>CBC Scale (% normalised):</strong>
@@ -375,7 +397,7 @@ body.dark .si.over-limit{background:#450a0a !important}
 <!-- CONTENT -->
 <div class="outer">
   <div class="info-strip">
-    <div class="sheet-title" id="sheetTitle">Select Grade &amp; Stream to begin</div>
+    <div class="sheet-title" id="sheetTitle">Select Grade to begin</div>
     <div class="pills">
       <div class="pill">👥 <span class="pv" id="pilS">0</span> students</div>
       <div class="pill">✅ <span class="pv" id="pilSv">0</span> saved</div>
@@ -414,6 +436,7 @@ let currentUser = null;
 
 // ── Streams enabled flag (read from Firestore settings) ──
 let streamsEnabled = true;
+let gradeHasStreams = false; // tracks whether the currently selected grade actually has streams
 let _settingsReady = false;
 let _settingsResolve = null;
 const _settingsPromise = new Promise(res => { _settingsResolve = res; });
@@ -514,9 +537,9 @@ async function initUser(fbUser){
     if(nameEl) nameEl.textContent = '👤 ' + (currentUser.fullName || 'Teacher');
     const classEl = el('hdrUserClass');
     if(currentUser.role === 'teacher'){
-      if(classEl) classEl.textContent = (currentUser.grade||'') + (currentUser.stream?' · '+currentUser.stream:'');
-      lockTeacherSelectors(); // streamsEnabled is now definitely correct
-      // Always call loadStudents — grade is locked in, stream is either set or blank
+      if(classEl) classEl.textContent = (currentUser.grade||'No grade') + (currentUser.stream?' · '+currentUser.stream:'');
+      lockTeacherSelectors(); // switches to teacher toolbar, sets hidden inputs
+      // Always call loadStudents — grade/stream come from profile via _getClassSelectors
       loadStudents();
     } else {
       if(classEl) classEl.textContent = (currentUser.role||'admin').toUpperCase();
@@ -573,41 +596,59 @@ async function loadSchoolBranding(schoolId){
 }
 
 function lockTeacherSelectors(){
-  const sg = el('selGrade'), ss = el('selStream');
   const grade  = currentUser.grade  || '';
   const stream = currentUser.stream || '';
 
-  sg.innerHTML = `<option value="${grade}">${grade}</option>`;
-  sg.value     = grade;
-  sg.disabled  = true;
+  // ── Switch to teacher toolbar — completely hide admin toolbar ──
+  const adminBar   = el('toolbarAdmin');
+  const teacherBar = el('toolbarTeacher');
+  if(adminBar)   adminBar.style.display   = 'none';
+  if(teacherBar) teacherBar.style.display = '';
 
-  // Streams disabled for this school — hide selector, load by grade only
-  if(!streamsEnabled){
-    ss.style.display = 'none';
-    ss.value         = '';
-    ss.disabled      = true;
-    const lbl = document.getElementById('streamLabel');
-    if(lbl) lbl.style.display = 'none';
-    // loadStudents() is called by initUser after this returns
-    return;
+  // ── Set locked hidden inputs — these are the ONLY values loadStudents() will use ──
+  const hGrade  = el('selGrade');
+  const hStream = el('selStream');
+  if(hGrade)  hGrade.value  = grade;
+  if(hStream) hStream.value = stream;
+
+  // Set gradeHasStreams based on teacher's profile
+  gradeHasStreams = Boolean(stream);
+
+  // ── Update the class badge in teacher toolbar ──
+  const badge = el('teacherClassBadge');
+  if(badge){
+    badge.textContent = grade
+      ? (stream ? `${grade} · ${stream}` : grade)
+      : 'No class assigned';
   }
 
-  // School uses streams
-  if(stream){
-    ss.innerHTML = `<option value="${stream}">${stream}</option>`;
-    ss.value     = stream;
-    ss.disabled  = true;
-    ss.style.display        = '';
-    ss.style.pointerEvents  = 'none';
-    ss.style.opacity        = '0.7';
-  } else {
-    // No stream assigned yet — let teacher pick
-    ss.innerHTML = '<option value="">-- Stream --</option>';
-    ss.disabled  = false;
-    ss.style.display       = '';
-    ss.style.pointerEvents = '';
-    ss.style.opacity       = '';
+  // ── Auto-set current term and year (detect from current date) ──
+  const now   = new Date();
+  const month = now.getMonth() + 1; // 1-12
+  const autoTerm = month <= 4 ? 'Term 1' : month <= 8 ? 'Term 2' : 'Term 3';
+  const autoYear  = now.getFullYear();
+  const termSel  = el('selTerm');
+  const yearInp  = el('selYear');
+  if(termSel) termSel.value = autoTerm;
+  if(yearInp) yearInp.value = autoYear;
+
+  // Block any attempt to call onGradeChange from teacher context
+  // (loadStudents is called by initUser after this returns)
+}
+
+// ── Enforce teacher class on every loadStudents call ──
+// Returns {grade, stream} always sourced from profile for teachers, from DOM for admins
+function _getClassSelectors(){
+  if(currentUser?.role === 'teacher'){
+    return {
+      grade:  currentUser.grade  || '',
+      stream: currentUser.stream || ''
+    };
   }
+  return {
+    grade:  el('selGrade')?.value  || '',
+    stream: el('selStream')?.value || ''
+  };
 }
 
 auth.onAuthStateChanged(initUser);
@@ -711,32 +752,32 @@ auth.onAuthStateChanged(initUser);
 
 const SUBS_LOWER = [ // Grade 1–3
   {id:'math', label:'Mathematical Activities', icon:'🔢', gc:'g-math', sc:'s-math'},
-  {id:'eng',  label:'English Activities',      icon:'📖', gc:'g-eng',  sc:'s-eng' },
-  {id:'kis',  label:'Kiswahili Activities',    icon:'🗣️', gc:'g-kis',  sc:'s-kis' },
+  {id:'eng',  label:'English',                 icon:'📖', gc:'g-eng',  sc:'s-eng' },
+  {id:'kis',  label:'Kiswahili',               icon:'🗣️', gc:'g-kis',  sc:'s-kis' },
   {id:'int',  label:'Integrated Activities',   icon:'🌈', gc:'g-sci',  sc:'s-sci' },
 ];
 
 const SUBS_UPPER = [ // Grade 4–6
-  {id:'math', label:'Mathematics',             icon:'🔢', gc:'g-math', sc:'s-math'},
-  {id:'eng',  label:'English',                 icon:'📖', gc:'g-eng',  sc:'s-eng',  parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
-  {id:'kis',  label:'Kiswahili',               icon:'🗣️', gc:'g-kis',  sc:'s-kis',  parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
-  {id:'sci',  label:'Science & Technology',    icon:'🔬', gc:'g-sci',  sc:'s-sci' },
-  {id:'re',   label:'CRE',                     icon:'✝️', gc:'g-re',   sc:'s-re'  },
-  {id:'soc',  label:'Social Studies',          icon:'🌍', gc:'g-soc',  sc:'s-soc' },
-  {id:'arts', label:'Creative Arts & Sports',  icon:'🎨', gc:'g-arts', sc:'s-arts'},
-  {id:'agri', label:'Agriculture & Nutrition', icon:'🌱', gc:'g-agri', sc:'s-agri'},
+  {id:'math', label:'Mathematics',              icon:'🔢', gc:'g-math', sc:'s-math'},
+  {id:'eng',  label:'English',                  icon:'📖', gc:'g-eng',  sc:'s-eng',  parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
+  {id:'kis',  label:'Kiswahili',                icon:'🗣️', gc:'g-kis',  sc:'s-kis',  parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
+  {id:'sci',  label:'Science and Technology',   icon:'🔬', gc:'g-sci',  sc:'s-sci' },
+  {id:'re',   label:'CRE',                      icon:'✝️', gc:'g-re',   sc:'s-re'  },
+  {id:'soc',  label:'Social Studies',           icon:'🌍', gc:'g-soc',  sc:'s-soc' },
+  {id:'arts', label:'Creative Art and Sport',   icon:'🎨', gc:'g-arts', sc:'s-arts'},
+  {id:'agri', label:'Agriculture and Nutrition',icon:'🌱', gc:'g-agri', sc:'s-agri'},
 ];
 
 const SUBS_JUNIOR = [ // Grade 7–9
-  {id:'eng',  label:'English',                 icon:'📖', gc:'g-eng',  sc:'s-eng',  parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
-  {id:'kis',  label:'Kiswahili/KSL',           icon:'🗣️', gc:'g-kis',  sc:'s-kis',  parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
-  {id:'math', label:'Mathematics',             icon:'🔢', gc:'g-math', sc:'s-math'},
-  {id:'sci',  label:'Integrated Science',      icon:'🔬', gc:'g-sci',  sc:'s-sci' },
-  {id:'soc',  label:'Social Studies',          icon:'🌍', gc:'g-soc',  sc:'s-soc' },
-  {id:'re',   label:'Religious Ed.',           icon:'✝️', gc:'g-re',   sc:'s-re'  },
-  {id:'arts', label:'Creative Arts & Sports',  icon:'🎨', gc:'g-arts', sc:'s-arts'},
-  {id:'pret', label:'Pre-Technical',           icon:'🔧', gc:'g-pret', sc:'s-pret'},
-  {id:'agri', label:'Agriculture & Nutrition', icon:'🌱', gc:'g-agri', sc:'s-agri'},
+  {id:'eng',  label:'English',                  icon:'📖', gc:'g-eng',  sc:'s-eng',  parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
+  {id:'kis',  label:'Kiswahili/KSL',            icon:'🗣️', gc:'g-kis',  sc:'s-kis',  parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
+  {id:'math', label:'Mathematics',              icon:'🔢', gc:'g-math', sc:'s-math'},
+  {id:'sci',  label:'Integrated Science',       icon:'🔬', gc:'g-sci',  sc:'s-sci' },
+  {id:'soc',  label:'Social Studies',           icon:'🌍', gc:'g-soc',  sc:'s-soc' },
+  {id:'re',   label:'Religious Ed.',            icon:'✝️', gc:'g-re',   sc:'s-re'  },
+  {id:'arts', label:'Creative Arts & Sports',   icon:'🎨', gc:'g-arts', sc:'s-arts'},
+  {id:'pret', label:'Pre-Technical',            icon:'🔧', gc:'g-pret', sc:'s-pret'},
+  {id:'agri', label:'Agriculture & Nutrition',  icon:'🌱', gc:'g-agri', sc:'s-agri'},
 ];
 
 // Returns the correct subject array for a given grade string e.g. "Grade 4"
@@ -780,12 +821,16 @@ function toast(msg,type='ok'){
 
 // ── Grade → load streams, then auto-load ──
 window.onGradeChange = async function(){
-  // Teachers can't change grade — selectors are locked
-  if(currentUser?.role === 'teacher') return;
+  // Teachers NEVER manually change grade — hard block
+  if(currentUser?.role === 'teacher'){
+    console.warn('[Security] Teacher attempted onGradeChange — blocked');
+    return;
+  }
   const grade=el('selGrade').value;
 
   // ── No-stream school: skip stream picker, load directly by grade ──
   if(!streamsEnabled){
+    gradeHasStreams = false;
     if(!grade){
       el('tblWrap').innerHTML=`<div class="empty-msg"><div class="ei">📋</div><p>Select a <strong>Grade</strong> to load students</p></div>`;
       return;
@@ -830,7 +875,21 @@ window.onGradeChange = async function(){
     if(!arr.length){ ss.innerHTML='<option value="">-- Error --</option>';ss.disabled=false;return; }
   }
 
-  if(!arr.length) arr=['East','West','North','South'];
+  if(!arr.length){
+    // No streams found — treat this grade as stream-free
+    gradeHasStreams = false;
+    ss.style.display = 'none';
+    ss.value = '';
+    ss.disabled = true;
+    const lbl = document.getElementById('streamLabel');
+    if(lbl) lbl.style.display = 'none';
+    loadStudents();
+    return;
+  }
+  gradeHasStreams = true;
+  ss.style.display = '';
+  const lbl2 = document.getElementById('streamLabel');
+  if(lbl2) lbl2.style.display = '';
   ss.innerHTML='<option value="">-- Stream --</option>'+arr.map(s=>`<option>${s}</option>`).join('');
   ss.disabled=false;
   if(arr.length===1){ss.value=arr[0];loadStudents();}
@@ -842,14 +901,22 @@ window.onGradeChange = async function(){
 
 // ── Load students ──
 window.loadStudents = async function(){
-  const grade=el('selGrade').value,
-        term=el('selTerm').value, year=el('selYear').value;
+  const {grade, stream: classStream} = _getClassSelectors();
+  const term=el('selTerm').value, year=el('selYear').value;
+
   // Wait for stream settings to resolve before reading streamsEnabled
   if(!_settingsReady) await _settingsPromise;
-  const stream = streamsEnabled ? (el('selStream').value||'') : '';
-  // Grade is always required; stream only required when streams are enabled
+
+  // For teachers: always use their profile grade/stream, never DOM
+  // For admins: stream is optional (schools without streams have value='')
+  const stream = currentUser?.role === 'teacher'
+    ? (currentUser.stream || '')
+    : classStream;
+
+  // Grade always required
   if(!grade) return;
-  if(streamsEnabled && !stream) return;
+  // Only require a stream selection if this grade actually has streams
+  if(currentUser?.role !== 'teacher' && gradeHasStreams && !stream) return;
   if(loadLock) return;
   loadLock=true;
 
@@ -893,8 +960,9 @@ window.loadStudents = async function(){
 
 // ── Render table ──
 function renderTable(){
-  // Update SUBS for the currently selected grade
-  SUBS = getSubs(el('selGrade')?.value || '');
+  // Update SUBS for the currently selected/assigned grade
+  const {grade: currentGrade} = _getClassSelectors();
+  SUBS = getSubs(currentGrade);
   // Collect saved oof values if any (from previously saved record)
   const anyRec = Object.values(savedMap)[0];
 
@@ -1432,9 +1500,11 @@ window.saveRow=async function(sid){
   if(!d.overallAvg){toast('Enter at least one score','err');return;}
   const btn=el(`act_${sid}`)?.querySelector('.sv-btn');
   if(btn){btn.disabled=true;btn.textContent='…';}
+  const {grade: saveGrade, stream: saveStream} = _getClassSelectors();
   const payload={
     studentId:sid, studentName:s.name, admissionNumber:s.admissionNumber||'',
-    grade:el('selGrade').value, stream:streamsEnabled?el('selStream').value:'',
+    grade: saveGrade,
+    stream: currentUser?.role === 'teacher' ? (currentUser.stream || '') : (streamsEnabled ? el('selStream').value : ''),
     term:el('selTerm').value,   year:el('selYear').value,
     schoolId:    currentUser?.schoolId   || sessionStorage.getItem('cbe_school_id') || '',
     teacherId:   currentUser?.uid        || '',

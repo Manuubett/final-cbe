@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBE Admin | Teacher Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Familjen+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#e8ecf4;--surface:#fff;--surf2:#f3f5fa;--border:#dce1ec;
+  --text:#131c2e;--text2:#4f6080;--text3:#9aaabb;
+  --accent:#1a56db;--ah:#1447c0;--alight:#eff4ff;
+  --green:#059669;--green-bg:#d1fae5;--green-tx:#065f46;
+  --amber:#d97706;--amber-bg:#fef3c7;--amber-tx:#92400e;
+  --red:#dc2626;--red-bg:#fee2e2;--red-tx:#991b1b;
+  --sh:0 1px 3px rgba(0,0,0,.06);--sh2:0 8px 28px rgba(0,0,0,.12);
+  --r:10px;--r2:6px;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh}
+
+/* ══════════════════════════════════════
+   LOADING SCREEN
+══════════════════════════════════════ */
+#screenLoad{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:14px;z-index:900;
+}
+#screenLoad .spin{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .65s linear infinite}
+#screenLoad p{font-size:12px;color:var(--text3);font-weight:600;letter-spacing:.3px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ══════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════ */
+#screenDash{display:none}
+#screenDash.show{display:block}
+
+/* header */
+header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;box-shadow:var(--sh);
+}
+.logo{display:flex;align-items:center;gap:9px}
+.lm{width:30px;height:30px;background:var(--accent);border-radius:7px;display:grid;place-items:center;color:#fff;font-size:15px}
+.lt{font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;letter-spacing:-.3px}
+.ls{font-size:10px;color:var(--text3)}
+.hdr-r{display:flex;align-items:center;gap:8px}
+.admin-badge{
+  background:var(--alight);color:var(--accent);border:1px solid #c7d9ff;
+  font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;letter-spacing:.3px;
+}
+
+/* buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:5px;padding:5px 13px;
+  border-radius:var(--r2);font-family:inherit;font-size:12.5px;font-weight:600;
+  cursor:pointer;border:none;transition:all .14s;white-space:nowrap;height:32px;
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--ah)}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--text2)}
+.btn-outline:hover{background:var(--bg);color:var(--text)}
+.btn-sm{padding:3px 9px;font-size:11.5px;height:26px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* outer */
+.outer{padding:20px 24px;max-width:1200px;margin:0 auto}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:22px}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:14px 16px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:4px;
+  animation:fadeUp .3s ease both;
+}
+.stat-card:nth-child(2){animation-delay:.05s}
+.stat-card:nth-child(3){animation-delay:.1s}
+.stat-card:nth-child(4){animation-delay:.15s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.stat-icon{font-size:20px;margin-bottom:2px}
+.stat-val{font-family:'Familjen Grotesk',sans-serif;font-size:28px;font-weight:800;line-height:1}
+.stat-lbl{font-size:10.5px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.s-active   .stat-val{color:var(--green)}
+.s-pending  .stat-val{color:var(--amber)}
+.s-suspended.stat-val,.s-suspended .stat-val{color:var(--red)}
+
+/* ── QUICK REPORTS ── */
+.quick-reports{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);box-shadow:var(--sh);
+  margin-bottom:22px;overflow:hidden;
+  animation:fadeUp .3s .2s ease both;
+}
+.qr-head{
+  padding:12px 18px;background:var(--surf2);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+}
+.qr-title{font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;display:flex;align-items:center;gap:7px}
+.qr-body{padding:14px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.qr-lbl{font-size:11px;color:var(--text3);font-weight:700}
+
+/* ── RESULTS STAT CARD ── */
+.stat-card.s-results .stat-val{color:var(--accent)}
+
+/* sec head */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px}
+.sec-title{font-family:'Familjen Grotesk',sans-serif;font-size:16px;font-weight:800}
+.sec-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.search-wrap{position:relative}
+.search-wrap input{
+  height:32px;padding:0 10px 0 30px;
+  border:1.5px solid var(--border);border-radius:var(--r2);
+  font-family:inherit;font-size:12.5px;color:var(--text);background:var(--surface);
+  outline:none;width:200px;transition:border-color .14s;
+}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-wrap::before{content:'🔍';position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none;opacity:.5}
+.fsel{
+  height:32px;padding:0 9px;border:1.5px solid var(--border);border-radius:var(--r2);
+  font-family:inherit;font-size:12.5px;color:var(--text);background:var(--surface);cursor:pointer;outline:none;
+}
+.fsel:focus{border-color:var(--accent)}
+
+/* table */
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;animation:fadeUp .35s .1s ease both}
+.tbl-scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:700px}
+thead th{
+  background:#1e2d4d;color:#c8d8f8;
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  padding:0 14px;text-align:left;height:34px;white-space:nowrap;border-bottom:1px solid #2d3e61;
+}
+thead th.tc{text-align:center}
+tbody td{padding:0 14px;height:46px;border-bottom:1px solid var(--border);font-size:12.5px;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surf2)}
+tbody td.tc{text-align:center}
+.t-name{font-weight:700}
+.t-email{font-size:11.5px;color:var(--text3)}
+.t-meta{font-size:11.5px;color:var(--text2)}
+
+/* status badge */
+.sbadge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:10.5px;font-weight:700}
+.sbadge::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.sbadge.active   {background:var(--green-bg);color:var(--green-tx)}.sbadge.active::before{background:var(--green)}
+.sbadge.pending  {background:var(--amber-bg);color:var(--amber-tx)}.sbadge.pending::before{background:var(--amber)}
+.sbadge.suspended{background:var(--red-bg);color:var(--red-tx)}.sbadge.suspended::before{background:var(--red)}
+
+/* action buttons */
+.act-wrap{display:flex;align-items:center;gap:5px;justify-content:flex-end}
+.act-btn{padding:3px 10px;border-radius:5px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:all .12s;white-space:nowrap}
+.act-approve {background:var(--green-bg);color:var(--green-tx)}.act-approve:hover{background:#a7f3d0}
+.act-suspend {background:var(--red-bg);color:var(--red-tx)}.act-suspend:hover{background:#fecaca}
+.act-activate{background:var(--alight);color:var(--accent)}.act-activate:hover{background:#c7d9ff}
+.act-edit    {background:var(--surf2);color:var(--text2);border:1px solid var(--border)}.act-edit:hover{background:var(--bg)}
+.act-delete  {background:none;color:var(--text3);border:none;font-size:14px;padding:3px 6px;line-height:1}.act-delete:hover{color:var(--red)}
+
+/* empty row */
+.empty-row td{text-align:center;padding:44px;color:var(--text3)}
+.empty-icon{font-size:30px;margin-bottom:8px}
+
+/* ── MODALS ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh2);width:100%;max-width:440px;animation:modalIn .22s cubic-bezier(.22,1,.36,1) both}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800}
+.modal-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--text3);line-height:1;padding:2px}.modal-close:hover{color:var(--text)}
+.modal-body{padding:20px}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.minp{width:100%;height:36px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--r2);font-family:inherit;font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color .14s}
+.minp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239aaabb'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.mfield{margin-bottom:14px}
+.mfield label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.confirm-icon{font-size:36px;text-align:center;margin-bottom:10px}
+.confirm-msg{font-size:13px;color:var(--text2);text-align:center;line-height:1.7}
+
+/* ══════════════════════════════════════
+   PAYMENT GATE OVERLAY
+   Full-screen blur lock — professional
+══════════════════════════════════════ */
+/* ══════════════════════════════
+   PENDING TEACHERS BANNER
+══════════════════════════════ */
+.pending-banner{
+  background:var(--surface);border:1.5px solid #fcd34d;
+  border-left:4px solid var(--amber);border-radius:var(--r);
+  box-shadow:var(--sh);margin-bottom:20px;overflow:hidden;
+  animation:fadeUp .3s ease;
+}
+.pb-head{
+  padding:11px 18px;background:var(--amber-bg);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.pb-title{
+  font-family:'Familjen Grotesk',sans-serif;font-size:13.5px;font-weight:800;
+  color:var(--amber-tx);display:flex;align-items:center;gap:7px;
+}
+.pb-count{
+  background:var(--amber);color:#fff;
+  font-size:11px;font-weight:800;padding:1px 8px;border-radius:20px;
+}
+.pb-body{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.pb-card{
+  background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);
+  padding:11px 14px;display:flex;align-items:center;gap:12px;
+  transition:border-color .14s;
+}
+.pb-card:hover{border-color:var(--accent)}
+.pb-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--alight),#c7d9ff);
+  display:grid;place-items:center;font-size:17px;flex-shrink:0;
+  border:1px solid #c7d9ff;
+}
+.pb-info{flex:1;min-width:0}
+.pb-name{font-weight:700;font-size:13px;color:var(--text);margin-bottom:2px}
+.pb-meta{font-size:11.5px;color:var(--text2)}
+.pb-time{font-size:11px;color:var(--text3);white-space:nowrap}
+.pb-actions{display:flex;gap:6px;flex-shrink:0}
+.pb-approve{
+  padding:5px 13px;border-radius:5px;
+  font-family:inherit;font-size:11.5px;font-weight:700;
+  cursor:pointer;border:none;
+  background:var(--green-bg);color:var(--green-tx);
+  transition:all .12s;
+}
+.pb-approve:hover{background:#a7f3d0}
+.pb-reject{
+  padding:5px 10px;border-radius:5px;
+  font-family:inherit;font-size:11.5px;font-weight:700;
+  cursor:pointer;background:var(--red-bg);color:var(--red-tx);
+  border:none;transition:all .12s;
+}
+.pb-reject:hover{background:#fecaca}
+
+/* ── REASSIGN CLASS MODAL ── */
+.reassign-field{margin-bottom:12px}
+.reassign-field label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+
+/* ══════════════════════════════
+   PAYMENT GATE — compact modal
+══════════════════════════════ */
+#paymentOverlay{
+  display:none;position:fixed;inset:0;z-index:800;
+  background:rgba(6,12,28,.78);
+  backdrop-filter:blur(20px) saturate(.35);
+  -webkit-backdrop-filter:blur(20px) saturate(.35);
+  align-items:center;justify-content:center;padding:20px;
+}
+#paymentOverlay.show{display:flex}
+.pov-card{
+  background:#fff;border-radius:16px;
+  box-shadow:0 24px 60px rgba(0,0,0,.5);
+  width:100%;max-width:400px;
+  overflow:hidden;
+  animation:povIn .35s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes povIn{from{opacity:0;transform:scale(.94) translateY(20px)}to{opacity:1;transform:none}}
+
+/* Compact top band */
+.pov-top{
+  background:linear-gradient(135deg,#0f172a,#1e3a8a 70%,#1a56db);
+  padding:20px 22px 16px;text-align:center;color:#fff;position:relative;overflow:hidden;
+}
+.pov-top::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 75% 10%,rgba(99,179,237,.15) 0%,transparent 60%)}
+.pov-lock-ring{
+  width:48px;height:48px;border-radius:50%;
+  background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.22);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin:0 auto 10px;
+  box-shadow:0 0 0 6px rgba(255,255,255,.05);position:relative;z-index:1;
+}
+.pov-title{font-family:'Familjen Grotesk',sans-serif;font-size:17px;font-weight:800;margin-bottom:4px;position:relative;z-index:1;letter-spacing:-.2px}
+.pov-school-tag{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);padding:2px 12px;border-radius:20px;font-size:11px;color:rgba(255,255,255,.8);position:relative;z-index:1;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Body */
+.pov-body{padding:16px 20px 0}
+
+/* Admin message — compact */
+.pov-msg-box{background:#fffbeb;border:1px solid #fcd34d;border-left:3px solid #f59e0b;border-radius:8px;padding:10px 14px;margin-bottom:14px}
+.pov-msg-from{font-size:9.5px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.pov-msg-text{font-size:12.5px;color:#1e293b;line-height:1.65;white-space:pre-line}
+
+/* Inline M-Pesa strip — single compact row */
+.pov-mpesa-strip{
+  display:flex;align-items:center;gap:10px;
+  background:#f0fdf4;border:1px solid #86efac;
+  border-radius:8px;padding:8px 14px;margin-bottom:14px;
+  flex-wrap:wrap;
+}
+.pov-mpesa-item{display:flex;flex-direction:column;gap:1px}
+.pov-mpesa-lbl{font-size:9px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.4px}
+.pov-mpesa-val{font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;color:#15803d}
+.pov-mpesa-sep{width:1px;height:28px;background:#86efac;flex-shrink:0}
+
+/* Request form — inline inside modal */
+.pov-form{margin-bottom:14px}
+.pov-form-label{font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;display:block}
+.pov-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.pov-inp{
+  height:36px;padding:0 10px;
+  border:1.5px solid #e2e8f0;border-radius:7px;
+  font-family:inherit;font-size:12.5px;color:#1e293b;
+  background:#f8fafc;outline:none;width:100%;
+  transition:border-color .14s;
+}
+.pov-inp:focus{border-color:#1a56db;background:#fff;box-shadow:0 0 0 3px rgba(26,86,219,.08)}
+.pov-inp::placeholder{color:#94a3b8}
+.pov-submit-btn{
+  width:100%;height:38px;
+  background:linear-gradient(135deg,#1a56db,#1447c0);
+  color:#fff;border:none;border-radius:7px;
+  font-family:'Familjen Grotesk',sans-serif;font-size:13.5px;font-weight:800;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+  transition:all .14s;box-shadow:0 3px 10px rgba(26,86,219,.3);
+}
+.pov-submit-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 5px 14px rgba(26,86,219,.4)}
+.pov-submit-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+/* Submitted state — shows inside modal after request sent */
+.pov-submitted{display:none;text-align:center;padding:6px 0 12px}
+.pov-submitted.show{display:block}
+.pov-sub-icon{font-size:32px;margin-bottom:6px}
+.pov-sub-title{font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;color:#1e293b;margin-bottom:4px}
+.pov-sub-msg{font-size:12px;color:#64748b;line-height:1.6}
+
+/* Actions strip */
+.pov-actions{padding:0 20px 18px;display:flex;gap:8px}
+.pov-wa-btn{
+  flex:1;padding:9px;border-radius:8px;
+  font-family:inherit;font-size:12px;font-weight:700;
+  cursor:pointer;border:none;
+  background:#16a34a;color:#fff;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  text-decoration:none;transition:all .14s;
+}
+.pov-wa-btn:hover{background:#15803d}
+.pov-logout-btn{
+  padding:9px 14px;border-radius:8px;
+  font-family:inherit;font-size:12px;font-weight:600;
+  cursor:pointer;background:none;border:1.5px solid #e2e8f0;color:#94a3b8;transition:all .14s;
+}
+.pov-logout-btn:hover{border-color:#cbd5e1;color:#64748b}
+
+/* Footer wait bar */
+.pov-wait-bar{
+  background:#f8fafc;border-top:1px solid #f1f5f9;
+  padding:8px 20px;display:flex;align-items:center;gap:7px;
+  font-size:11px;color:#94a3b8;
+}
+.pov-pulse{width:6px;height:6px;border-radius:50%;background:#f59e0b;flex-shrink:0;animation:ppulse 2s infinite}
+@keyframes ppulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+/* toast */
+#tc{position:fixed;top:62px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
+.t{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:var(--r2);font-size:12.5px;font-weight:500;box-shadow:var(--sh2);animation:tin .25s ease;min-width:210px}
+.t.ok {background:#064e3b;color:#ecfdf5;border-left:3px solid #10b981}
+.t.err{background:#7f1d1d;color:#fef2f2;border-left:3px solid #ef4444}
+.t.info{background:#1e3a5f;color:#dbeafe;border-left:3px solid var(--accent)}
+@keyframes tin {from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tout{to{transform:translateX(110%);opacity:0}}
+</style>
+</head>
+<body>
+
+<div id="tc"></div>
+
+<!-- ══════════ LOADING ══════════ -->
+<div id="screenLoad">
+  <div class="spin"></div>
+  <p>VERIFYING ACCESS…</p>
+</div>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div id="screenDash">
+
+  <!-- PAYMENT GATE OVERLAY — blurs dashboard, stays until owner approves -->
+  <div id="paymentOverlay">
+    <div class="pov-card">
+
+      <div class="pov-top">
+        <div class="pov-lock-ring">🔒</div>
+        <div class="pov-title">Subscription Required</div>
+        <div class="pov-school-tag" id="povSchoolName">Your School</div>
+      </div>
+
+      <div class="pov-body">
+
+        <!-- Admin message -->
+        <div class="pov-msg-box">
+          <div class="pov-msg-from">📩 Message from Administrator</div>
+          <div class="pov-msg-text" id="povMsgText">Your subscription payment is due. Please pay and submit your confirmation below.</div>
+        </div>
+
+        <!-- Compact M-Pesa strip -->
+        <div class="pov-mpesa-strip">
+          <div class="pov-mpesa-item">
+            <span class="pov-mpesa-lbl">Till Number</span>
+            <span class="pov-mpesa-val">4585402</span>
+          </div>
+          <div class="pov-mpesa-sep"></div>
+          <div class="pov-mpesa-item">
+            <span class="pov-mpesa-lbl">Amount</span>
+            <span class="pov-mpesa-val">Ksh 2,599</span>
+          </div>
+          <div class="pov-mpesa-sep"></div>
+          <div class="pov-mpesa-item">
+            <span class="pov-mpesa-lbl">Business</span>
+            <span class="pov-mpesa-val" style="font-size:12px">CBE Mark Sheet</span>
+          </div>
+        </div>
+
+        <!-- Inline request form — submit without leaving page -->
+        <div class="pov-form" id="povForm">
+          <span class="pov-form-label">Submit your payment confirmation</span>
+          <div class="pov-fields">
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.4px">Your Phone</span>
+              <input class="pov-inp" id="povPhone" placeholder="07XX XXX XXX" type="tel">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.4px">M-Pesa Payment Name</span>
+              <input class="pov-inp" id="povPayName" placeholder="e.g. JANE WANJIKU"
+                oninput="this.value=this.value.toUpperCase()" style="text-transform:uppercase">
+            </div>
+          </div>
+          <div style="font-size:10.5px;color:#94a3b8;margin-bottom:8px;line-height:1.5">Enter the <strong>sender name</strong> exactly as shown in your M-Pesa confirmation message.</div>
+          <button class="pov-submit-btn" id="povSubmitBtn" onclick="submitRenewalRequest()">
+            <span id="povSubmitTxt">📤 Send Approval Request</span>
+          </button>
+        </div>
+
+        <!-- Submitted state — replaces form after sending -->
+        <div class="pov-submitted" id="povSubmitted">
+          <div class="pov-sub-icon">⏳</div>
+          <div class="pov-sub-title">Request Sent — Awaiting Approval</div>
+          <div class="pov-sub-msg">Your payment details have been sent to the administrator.<br>This screen will close automatically once approved.</div>
+        </div>
+
+      </div>
+
+      <div class="pov-actions">
+        <a class="pov-wa-btn"
+           href="https://wa.me/254704518130?text=Hello%2C%20I%20have%20paid%20for%20CBE%20Mark%20Sheet%20renewal%20via%20M-Pesa%20Till%204585402.%20Please%20reactivate%20my%20account."
+           target="_blank">💬 WhatsApp</a>
+        <button class="pov-logout-btn" onclick="doLogout()">← Sign Out</button>
+      </div>
+
+      <div class="pov-wait-bar">
+        <div class="pov-pulse"></div>
+        Waiting for administrator approval — this clears automatically
+      </div>
+
+    </div>
+  </div>
+
+  <!-- EDIT MODAL -->
+  <div class="overlay" id="editOverlay">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">✏️ Edit Teacher</div>
+        <button class="modal-close" onclick="closeEdit()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="mfield"><label>First Name</label><input class="minp" type="text" id="eFirst"></div>
+          <div class="mfield"><label>Last Name</label><input class="minp" type="text" id="eLast"></div>
+        </div>
+        <div class="mfield"><label>TSC Number</label><input class="minp" type="text" id="eTSC" placeholder="Optional"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="mfield">
+            <label>Grade</label>
+            <select class="minp" id="eGrade" onchange="onEditGradeChange()">
+              <option value="">-- Grade --</option>
+              <option>Grade 1</option><option>Grade 2</option><option>Grade 3</option>
+              <option>Grade 4</option><option>Grade 5</option><option>Grade 6</option>
+              <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+            </select>
+          </div>
+          <div class="mfield">
+            <label>Stream <span style="font-size:10px;color:var(--text3);font-weight:400">(optional)</span></label>
+            <select class="minp" id="eStream">
+              <option value="">-- No Stream --</option>
+            </select>
+            <span id="eStreamHint" style="font-size:10.5px;color:var(--text3);margin-top:3px;display:block"></span>
+          </div>
+        </div>
+        <div class="mfield">
+          <label>Status</label>
+          <select class="minp" id="eStatus">
+            <option value="active">Active</option>
+            <option value="pending">Pending</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeEdit()">Cancel</button>
+        <button class="btn btn-primary" id="editSaveBtn" onclick="saveEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRM MODAL -->
+  <div class="overlay" id="delOverlay">
+    <div class="modal" style="max-width:360px">
+      <div class="modal-head">
+        <div class="modal-title">🗑️ Delete Teacher</div>
+        <button class="modal-close" onclick="closeDel()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="confirm-icon">⚠️</div>
+        <div class="confirm-msg">
+          Remove <strong id="delName"></strong> from the system?<br><br>
+          <span style="font-size:11.5px;color:var(--text3)">This deletes their Firestore profile. To fully remove their login, delete them from Firebase Console → Authentication.</span>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeDel()">Cancel</button>
+        <button class="btn" style="background:var(--red);color:#fff" id="delConfirmBtn" onclick="confirmDelete()">Delete Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="lm">⚙️</div>
+      <div><div class="lt">CBE Admin</div><div class="ls">Teacher Management · Junior School</div></div>
+    </div>
+    <div class="hdr-r">
+      <span class="admin-badge">ADMIN</span>
+      <span id="adminName" style="font-size:11.5px;color:var(--text2);font-weight:600"></span>
+      <a href="settings.html" class="btn btn-outline btn-sm">⚙️ Settings</a>
+      <a href="admission" class="btn btn-outline btn-sm">🎓 Admission</a>
+      <a href="marksheet" class="btn btn-outline btn-sm">📊 Mark Sheet</a>
+      <a href="analysis" class="btn btn-outline btn-sm">📈 Analysis</a>
+      <button class="btn btn-outline btn-sm" style="color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="doLogout()">🚪 Sign Out</button>
+    </div>
+  </header>
+
+  <!-- PENDING TEACHER APPROVALS BANNER -->
+  <div class="pending-banner" id="pendingBanner" style="display:none">
+    <div class="pb-head">
+      <div class="pb-title">
+        🔔 Pending Teacher Approvals
+        <span class="pb-count" id="pendingCount">0</span>
+      </div>
+      <span style="font-size:11.5px;color:var(--amber-tx);font-weight:600">Review and approve before teachers can login</span>
+    </div>
+    <div class="pb-body" id="pendingCards"></div>
+  </div>
+
+  <!-- REASSIGN CLASS MODAL -->
+  <div class="overlay" id="reassignOverlay">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-head">
+        <div class="modal-title">🏫 Change Class Assignment</div>
+        <button class="modal-close" onclick="closeReassign()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px;margin-bottom:14px">
+          <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Teacher</div>
+          <div style="font-weight:800;font-size:14px;color:var(--text);margin-top:2px" id="reassignTeacherName">—</div>
+          <div style="font-size:12px;color:var(--text2)" id="reassignCurrentClass">—</div>
+        </div>
+        <div class="reassign-field">
+          <label>New Grade</label>
+          <select class="minp" id="reassignGrade" onchange="onReassignGradeChange()">
+            <option value="">-- Select Grade --</option>
+            <option>Grade 1</option>
+            <option>Grade 2</option>
+            <option>Grade 3</option>
+            <option>Grade 4</option>
+            <option>Grade 5</option>
+            <option>Grade 6</option>
+            <option>Grade 7</option>
+            <option>Grade 8</option>
+            <option>Grade 9</option>
+          </select>
+        </div>
+        <div class="reassign-field">
+          <label>New Stream <span style="font-size:10px;color:var(--text3);font-weight:400">(optional)</span></label>
+          <select class="minp" id="reassignStream">
+            <option value="">-- No Stream --</option>
+          </select>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px" id="reassignStreamHint"></div>
+        </div>
+        <div class="reassign-field">
+          <label>Status</label>
+          <select class="minp" id="reassignStatus">
+            <option value="active">Active — can login</option>
+            <option value="pending">Pending — awaiting approval</option>
+            <option value="suspended">Suspended — blocked</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeReassign()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveReassign()">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS SECTION -->
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-val" id="statTotal">—</div>
+        <div class="stat-lbl">Total Teachers</div>
+      </div>
+      <div class="stat-card s-active">
+        <div class="stat-icon">✅</div>
+        <div class="stat-val" id="statActive">—</div>
+        <div class="stat-lbl">Active</div>
+      </div>
+      <div class="stat-card s-pending">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-val" id="statPending">—</div>
+        <div class="stat-lbl">Pending Approval</div>
+      </div>
+      <div class="stat-card s-suspended">
+        <div class="stat-icon">🚫</div>
+        <div class="stat-val" id="statSuspended">—</div>
+        <div class="stat-lbl">Suspended</div>
+      </div>
+      <div class="stat-card s-results">
+        <div class="stat-icon">📈</div>
+        <div class="stat-val" id="statResults">—</div>
+        <div class="stat-lbl">Results Saved</div>
+      </div>
+    </div>
+
+    <!-- QUICK REPORTS -->
+
+
+    <!-- TABLE -->
+    <div class="sec-head">
+      <div class="sec-title">Teachers</div>
+      <div class="sec-tools">
+        <div class="search-wrap">
+          <input type="text" id="searchInp" placeholder="Search name, email, class…" oninput="renderTable()">
+        </div>
+        <select class="fsel" id="filterStatus" onchange="renderTable()">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="pending">Pending</option>
+          <option value="suspended">Suspended</option>
+        </select>
+        <select class="fsel" id="filterGrade" onchange="renderTable()">
+          <option value="">All Grades</option>
+          <option>Grade 1</option><option>Grade 2</option><option>Grade 3</option>
+          <option>Grade 4</option><option>Grade 5</option><option>Grade 6</option>
+          <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="loadTeachers()">🔄 Refresh</button>
+        <button class="btn btn-outline btn-sm" onclick="copyRegLink()" title="Copy self-registration link for teachers">🔗 Reg Link</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddTeacher()">➕ Add Teacher</button>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="tbl-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Teacher</th>
+              <th>TSC No.</th>
+              <th>Class</th>
+              <th class="tc">Status</th>
+              <th>Registered</th>
+              <th class="tc">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="teacherTbody">
+            <tr class="empty-row"><td colspan="7"><div class="empty-icon">⏳</div><div>Loading…</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+  <!-- ADD TEACHER MODAL -->
+  <div class="overlay" id="addTeacherOverlay">
+    <div class="modal" style="max-width:460px">
+      <div class="modal-head">
+        <div class="modal-title">➕ Add Teacher</div>
+        <button class="modal-close" onclick="closeAddTeacher()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert err" id="addTeacherErr"><span>⚠️</span><span id="addTeacherErrMsg"></span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="mfield"><label>First Name *</label><input class="minp" id="atFirst" placeholder="Mary"></div>
+          <div class="mfield"><label>Last Name *</label><input class="minp" id="atLast" placeholder="Wanjiku"></div>
+        </div>
+        <div class="mfield"><label>Email Address *</label><input class="minp" type="email" id="atEmail" placeholder="teacher@school.ac.ke"></div>
+        <div class="mfield"><label>TSC Number</label><input class="minp" id="atTSC" placeholder="Optional"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="mfield">
+            <label>Grade *</label>
+            <select class="minp" id="atGrade" onchange="onAddTeacherGradeChange()">
+              <option value="">-- Grade --</option>
+              <option>Grade 1</option><option>Grade 2</option><option>Grade 3</option>
+              <option>Grade 4</option><option>Grade 5</option><option>Grade 6</option>
+              <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+            </select>
+          </div>
+          <div class="mfield">
+            <label>Stream <span style="font-size:10px;color:var(--text3);font-weight:400">(optional)</span></label>
+            <select class="minp" id="atStream"><option value="">-- No Stream --</option></select>
+          </div>
+        </div>
+        <div class="mfield">
+          <label>Temporary Password *</label>
+          <div style="position:relative">
+            <input class="minp" id="atPass" type="text" value="Teacher@2026" style="padding-right:90px">
+            <button onclick="generatePassword()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer;background:var(--surf2);border:1px solid var(--border);color:var(--text2)">🔄 Generate</button>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">Teacher uses this to sign in. Share it with them securely.</div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline" onclick="closeAddTeacher()">Cancel</button>
+        <button class="btn btn-primary" id="addTeacherBtn" onclick="saveAddTeacher()">➕ Add Teacher</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REG LINK MODAL -->
+  <div class="overlay" id="regLinkOverlay">
+    <div class="modal" style="max-width:460px">
+      <div class="modal-head">
+        <div class="modal-title">🔗 Teacher Registration Link</div>
+        <button class="modal-close" onclick="el('regLinkOverlay').classList.remove('open')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">
+          Share this link with teachers. They open it, fill their details and submit — the school is identified automatically.
+        </div>
+
+        <div class="mfield">
+          <label>Base URL of your site</label>
+          <input class="minp" id="regBaseUrl" placeholder="e.g. https://yoursite.com/" oninput="updateRegLink()">
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">
+            The folder/domain where login.html is hosted. Edit if the auto-detected URL is wrong.
+          </div>
+        </div>
+
+        <div class="mfield">
+          <label>Full Registration Link</label>
+          <input type="text" id="regLinkText" readonly onclick="this.select()"
+            style="width:100%;background:var(--surf2);border:1.5px solid var(--border);border-radius:var(--r2);padding:10px 14px;font-family:monospace;font-size:12px;color:var(--accent);word-break:break-all;cursor:text;outline:none" value="—">
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:1" onclick="doCopyLink()">📋 Copy Link</button>
+          <button class="btn btn-outline" style="flex:1" onclick="doShareWhatsApp()">💬 WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /screenDash -->
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp({
+
+apiKey: "AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
+      authDomain: "bett-294a2.firebaseapp.com",
+      projectId: "bett-294a2",
+      storageBucket: "bett-294a2.appspot.com",
+      messagingSenderId: "1055511650032",
+      appId: "1:1055511650032:web:7e0f9c28e58515f549ac35"
+
+  
+});
+const db   = firebase.firestore();
+const auth = firebase.auth();
+// Persistence is set at login time in registration.html — not here
+
+let allTeachers = [], editingUid = null, deletingUid = null;
+const el = id => document.getElementById(id);
+
+// ── SCREEN SWITCHER ──
+let _redirecting = false; // guard against redirect loops
+function show(screen){
+  ['screenLoad','screenDash'].forEach(s=>{
+    const node = el(s); if(!node) return;
+    node.style.display = 'none';
+    node.classList.remove('show');
+  });
+  if(screen === 'Login'){
+    if(_redirecting) return; // already redirecting — don't loop
+    _redirecting = true;
+    window.location.href = 'registration.html';
+    return;
+  }
+  const target = el('screen'+screen);
+  if(!target) return;
+  if(screen === 'Load') target.style.display = 'flex';
+  else { target.style.display = 'block'; target.classList.add('show'); }
+}
+
+// ── TOAST ──
+function toast(msg, type='ok'){
+  const t = document.createElement('div');
+  t.className = `t ${type}`;
+  t.innerHTML = `<span>${type==='ok'?'✅':type==='err'?'❌':'ℹ️'}</span>${msg}`;
+  el('tc').appendChild(t);
+  setTimeout(()=>{t.style.animation='tout .25s ease forwards';setTimeout(()=>t.remove(),280);},2800);
+}
+
+// ── AUTH STATE — decide which screen to show ──
+// ── In-memory state — no localStorage ──
+let _schoolId   = null;
+let _schoolName = '';
+let _ownerMsgUnsub = null;
+let _sessionId = null;
+
+// ── Logger ──
+const _logs = [];
+function log(level, msg, data){
+  const entry={level,msg,data:data||null,ts:new Date().toISOString()};
+  _logs.unshift(entry); if(_logs.length>100) _logs.pop();
+  const fn=level==='error'?console.error:level==='warn'?console.warn:console.log;
+  fn('[CBE Admin]',msg,data||'');
+}
+window._getLogs = ()=>_logs.map(l=>`[${l.ts}] ${l.level.toUpperCase()}: ${l.msg}${l.data?' | '+JSON.stringify(l.data):''}`).join('\n');
+
+auth.onAuthStateChanged(async u => {
+  // Guard: if already redirecting, do nothing
+  if(_redirecting) return;
+
+  if(!u){
+    log('info','No authenticated user — going to register');
+    show('Login');
+    return;
+  }
+
+  log('info','User authenticated', u.email);
+
+  try{
+    // 1. Load user profile from Firestore
+    const snap = await db.collection('users').doc(u.uid).get();
+
+    if(!snap.exists){
+      // New user — no profile yet, must complete registration
+      log('warn','No user profile found', u.uid);
+      show('Login'); return;
+    }
+
+    const profile = snap.data();
+
+    // 2. Teachers cannot access admin
+    if(profile.role === 'teacher'){
+      log('warn','Teacher attempted admin access', u.email);
+      await auth.signOut();
+      show('Login'); return;
+    }
+
+    // 3. Set school ID — stored in sessionStorage so other pages can read it
+    _schoolId = u.uid;
+    window._schoolId = u.uid;
+    sessionStorage.setItem('cbe_school_id', u.uid);
+    localStorage.setItem('cbe_user_role', 'admin'); // remembered for return visits
+    _schoolName = profile.fullName ? '' : ''; // populated by applySchoolSettings below
+    el('adminName').textContent = '👤 ' + (profile.fullName || profile.email || '');
+
+    // 4. Show dashboard IMMEDIATELY — don't wait for settings
+   show('Dash');
+checkSchoolSetup();
+
+    // 5. Load data in parallel — non-blocking
+    loadTeachers();
+    loadResultsCount();
+    applySchoolSettings(db).catch(()=>{});
+
+    // 6. One-time patch — fix any teachers who registered before schoolId was required
+    _patchTeachersSchoolId(_schoolId).catch(()=>{});
+
+    // 6. Start payment gate listener
+    _listenPayment(_schoolId);
+
+    // 7. Session tracking — fully non-blocking
+    _trackSession(u, profile).catch(()=>{});
+
+    log('info','Dashboard loaded', {uid:u.uid, role:profile.role});
+
+  }catch(e){
+    log('error','Auth error — staying on load screen', e.message);
+    // On Firestore error, don't redirect — just show error toast
+    // User can retry by refreshing
+    show('Load');
+    toast('Connection error. Please refresh the page.', 'err');
+  }
+});
+
+// Login handled by registration.html — no login screen in admin.html
+
+// ── LOGOUT ──
+async function doLogout(){
+  if(_ownerMsgUnsub){ _ownerMsgUnsub(); _ownerMsgUnsub=null; }
+  await _endSession().catch(()=>{});
+  _schoolId=null; window._schoolId=null;
+  localStorage.removeItem('cbe_user_role');
+  localStorage.removeItem('cbe_pending_uid');
+  localStorage.removeItem('cbe_pending_email');
+  sessionStorage.removeItem('cbe_school_id');
+  _redirecting = false; // reset flag so redirect works
+  await auth.signOut();
+  // onAuthStateChanged will fire with null user → redirects to registration.html
+}
+
+// ══════════════════════════════════════════════
+// SHARED COMPUTER SECURITY
+// ══════════════════════════════════════════════
+
+const SESSION_TIMEOUT_MS  = 30 * 60 * 1000; // 30 minutes idle
+const SESSION_WARNING_MS  = 2  * 60 * 1000; // warn 2 minutes before
+let   _idleTimer = null, _warnTimer = null, _warnEl = null;
+
+// ── Clear only user-session data on logout ──
+// Keeps: cbe_theme, cbe_school_settings (non-sensitive)
+// Clears: streams cache, any user-specific state
+function clearSessionCache(){
+  ['cbe_streams','cbe_streams_ts'].forEach(k=>localStorage.removeItem(k));
+}
+
+async function checkSchoolSetup(){
+  try{
+    // Check the settings doc — a school is "set up" only if it has a name saved
+    const settingsDoc = await db.collection('settings').doc(_currentUid).get();
+    const isSetup = settingsDoc.exists && settingsDoc.data()?.name?.trim();
+
+    if(!isSetup){
+      // Block the entire UI — show the forced setup overlay
+      _showSetupGate();
+    } else {
+      localStorage.setItem('cbe_school_setup_done', 'true');
+      // Patch user doc in case it was missing the flag
+      db.collection('users').doc(_currentUid)
+        .update({schoolSetupDone: true}).catch(()=>{});
+    }
+  }catch(e){
+    log('warn','checkSchoolSetup error', e.message);
+    // On error, still check localStorage as fallback
+    if(!localStorage.getItem('cbe_school_setup_done')){
+      _showSetupGate();
+    }
+  }
+}
+
+function _showSetupGate(){
+  const ov = el('setupOverlay');
+  if(ov){
+    ov.classList.add('open');
+    // Prevent any click-away dismissal
+    ov.addEventListener('click', function(e){ e.stopPropagation(); }, true);
+  }
+  // Block ESC key from closing it
+  document.addEventListener('keydown', function blockEsc(e){
+    if(e.key === 'Escape') e.stopImmediatePropagation();
+  }, true);
+  log('info','Setup gate shown — school not configured');
+}
+
+
+// ── Create warning banner (injected into DOM) ──
+function createWarnBanner(){
+  if(document.getElementById('_sessionWarn')) return;
+  const d = document.createElement('div');
+  d.id = '_sessionWarn';
+  d.style.cssText = `
+    display:none;position:fixed;top:0;left:0;right:0;z-index:9999;
+    background:#7f1d1d;color:#fef2f2;font-family:inherit;
+    padding:10px 20px;font-size:13px;font-weight:600;
+    display:none;align-items:center;justify-content:space-between;gap:12px;
+    border-bottom:2px solid #ef4444;
+  `;
+  d.innerHTML = `
+    <span>⚠️ Your session will expire in <span id="_sessionCountdown">2:00</span> due to inactivity.</span>
+    <div style="display:flex;gap:8px">
+      <button onclick="_keepAlive()" style="padding:4px 12px;background:#059669;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;font-size:12px">Stay Logged In</button>
+      <button onclick="doLogout()" style="padding:4px 12px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:4px;cursor:pointer;font-size:12px">Sign Out Now</button>
+    </div>`;
+  document.body.prepend(d);
+  _warnEl = d;
+}
+
+// ── Reset idle timer on any user activity ──
+function _resetIdleTimer(){
+  clearTimeout(_idleTimer);
+  clearTimeout(_warnTimer);
+  if(_warnEl) _warnEl.style.display = 'none';
+
+  // Warn 2 min before timeout
+  _warnTimer = setTimeout(()=>{
+    createWarnBanner();
+    _warnEl.style.display = 'flex';
+    // Countdown tick
+    let secs = SESSION_WARNING_MS / 1000;
+    const tick = setInterval(()=>{
+      secs--;
+      const el = document.getElementById('_sessionCountdown');
+      if(el) el.textContent = Math.floor(secs/60)+':'+(secs%60).toString().padStart(2,'0');
+      if(secs <= 0) clearInterval(tick);
+    }, 1000);
+  }, SESSION_TIMEOUT_MS - SESSION_WARNING_MS);
+
+  // Auto-logout after full timeout
+  _idleTimer = setTimeout(()=>{
+    doLogout();
+  }, SESSION_TIMEOUT_MS);
+}
+
+window._keepAlive = function(){
+  _resetIdleTimer();
+};
+
+// ── Listen for activity ──
+['mousemove','keydown','click','touchstart','scroll'].forEach(evt=>{
+  document.addEventListener(evt, _resetIdleTimer, {passive:true});
+});
+
+// ── Start timer immediately ──
+_resetIdleTimer();
+
+
+// ── LOAD RESULTS COUNT ──
+async function loadResultsCount(){
+  try{
+    const snap = await db.collection('results').where('schoolId','==',_schoolId).get();
+    el('statResults').textContent = snap.size;
+  }catch(e){ el('statResults').textContent = '?'; }
+}
+
+
+
+// ── Open analysis for a specific teacher's class ──
+function openAnalysisFor(grade, stream){
+  const term = new Date().getMonth() < 4 ? 'Term 1' : new Date().getMonth() < 8 ? 'Term 2' : 'Term 3';
+  const year = new Date().getFullYear();
+  const params = new URLSearchParams({grade,stream,term,year});
+  window.open(`analysis?${params}`, '_blank');
+}
+
+// ── Pending Teacher Approvals Banner ──
+function renderPendingBanner(){
+  const pending = allTeachers.filter(t => t.status === 'pending');
+  const banner = el('pendingBanner');
+  if(!banner) return;
+  if(!pending.length){ banner.style.display='none'; return; }
+
+  el('pendingCount').textContent = pending.length;
+  banner.style.display = 'block';
+
+  el('pendingCards').innerHTML = pending.map(t => {
+    const when = t.createdAt?.toDate
+      ? t.createdAt.toDate().toLocaleString('en-KE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})
+      : '—';
+    return `<div class="pb-card">
+      <div class="pb-avatar">👤</div>
+      <div class="pb-info">
+        <div class="pb-name">${t.fullName||'—'}</div>
+        <div class="pb-meta">
+          ${t.email||''}
+          ${t.phone ? ` · 📞 ${t.phone}` : ''}
+          ${t.tscNumber ? ` · TSC: ${t.tscNumber}` : ''}
+          ${t.grade&&t.stream ? ` · <strong>${t.grade} ${t.stream}</strong>` : ' · <span style="color:var(--amber-tx);font-size:11px">awaiting class assignment</span>'}
+        </div>
+      </div>
+      <div class="pb-time">${when}</div>
+      <div class="pb-actions">
+        <button class="pb-approve" onclick="quickApprove('${t.uid}')">✅ Approve</button>
+        <button class="pb-reject"  onclick="quickReject('${t.uid}')">✗ Reject</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function quickApprove(uid){
+  const t = allTeachers.find(x=>x.uid===uid);
+  if(!t){ toast('Teacher not found','err'); return; }
+  if(!_schoolId){ toast('Not authenticated — please refresh','err'); return; }
+
+  // Safety: only approve teachers belonging to this school
+  if(t.schoolId && t.schoolId !== _schoolId){
+    toast('⚠️ This teacher belongs to a different school','err');
+    return;
+  }
+
+  const btn = event?.target;
+  if(btn){ btn.disabled=true; btn.textContent='Approving…'; }
+
+  try{
+    const schoolName = _schoolName || window.schoolSettings?.name || '';
+    await db.collection('users').doc(uid).update({
+      status:     'active',
+      schoolId:   _schoolId,
+      schoolName: schoolName,
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    // Update teacher request record — non-blocking
+    db.collection('teacherRequests').doc(uid).update({
+      status:     'approved',
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(()=>{});
+
+    t.status='active'; t.schoolId=_schoolId;
+    updateStats(); renderTable(); renderPendingBanner();
+    toast(`✅ ${t.fullName} approved`);
+  }catch(e){
+    console.error('quickApprove failed:', e.code, e.message);
+    toast(`Failed: ${e.message}`,'err');
+    if(btn){ btn.disabled=false; btn.textContent='✅ Approve'; }
+  }
+}
+
+async function quickReject(uid){
+  const t = allTeachers.find(x=>x.uid===uid); if(!t) return;
+  if(!confirm('Reject and suspend '+t.fullName+'?')) return;
+  try{
+    await db.collection('users').doc(uid).update({status:'suspended'});
+    t.status='suspended';
+    updateStats(); renderTable(); renderPendingBanner();
+    toast(`${t.fullName} rejected`,'info');
+  }catch(e){ toast('Failed: '+e.message,'err'); }
+}
+
+// ── Reassign class modal ──
+let _reassignUid = null;
+
+function openReassign(uid){
+  const t = allTeachers.find(x=>x.uid===uid); if(!t) return;
+  _reassignUid = uid;
+  el('reassignTeacherName').textContent = t.fullName||t.email||'—';
+  el('reassignCurrentClass').textContent = 'Currently: '+(t.grade&&t.stream ? t.grade+' '+t.stream : 'No class assigned');
+  el('reassignGrade').value = t.grade||'';
+  el('reassignStatus').value = t.status||'active';
+  el('reassignStream').innerHTML = '<option value="">-- Select Grade first --</option>';
+  if(t.grade){
+    el('reassignGrade').dispatchEvent(new Event('change'));
+    setTimeout(()=>{ el('reassignStream').value = t.stream||''; }, 200);
+  }
+  el('reassignOverlay').classList.add('open');
+}
+
+function closeReassign(){
+  el('reassignOverlay').classList.remove('open');
+  _reassignUid = null;
+}
+
+async function onReassignGradeChange(){
+  const grade = el('reassignGrade').value;
+  const ss = el('reassignStream');
+  const hint = el('reassignStreamHint');
+  ss.innerHTML = '<option value="">Loading…</option>';
+  if(!grade){ ss.innerHTML='<option value="">-- No Stream --</option>'; hint.textContent=''; return; }
+  try{
+    const snap = await db.collection('students')
+      .where('grade','==',grade)
+      .where('schoolId','==',_schoolId)
+      .get();
+    const set = new Set();
+    snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
+    const streams = [...set].sort();
+    if(!streams.length){
+      ss.innerHTML='<option value="">-- No Stream --</option>';
+      hint.textContent='No streams found for this grade.';
+      hint.style.color='var(--text3)';
+    } else {
+      ss.innerHTML='<option value="">-- No Stream --</option>'+streams.map(s=>`<option value="${s}">${s}</option>`).join('');
+      hint.textContent=streams.length+' stream'+(streams.length>1?'s':'')+' available';
+      hint.style.color='var(--green)';
+    }
+  }catch(e){ ss.innerHTML='<option value="">Error loading</option>'; }
+}
+
+async function saveReassign(){
+  if(!_reassignUid) return;
+  const grade  = el('reassignGrade').value;
+  const stream = el('reassignStream').value;
+  const status = el('reassignStatus').value;
+  const t = allTeachers.find(x=>x.uid===_reassignUid);
+  if(!t) return;
+  // stream is optional — schools without streams leave it blank
+  const btn = el('reassignOverlay').querySelector('.btn-primary');
+  btn.disabled=true; btn.textContent='Saving…';
+  try{
+    const upd = { status };
+    if(grade)  upd.grade  = grade;
+    if(stream) upd.stream = stream;
+    if(!grade){ upd.grade=null; upd.stream=null; }
+    await db.collection('users').doc(_reassignUid).update(upd);
+    Object.assign(t, upd);
+    updateStats(); renderTable(); renderPendingBanner();
+    closeReassign();
+    const statusMsg = status==='active'?'activated ✅':status==='suspended'?'suspended 🚫':'set to pending';
+    toast(`${t.fullName} — ${grade?grade+' '+stream:'no class'} · ${statusMsg}`);
+  }catch(e){ toast('Save failed: '+e.message,'err'); }
+  btn.disabled=false; btn.textContent='💾 Save Changes';
+}
+
+// ── Patch teachers missing schoolId (one-time fix for existing data) ──
+async function _patchTeachersSchoolId(schoolId){
+  if(!schoolId) return;
+  try{
+    // Check teacherRequests for this school — find matching user docs with missing schoolId
+    const reqSnap = await db.collection('teacherRequests')
+      .where('schoolId','==',schoolId).get();
+    if(reqSnap.empty) return;
+
+    const batch = db.batch();
+    let count = 0;
+    for(const req of reqSnap.docs){
+      const uid = req.id;
+      const userRef = db.collection('users').doc(uid);
+      try{
+        const userSnap = await userRef.get();
+        if(userSnap.exists){
+          const d = userSnap.data();
+          // Patch if schoolId is missing, null, or wrong
+          if(!d.schoolId || d.schoolId !== schoolId){
+            batch.update(userRef, {
+              schoolId,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            count++;
+            log('info', `Will patch teacher ${d.fullName||uid} schoolId → ${schoolId}`);
+          }
+        }
+      }catch(_){}
+    }
+    if(count > 0){
+      await batch.commit();
+      log('info', `Patched ${count} teacher(s) schoolId via teacherRequests`);
+      toast(`✅ Fixed ${count} teacher request(s) — they should now appear below`, 'info');
+      if(_teachersUnsub){ _teachersUnsub(); _teachersUnsub = null; }
+      loadTeachers();
+    }
+  }catch(e){ log('warn','Patch teachers failed', e.message); }
+}
+
+// ── LOAD TEACHERS ──
+let _teachersUnsub = null;
+
+// Defined outside loadTeachers so it's stable across re-subscriptions
+function _onTeachersSnap(snap){
+  allTeachers = [];
+  snap.forEach(d=>{
+    const data = d.data();
+    if(data.role === 'teacher' || !data.role) allTeachers.push({uid:d.id, ...data});
+  });
+  allTeachers.sort((a,b)=>(b.createdAt?.toMillis?.()??0)-(a.createdAt?.toMillis?.()??0));
+  log('info','Teachers loaded', allTeachers.length);
+  updateStats();
+  renderTable();
+  const pending = allTeachers.filter(t=>t.status==='pending').length;
+  document.title = pending > 0 ? `(${pending}) Admin — CBE` : 'Admin — CBE Mark Sheet';
+}
+
+function loadTeachers(){
+  if(!_schoolId){ log('warn','loadTeachers: no schoolId'); return; }
+  if(_teachersUnsub){ _teachersUnsub(); _teachersUnsub = null; }
+
+  el('teacherTbody').innerHTML =
+    `<tr class="empty-row"><td colspan="7"><div class="empty-icon">⏳</div><div>Loading teachers…</div></td></tr>`;
+
+  log('info','Subscribing to teachers for school', _schoolId);
+
+  _teachersUnsub = db.collection('users')
+    .where('schoolId','==',_schoolId)
+    .onSnapshot(_onTeachersSnap, e=>{
+      log('error','Teachers listener error', e.code, e.message);
+      el('teacherTbody').innerHTML =
+        `<tr class="empty-row"><td colspan="7"><div class="empty-icon">❌</div>
+         <div>${e.code === 'permission-denied'
+           ? 'Permission denied — check Firestore rules'
+           : e.message}</div></td></tr>`;
+    });
+}
+
+// ── STATS ──
+function updateStats(){
+  el('statTotal').textContent     = allTeachers.length;
+  el('statActive').textContent    = allTeachers.filter(t=>t.status==='active').length;
+  el('statPending').textContent   = allTeachers.filter(t=>t.status==='pending').length;
+  el('statSuspended').textContent = allTeachers.filter(t=>t.status==='suspended').length;
+  renderPendingBanner();
+}
+
+// ── RENDER TABLE ──
+function renderTable(){
+  const q  = el('searchInp').value.trim().toLowerCase();
+  const fs = el('filterStatus').value;
+  const fg = el('filterGrade').value;
+  const list = allTeachers.filter(t=>{
+    const mq = !q||[t.fullName,t.email,t.grade,t.stream,t.tscNumber].some(v=>(v||'').toLowerCase().includes(q));
+    return mq && (!fs||t.status===fs) && (!fg||t.grade===fg);
+  });
+  if(!list.length){
+    el('teacherTbody').innerHTML=`<tr class="empty-row"><td colspan="7"><div class="empty-icon">👤</div><div>No teachers found</div></td></tr>`;
+    return;
+  }
+  el('teacherTbody').innerHTML = list.map((t,i)=>{
+    const date = t.createdAt?.toDate ? t.createdAt.toDate().toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    const sc = t.status||'pending';
+    const sl = sc.charAt(0).toUpperCase()+sc.slice(1);
+    let actions='';
+    if(sc==='pending'){
+      actions+=`<button class="act-btn act-approve" onclick="setStatus('${t.uid}','active')">✅ Approve</button>`;
+      actions+=`<button class="act-btn act-suspend" onclick="setStatus('${t.uid}','suspended')">🚫 Reject</button>`;
+    } else if(sc==='active'){
+      actions+=`<button class="act-btn act-suspend" onclick="setStatus('${t.uid}','suspended')">🚫 Suspend</button>`;
+    } else {
+      actions+=`<button class="act-btn act-activate" onclick="setStatus('${t.uid}','active')">✅ Reinstate</button>`;
+    }
+    actions+=`<button class="act-btn act-edit" onclick="openEdit('${t.uid}')">✏️ Edit</button>`;
+    actions+=`<button class="act-btn" style="background:var(--alight);color:var(--accent)" onclick="openReassign('${t.uid}')">🔄 Class</button>`;
+    if(t.grade && t.stream){
+      actions+=`<button class="act-btn" style="background:var(--alight);color:var(--accent)" onclick="openAnalysisFor('${t.grade}','${t.stream}')">📈</button>`;
+    }
+    actions+=`<button class="act-btn act-delete" onclick="openDel('${t.uid}')" title="Delete">🗑️</button>`;
+    return `<tr>
+      <td style="color:var(--text3);font-size:11px;font-weight:700">${i+1}</td>
+      <td><div class="t-name">${t.fullName||'—'}</div><div class="t-email">${t.email||''}</div></td>
+      <td class="t-meta">${t.tscNumber||'—'}</td>
+      <td class="t-meta"><strong>${t.grade||'—'}</strong> · ${t.stream||'—'}</td>
+      <td class="tc"><span class="sbadge ${sc}">${sl}</span></td>
+      <td class="t-meta">${date}</td>
+      <td><div class="act-wrap">${actions}</div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── SET STATUS ──
+async function setStatus(uid, newStatus){
+  const t = allTeachers.find(x=>x.uid===uid);
+  if(!t) return;
+  if(!_schoolId){ toast('Not authenticated — please refresh','err'); return; }
+  try{
+    const upd = {status: newStatus};
+    // When activating, ensure schoolId is set
+    if(newStatus === 'active') upd.schoolId = _schoolId;
+    await db.collection('users').doc(uid).update(upd);
+    t.status = newStatus;
+    if(newStatus === 'active') t.schoolId = _schoolId;
+    updateStats(); renderTable(); renderPendingBanner();
+    const labels={active:'activated ✅',suspended:'suspended 🚫',pending:'set to pending'};
+    toast(`${t.fullName} ${labels[newStatus]||newStatus}`);
+  }catch(e){
+    console.error('setStatus failed:', e.code, e.message);
+    toast(`Update failed: ${e.message}`,'err');
+  }
+}
+
+// ── EDIT MODAL ──
+async function openEdit(uid){
+  const t = allTeachers.find(x=>x.uid===uid);
+  if(!t) return;
+  editingUid=uid;
+  el('eFirst').value=t.firstName||'';
+  el('eLast').value=t.lastName||'';
+  el('eTSC').value=t.tscNumber||'';
+  el('eGrade').value=t.grade||'';
+  el('eStatus').value=t.status||'pending';
+  el('editOverlay').classList.add('open');
+  // Load streams for this grade, then set current stream
+  await onEditGradeChange(t.stream||'');
+}
+
+// ── Load streams dynamically for edit modal ──
+async function onEditGradeChange(preselect=''){
+  const grade = el('eGrade').value;
+  const ss    = el('eStream');
+  const hint  = el('eStreamHint');
+  ss.innerHTML = '<option value="">Loading…</option>';
+  if(!grade){
+    ss.innerHTML='<option value="">-- Select Grade first --</option>';
+    if(hint) hint.textContent='';
+    return;
+  }
+
+  let streams = [];
+
+  // 1. Check localStorage cache
+  try{
+    const raw = localStorage.getItem('cbe_streams');
+    if(raw){ const map=JSON.parse(raw); if(map[grade]?.length) streams=map[grade]; }
+  }catch(_){}
+
+  // 2. Always fetch live from Firestore
+  try{
+    if(_schoolId){
+      const snap = await db.collection('students').where('grade','==',grade).where('schoolId','==',_schoolId).get();
+      const set  = new Set(streams);
+      snap.forEach(d=>{ const s=d.data(); if(s.stream?.trim()) set.add(s.stream.trim()); });
+      streams = [...set].sort();
+    }
+    // Update cache
+    try{
+      const raw=localStorage.getItem('cbe_streams');
+      const map=raw?JSON.parse(raw):{};
+      map[grade]=streams;
+      localStorage.setItem('cbe_streams',JSON.stringify(map));
+      localStorage.setItem('cbe_streams_ts',Date.now().toString());
+    }catch(_){}
+  }catch(_){}
+
+  if(!streams.length){
+    ss.innerHTML='<option value="">-- No Stream --</option>';
+    if(hint){ hint.textContent='No streams found for this grade.'; hint.style.color='var(--text3)'; }
+  } else {
+    ss.innerHTML='<option value="">-- No Stream --</option>'+
+      streams.map(s=>`<option value="${s}"${s===preselect?' selected':''}>${s}</option>`).join('');
+    if(hint){ hint.textContent=`${streams.length} stream${streams.length>1?'s':''} available`; hint.style.color='var(--green)'; }
+    // If preselect not found (e.g. teacher had a stream that was removed), keep blank
+    if(preselect && !streams.includes(preselect)){
+      ss.innerHTML='<option value="">-- No Stream --</option><option value="'+preselect+'">'+preselect+' (current)</option>'+
+        streams.map(s=>`<option value="${s}">${s}</option>`).join('');
+    }
+  }
+}
+function closeEdit(){ el('editOverlay').classList.remove('open'); editingUid=null; }
+
+async function saveEdit(){
+  if(!editingUid) return;
+  const first=el('eFirst').value.trim(), last=el('eLast').value.trim();
+  const grade=el('eGrade').value, stream=el('eStream').value;
+  const status=el('eStatus').value, tsc=el('eTSC').value.trim();
+  if(!first||!last){toast('Name required','err');return;}
+  if(!grade){toast('Grade is required','err');return;}  const btn=el('editSaveBtn');
+  btn.disabled=true; btn.textContent='Saving…';
+  try{
+    const upd={firstName:first,lastName:last,fullName:`${first} ${last}`,grade,stream,status,tscNumber:tsc||null};
+    await db.collection('users').doc(editingUid).update(upd);
+    Object.assign(allTeachers.find(x=>x.uid===editingUid), upd);
+    updateStats(); renderTable(); closeEdit();
+    toast(`${first} ${last} updated`);
+  }catch(e){ toast('Save failed: '+e.message,'err'); }
+  btn.disabled=false; btn.textContent='Save Changes';
+}
+
+// ── DELETE MODAL ──
+function openDel(uid){
+  const t=allTeachers.find(x=>x.uid===uid);
+  if(!t) return;
+  deletingUid=uid;
+  el('delName').textContent=t.fullName||t.email||uid;
+  el('delOverlay').classList.add('open');
+}
+function closeDel(){ el('delOverlay').classList.remove('open'); deletingUid=null; }
+
+async function confirmDelete(){
+  if(!deletingUid) return;
+  const btn=el('delConfirmBtn');
+  btn.disabled=true; btn.textContent='Deleting…';
+  try{
+    await db.collection('users').doc(deletingUid).delete();
+    allTeachers=allTeachers.filter(x=>x.uid!==deletingUid);
+    updateStats(); renderTable(); closeDel();
+    toast('Teacher profile deleted');
+  }catch(e){ toast('Delete failed: '+e.message,'err'); }
+  btn.disabled=false; btn.textContent='Delete Profile';
+}
+
+// ── CLOSE ON BACKDROP / ESC ──
+el('editOverlay').addEventListener('click',e=>{ if(e.target===el('editOverlay')) closeEdit(); });
+el('delOverlay').addEventListener('click', e=>{ if(e.target===el('delOverlay'))  closeDel();  });
+el('reassignOverlay').addEventListener('click',e=>{ if(e.target===el('reassignOverlay')) closeReassign(); });
+el('addTeacherOverlay').addEventListener('click',e=>{ if(e.target===el('addTeacherOverlay')) closeAddTeacher(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeEdit();closeDel();closeReassign();closeAddTeacher();} });
+
+// ── ADD TEACHER ──
+function openAddTeacher(){
+  el('addTeacherErr').classList.remove('show');
+  ['atFirst','atLast','atEmail','atTSC'].forEach(id=>el(id).value='');
+  el('atGrade').value=''; el('atStream').innerHTML='<option value="">-- Select Grade --</option>';
+  el('atPass').value='Teacher@2026';
+  el('addTeacherOverlay').classList.add('open');
+}
+function closeAddTeacher(){ el('addTeacherOverlay').classList.remove('open'); }
+
+async function onAddTeacherGradeChange(){
+  const grade=el('atGrade').value, ss=el('atStream');
+  ss.innerHTML='<option value="">Loading…</option>';
+  if(!grade){ss.innerHTML='<option value="">-- Select Grade --</option>';return;}
+  try{
+    const snap=await db.collection('students')
+      .where('grade','==',grade).where('schoolId','==',_schoolId).get();
+    const set=new Set();
+    snap.forEach(d=>{const s=d.data();if(s.stream?.trim())set.add(s.stream.trim());});
+    const streams=[...set].sort();
+    ss.innerHTML='<option value="">-- No Stream --</option>'+streams.map(s=>`<option>${s}</option>`).join('');
+  }catch(_){ ss.innerHTML='<option value="">-- No Stream --</option>'; }
+}
+
+function generatePassword(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#';
+  let p=''; for(let i=0;i<10;i++) p+=chars[Math.floor(Math.random()*chars.length)];
+  el('atPass').value=p;
+}
+
+async function saveAddTeacher(){
+  const first=el('atFirst').value.trim(), last=el('atLast').value.trim();
+  const email=el('atEmail').value.trim(), tsc=el('atTSC').value.trim();
+  const grade=el('atGrade').value, stream=el('atStream').value;
+  const pass=el('atPass').value.trim();
+
+  el('addTeacherErr').classList.remove('show');
+  if(!first||!last){el('addTeacherErrMsg').textContent='First and last name required.';el('addTeacherErr').classList.add('show');return;}
+  if(!email){el('addTeacherErrMsg').textContent='Email required.';el('addTeacherErr').classList.add('show');return;}
+  if(!grade){el('addTeacherErrMsg').textContent='Grade is required.';el('addTeacherErr').classList.add('show');return;}
+  if(!pass||pass.length<6){el('addTeacherErrMsg').textContent='Password must be at least 6 characters.';el('addTeacherErr').classList.add('show');return;}
+
+  const btn=el('addTeacherBtn');
+  btn.disabled=true; btn.textContent='Creating…';
+
+  // Use Firebase Auth REST API to create user without signing out current admin
+  // We use the secondary auth approach via Firestore doc + a flag
+  // Then teacher logs in — their account is pre-created and active
+  try{
+    // Create Firebase Auth user via REST (doesn't affect current session)
+    const apiKey='AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24';
+    const res=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password:pass,returnSecureToken:true})
+    });
+    const data=await res.json();
+    if(data.error){
+      el('addTeacherErrMsg').textContent=data.error.message==='EMAIL_EXISTS'
+        ?'This email is already registered.'
+        :data.error.message;
+      el('addTeacherErr').classList.add('show');
+      btn.disabled=false; btn.textContent='➕ Add Teacher'; return;
+    }
+    const uid=data.localId;
+
+    // Save Firestore profile — active immediately, no approval needed
+    await db.collection('users').doc(uid).set({
+      firstName:first, lastName:last, fullName:`${first} ${last}`,
+      email, tscNumber:tsc||null,
+      grade, stream,
+      role:'teacher', status:'active',
+      schoolId:_schoolId,
+      schoolName:_schoolName||window.schoolSettings?.name||'',
+      addedByAdmin:true,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    log('info','Teacher added manually',{name:`${first} ${last}`,email,grade,stream});
+    toast(`✅ ${first} ${last} added — ${grade} ${stream} · Share password: ${pass}`);
+    closeAddTeacher();
+
+  }catch(e){
+    log('error','Add teacher failed',e.message);
+    el('addTeacherErrMsg').textContent=e.message;
+    el('addTeacherErr').classList.add('show');
+  }
+  btn.disabled=false; btn.textContent='➕ Add Teacher';
+}
+
+// ── REGISTRATION LINK ──
+function copyRegLink(){
+  if(!_schoolId){ toast('Not logged in','err'); return; }
+  // Strip current filename — works for admin.html, admin1.html, any name
+  const href = window.location.href.split('?')[0].split('#')[0];
+  const base = href.substring(0, href.lastIndexOf('/') + 1);
+  el('regBaseUrl').value = base;
+  updateRegLink();
+  el('regLinkOverlay').classList.add('open');
+}
+
+function updateRegLink(){
+  let base = el('regBaseUrl').value.trim();
+  if(!base) return;
+  if(!base.endsWith('/')) base += '/';
+  const link = base + 'login?sid=' + _schoolId;
+  el('regLinkText').value = link;
+}
+
+function doCopyLink(){
+  const link = el('regLinkText').value || el('regLinkText').textContent;
+  navigator.clipboard.writeText(link)
+    .then(()=>{ toast('✅ Link copied to clipboard'); })
+    .catch(()=>{ el('regLinkText').select?.(); document.execCommand('copy'); toast('✅ Copied'); });
+}
+
+function doShareWhatsApp(){
+  const link = el('regLinkText').value || el('regLinkText').textContent;
+  const msg  = encodeURIComponent(`Hello! Please use this link to register as a teacher on our CBE Mark Sheet System:
+
+${link}
+
+Fill in your details and submit. I will approve your account.`);
+  window.open(`https://wa.me/?text=${msg}`,'_blank');
+}
+
+// ── Submit renewal request from inside the overlay ──
+async function submitRenewalRequest(){
+  const phone       = (el('povPhone')?.value||'').trim();
+  const paymentName = (el('povPayName')?.value||'').trim().toUpperCase();
+  if(!phone){       toast('Enter your phone number','err'); el('povPhone')?.focus(); return; }
+  if(!paymentName){ toast('Enter the M-Pesa payment name','err'); el('povPayName')?.focus(); return; }
+
+  const btn = el('povSubmitBtn'), txt = el('povSubmitTxt');
+  btn.disabled = true;
+  txt.innerHTML = '<div class="spin-sm"></div> Sending…';
+  log('info','Renewal request submitted', {phone, paymentName});
+
+  try{
+    // Write renewal request to approvedSchools — owner sees it in their panel
+    await db.collection('approvedSchools').doc(_schoolId).update({
+      renewalRequest: {
+        phone, paymentName,
+        submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        schoolName:  window.schoolSettings?.name || _schoolId
+      }
+    });
+
+    // Log to owner activity
+    db.collection('ownerLog').add({
+      type:    'renewal_request',
+      message: 'Renewal request from: ' + (window.schoolSettings?.name || _schoolId),
+      school:  window.schoolSettings?.name || '—',
+      phone, paymentName, color: 'amber',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(()=>{});
+
+    // Switch to submitted state inside the modal
+    el('povForm').style.display       = 'none';
+    el('povSubmitted').classList.add('show');
+    toast('✅ Approval request sent — waiting for administrator');
+
+  }catch(e){
+    log('error','Renewal request failed', e.message);
+    toast('Failed: '+e.message, 'err');
+    btn.disabled = false;
+    txt.textContent = '📤 Send Approval Request';
+  }
+}
+
+// ── Payment gate listener — continuous real-time ──
+// Shows overlay whenever owner sends a message OR suspends the school.
+// Disappears ONLY when owner sets status:'approved' and clears the message.
+function _listenPayment(schoolId){
+  if(_ownerMsgUnsub){ _ownerMsgUnsub(); _ownerMsgUnsub=null; }
+  log('info','Payment gate listener started', schoolId);
+
+  _ownerMsgUnsub = db.collection('approvedSchools').doc(schoolId)
+    .onSnapshot(snap=>{
+      if(!snap.exists){
+        log('info','No approvedSchools doc — hiding overlay');
+        _hidePayment(); return;
+      }
+
+      const d = snap.data();
+      log('info','Payment gate update', {status:d.status, hasMsg:!!(d.message?.trim())});
+
+      // ── APPROVED + no message → hide gate, allow full access ──
+      if(d.status === 'approved' && !d.message?.trim()){
+        _hidePayment(); return;
+      }
+
+      // ── SUSPENDED or has a message → show gate ──
+      if(d.status === 'suspended' || (d.message && d.message.trim())){
+        // Update school name tag
+        const nameEl = el('povSchoolName');
+        if(nameEl) nameEl.textContent = d.schoolName || window.schoolSettings?.name || '—';
+
+        // Update message — use owner message or a default
+        const msgEl = el('povMsgText');
+        if(msgEl){
+          msgEl.textContent = d.message?.trim()
+            ? d.message
+            : d.status === 'suspended'
+              ? 'Your account has been suspended. Please contact the administrator to resolve this.'
+              : 'Your subscription payment is due. Please renew to continue using the system.';
+        }
+
+        // Show overlay — reset form state so they can re-submit if needed
+        const ov = el('paymentOverlay');
+        if(ov && !ov.classList.contains('show')){
+          // Reset form to initial state
+          const form = el('povForm'), sub = el('povSubmitted');
+          if(form){ form.style.display=''; }
+          if(sub)  { sub.classList.remove('show'); }
+          const sBtn = el('povSubmitBtn'), sTxt = el('povSubmitTxt');
+          if(sBtn){ sBtn.disabled=false; }
+          if(sTxt){ sTxt.textContent='📤 Send Approval Request'; }
+
+          // Pre-fill phone from Firestore if available
+          const phoneInp = el('povPhone');
+          if(phoneInp && d.phone && !phoneInp.value){
+            phoneInp.value = d.phone;
+          }
+
+          ov.classList.add('show');
+          log('info','Payment gate overlay shown');
+        }
+        return;
+      }
+
+      // Default — hide (e.g. approved with cleared message)
+      _hidePayment();
+
+    }, e=>{
+      log('warn','Payment gate listener error', e.message);
+      // On error — don't block the user, just hide
+      _hidePayment();
+    });
+}
+
+function _hidePayment(){
+  const ov = el('paymentOverlay');
+  if(ov && ov.classList.contains('show')){
+    ov.classList.remove('show');
+    log('info','Payment gate hidden — access restored');
+  }
+}
+
+// ── Session tracking ──
+async function _trackSession(user, profile){
+  let ip='—';
+  try{ const ctrl=new AbortController(); setTimeout(()=>ctrl.abort(),3000); const r=await fetch('https://api.ipify.org?format=json',{signal:ctrl.signal}); ip=(await r.json()).ip||'—'; }catch(_){}
+  const ua=navigator.userAgent;
+  function gd(u){return /iPhone/.test(u)?'iPhone':/iPad/.test(u)?'iPad':/Android/.test(u)?'Android':/Chrome/.test(u)?'Chrome':/Firefox/.test(u)?'Firefox':'Desktop';}
+  function go(u){return /Windows/.test(u)?'Windows':/Mac/.test(u)?'macOS':/Linux/.test(u)?'Linux':/Android/.test(u)?'Android':'Unknown';}
+  const ref=await db.collection('adminSessions').add({
+    schoolId:user.uid, adminId:user.uid,
+    adminName:profile.fullName||profile.email||'',
+    adminEmail:user.email||'', schoolName:window.schoolSettings?.name||'',
+    role:profile.role||'admin', ip, device:gd(ua), os:go(ua),
+    active:true, forcedLogout:false,
+    loginAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  _sessionId=ref.id;
+  db.collection('users').doc(user.uid).update({lastLogin:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});
+  window.addEventListener('beforeunload',_endSession);
+  _listenSessionControl();
+}
+function _listenSessionControl(){
+  if(!_sessionId) return;
+  db.collection('adminSessions').doc(_sessionId).onSnapshot(doc=>{
+    if(!doc.exists) return;
+    const d=doc.data();
+    if(d && d.forcedLogout){
+      toast('⚠️ Session ended — another login detected','err');
+      setTimeout(()=>doLogout(),2000);
+    }
+  });
+}
+async function _endSession(){
+  if(!_sessionId) return;
+  await db.collection('adminSessions').doc(_sessionId).update({active:false,logoutAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});
+  _sessionId=null;
+}
+</script>
+<script src="school-settings.js"></script>
+
+<!-- FORCE SETUP OVERLAY — shown on first login, cannot be dismissed -->
+<div class="overlay" id="setupOverlay" style="z-index:1000;background:rgba(6,12,28,.92);backdrop-filter:blur(16px)">
+  <div class="modal" style="max-width:460px;overflow:hidden;border:none;border-radius:16px;box-shadow:0 32px 80px rgba(0,0,0,.6)">
+
+    <!-- Top gradient band -->
+    <div style="background:linear-gradient(135deg,#0f172a,#1e3a8a 60%,#1a56db);padding:28px 24px 22px;text-align:center;position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 70% 10%,rgba(99,179,237,.15),transparent 60%)"></div>
+      <div style="width:56px;height:56px;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.22);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 12px;position:relative;z-index:1;box-shadow:0 0 0 8px rgba(255,255,255,.05)">🏫</div>
+      <div style="font-family:'Familjen Grotesk',sans-serif;font-size:20px;font-weight:800;color:#fff;margin-bottom:6px;position:relative;z-index:1">Welcome to CBE Mark Sheet</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7);position:relative;z-index:1;line-height:1.5">Before you begin, you need to set up your school details.<br>This only takes a minute.</div>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body" style="padding:22px 24px">
+
+      <!-- Steps checklist -->
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:12px;background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px">
+          <div style="width:28px;height:28px;background:var(--alight);border-radius:50%;display:grid;place-items:center;font-size:14px;flex-shrink:0">1️⃣</div>
+          <div>
+            <div style="font-weight:700;font-size:12.5px">Set your school name &amp; details</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:1px">Name, motto, county, logo</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px">
+          <div style="width:28px;height:28px;background:var(--alight);border-radius:50%;display:grid;place-items:center;font-size:14px;flex-shrink:0">2️⃣</div>
+          <div>
+            <div style="font-weight:700;font-size:12.5px">Configure stream settings</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:1px">Enable or disable class streams</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px">
+          <div style="width:28px;height:28px;background:var(--alight);border-radius:50%;display:grid;place-items:center;font-size:14px;flex-shrink:0">3️⃣</div>
+          <div>
+            <div style="font-weight:700;font-size:12.5px">Then admit students &amp; add teachers</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:1px">You'll be redirected back here after setup</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#fef3c7;border:1px solid #fcd34d;border-left:3px solid #f59e0b;border-radius:var(--r2);padding:10px 14px;margin-bottom:18px;font-size:12px;color:#92400e;line-height:1.6">
+        ⚠️ <strong>Setup is required</strong> — you cannot admit students or use the system until your school details are saved.
+      </div>
+
+      <a href="settings.html" class="btn btn-primary" style="width:100%;justify-content:center;height:40px;font-size:13.5px;font-family:'Familjen Grotesk',sans-serif;font-weight:800;border-radius:8px">
+        ⚙️ Go to School Settings →
+      </a>
+
+      <div style="text-align:center;margin-top:12px">
+        <button onclick="doLogout()" style="background:none;border:none;font-size:11.5px;color:var(--text3);cursor:pointer;font-family:inherit">← Sign out and try a different account</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -38,7 +38,7 @@ app.post('/api/payment/pay', async (req, res) => {
     };
 
     const response = await axios.post(
-      `${INSTASEND_BASE}/payment/collection/`,
+      `${INSTASEND_BASE}/payment/mpesa-stk-push/`,
       payload,
       {
         headers: {

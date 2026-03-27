@@ -38,11 +38,11 @@ app.post('/api/payment/pay', async (req, res) => {
     };
 
     const response = await axios.post(
-      `${INSTASEND_BASE}/payment/mpesa-stk-push/`,
+      `${INSTASEND_BASE}/payment/collection/`,
       payload,
       {
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Token ${API_KEY}`,
           'Content-Type':  'application/json'
         }
       }
@@ -79,7 +79,7 @@ app.get('/api/payment/status/:invoiceId', async (req, res) => {
       `${INSTASEND_BASE}/payment/invoices/${invoiceId}/`,
       {
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Token ${API_KEY}`,
           'Content-Type':  'application/json'
         }
       }

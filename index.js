@@ -75,7 +75,7 @@ app.post('/api/payment/pay', async (req, res) => {
       description: 'Payment',
     };
 const response = await axios.post(
-  `https://paynecta.co.ke/api/payments/initialize`,
+  `${PAYNECTA_URL}/payment-links/initialize`,
   payload,
   { headers: headers() }
 );

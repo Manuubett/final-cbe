@@ -74,13 +74,16 @@ app.post('/api/payment/pay', async (req, res) => {
   }
 
   try {
-    // Paynecta STK push endpointconst payload = {
+    // Paynecta STK push endpoint
+    
+    const payload = {
   phone_number: normalizedPhone,
   amount: Number(amount),
-  email: process.env.PAYNECTA_EMAIL || 'bettemanuel49@gmail.com',
+  customer_email: process.env.PAYNECTA_EMAIL,
   reference: 'PAY-' + Date.now(),
   description: 'Test Payment',
 };
+    
     
 
     console.log('[pay] Payload to Paynecta:', payload);

@@ -16,7 +16,7 @@ app.use(cors({
 }));
 
 const PORT = process.env.PORT || 5000;
-const PAYNECTA_URL = 'https://paynecta.co.ke/api/v1';
+const PAYNECTA_URL = 'https://paynecta.co.ke/api';
 const API_KEY = process.env.PAYNECTA_API_KEY;
 const API_EMAIL = process.env.PAYNECTA_EMAIL;
 const LINK_CODE = process.env.PAYNECTA_LINK_CODE;
@@ -74,12 +74,12 @@ app.post('/api/payment/pay', async (req, res) => {
       reference: 'PAY-' + Date.now(),
       description: 'Payment',
     };
+const response = await axios.post(
+  `https://paynecta.co.ke/api/payments/initialize`,
+  payload,
+  { headers: headers() }
+);
 
-    const response = await axios.post(
-      `${PAYNECTA_URL}/payments/initialize`,
-      payload,
-      { headers: headers() }
-    );
 
     const data = response.data;
 

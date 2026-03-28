@@ -61,10 +61,12 @@ app.post('/api/payment/pay', async (req, res) => {
     return res.status(400).json({ error: 'phone and amount are required' });
   }
 
-  // Accept 07XX or 2547XX format
-  let normalised = String(phone).replace(/\D/g, '');
-  if (normalised.startsWith('0')) normalised = '254' + normalised.slice(1);
-  if (!/^2547\d{8}$/.test(normalised)) {
+  // Normalise phone number to 2547XXXXXXXX
+  let normalizedPhone = String(phone).replace(/\D/g, '');
+  if (normalizedPhone.startsWith('0')) {
+    normalizedPhone = '254' + normalizedPhone.slice(1);
+  }
+  if (!/^2547\d{8}$/.test(normalizedPhone)) {
     return res.status(400).json({ error: 'Phone must be a valid Safaricom number e.g. 0712345678' });
   }
 
@@ -74,17 +76,16 @@ app.post('/api/payment/pay', async (req, res) => {
   }
 
   try {
-    // Paynecta STK push endpoint
-    
+    // Paynecta STK push payload – adjust fields according to their documentation
     const payload = {
-  phone_number: normalizedPhone,
-  amount: Number(amount),
-  customer_email: process.env.PAYNECTA_EMAIL,
-  reference: 'PAY-' + Date.now(),
-  description: 'Test Payment',
-};
-    
-    
+      phone_number: normalizedPhone,      // ✅ fixed variable name
+      amount: Number(amount),
+      link_code: LINK_CODE,               // ✅ include your payment link code
+      customer_email: API_EMAIL,          // your merchant email (or collect customer email)
+      reference: 'PAY-' + Date.now(),
+      description: 'Test Payment',
+      // callback_url: CALLBACK_URL       // uncomment if Paynecta expects it here
+    };
 
     console.log('[pay] Payload to Paynecta:', payload);
 
@@ -96,7 +97,7 @@ app.post('/api/payment/pay', async (req, res) => {
 
     console.log('[pay] Paynecta response:', JSON.stringify(response.data, null, 2));
 
-    // Extract transaction reference for polling
+    // Extract transaction reference – update keys to match actual Paynecta response
     const ref = response.data?.transaction_reference
       || response.data?.data?.transaction_reference
       || response.data?.reference

@@ -18,16 +18,19 @@ app.use(cors({
 }));
 
 const PORT = process.env.PORT || 5000;
-const PAYNECTA_URL = 'https://paynecta.co.ke/api';
+
+// ✅ Correct base URL
+const PAYNECTA_URL = 'https://paynecta.co.ke/api/v1';
+
 const API_KEY = process.env.PAYNECTA_API_KEY;
 
-// temporary store
+// Temporary store
 const paymentStore = {};
 
 // ── Helpers ──
 function headers() {
   return {
-    Authorization: `Bearer ${API_KEY}`,
+    Authorization: `Bearer ${API_KEY}`, // ⚠️ If fails, change to: Token ${API_KEY}
     'Content-Type': 'application/json',
     Accept: 'application/json',
   };
@@ -48,12 +51,12 @@ function normalizePhone(phone) {
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'Paynecta STK Backend',
+    service: 'Paynecta Backend FINAL',
     time: new Date().toISOString(),
   });
 });
 
-// ── PAY (STK PUSH) ──
+// ── PAY ──
 app.post('/api/payment/pay', async (req, res) => {
   try {
     const { phone, amount } = req.body;
@@ -71,10 +74,11 @@ app.post('/api/payment/pay', async (req, res) => {
       description: 'Test Payment',
     };
 
-    console.log("➡️ STK PUSH:", payload);
+    console.log("➡️ URL:", `${PAYNECTA_URL}/payment/initialize`);
+    console.log("➡️ Payload:", payload);
 
     const response = await axios.post(
-      `${PAYNECTA_URL}/mpesa/stk-push`,
+      `${PAYNECTA_URL}/payment/initialize`,
       payload,
       { headers: headers() }
     );
@@ -110,7 +114,7 @@ app.get('/api/payment/status/:reference', async (req, res) => {
     console.log("🔍 Checking status:", reference);
 
     const response = await axios.get(
-      `${PAYNECTA_URL}/mpesa/query/${reference}`,
+      `${PAYNECTA_URL}/payment/status/${reference}`,
       { headers: headers() }
     );
 
@@ -142,5 +146,5 @@ app.post('/api/payment/callback', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });

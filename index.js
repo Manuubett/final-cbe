@@ -3,6 +3,13 @@ app.get("/paynecta-webhook", (req, res) => {
   res.send("Webhook endpoint is live ✅");
 });
 
+app.post("/paynecta-webhook", (req, res) => {
+  console.log("🔥🔥 WEBHOOK HIT 🔥🔥");
+  console.log(req.body);
+
+  res.sendStatus(200);
+});
+
 // Actual webhook (POST)
 app.post("/paynecta-webhook", (req, res) => {
   console.log("📩 Webhook received:", req.body);

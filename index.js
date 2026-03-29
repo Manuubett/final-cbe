@@ -1,29 +1,20 @@
-app.post("/paynecta-webhook", async (req, res) => {
-  const signature = req.headers["x-paynecta-signature"];
+// Test route (GET)
+app.get("/paynecta-webhook", (req, res) => {
+  res.send("Webhook endpoint is live ✅");
+});
 
-  // 🔐 Verify webhook
-  if (signature !== process.env.PAYNECTA_SECRET) {
-    return res.status(403).send("Invalid signature");
-  }
+// Actual webhook (POST)
+app.post("/paynecta-webhook", (req, res) => {
+  console.log("📩 Webhook received:", req.body);
 
-  const data = req.body;
+  res.sendStatus(200); // respond immediately
 
-  console.log("📩 Webhook:", data);
+  // Process in background
+  setImmediate(() => {
+    const data = req.body;
 
-  if (data.status === "completed") {
-    const tx = data.transaction_id;
-
-    // OPTIONAL: verify with PayNecta API
-    // (recommended for extra security)
-
-    // ✅ Auto approve
-    await db.payments.update({
-      transaction_id: tx,
-      status: "paid"
-    });
-
-    console.log("✅ Payment confirmed:", tx);
-  }
-
-  res.sendStatus(200); // VERY IMPORTANT
+    if (data.status === "completed") {
+      console.log("✅ Payment success:", data.transaction_id);
+    }
+  });
 });

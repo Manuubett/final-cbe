@@ -1,8 +1,10 @@
-// Test route (GET)
-app.get("/paynecta-webhook", (req, res) => {
-  res.send("Webhook endpoint is live ✅");
-});
+const express = require("express");
+const app = express();
 
+// 🔥 IMPORTANT (must be BEFORE routes)
+app.use(express.json());
+
+// ✅ Your webhook route (PUT IT HERE)
 app.post("/paynecta-webhook", (req, res) => {
   console.log("🔥🔥 WEBHOOK HIT 🔥🔥");
   console.log(req.body);
@@ -10,18 +12,12 @@ app.post("/paynecta-webhook", (req, res) => {
   res.sendStatus(200);
 });
 
-// Actual webhook (POST)
-app.post("/paynecta-webhook", (req, res) => {
-  console.log("📩 Webhook received:", req.body);
+// Optional test route
+app.get("/", (req, res) => {
+  res.send("Server running 🚀");
+});
 
-  res.sendStatus(200); // respond immediately
-
-  // Process in background
-  setImmediate(() => {
-    const data = req.body;
-
-    if (data.status === "completed") {
-      console.log("✅ Payment success:", data.transaction_id);
-    }
-  });
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });

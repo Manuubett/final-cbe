@@ -283,11 +283,13 @@ app.post('/api/schools/approve', async (req, res) => {
 });
 
 // ── Static files + SPA catch-all (MUST be last) ───────────────────────────────
-app.use(express.static(path.join(__dirname, 'public')));
-app.get('*', (req, res, next) => {
+app.use(express.static(path.join(__dirname, 'public')));// NEW - Express 5 compatible
+app.get('*splat', (req, res, next) => {
   if (req.path.startsWith('/api/')) return next();
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

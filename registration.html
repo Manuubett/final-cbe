@@ -696,7 +696,7 @@ async function initiateStkPush(){
       res = await fetch(`${BACKEND}/api/stk-push`, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ amount: 1, phone, userId: _createdUid || null })
+        body: JSON.stringify({ amount: 3599, phone, userId: _createdUid || null })
       });
     }catch(netErr){
       throw new Error('Could not reach payment server. Check your internet connection.');

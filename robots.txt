@@ -6,6 +6,7 @@ User-agent: *
 # ── Public pages — allow indexing ──
 Allow: /
 Allow: /register
+Allow: /login
 Allow: /demo
 
 # ── Internal app pages — block from indexing ──

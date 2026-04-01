@@ -899,6 +899,42 @@ window.onGradeChange = async function(){
 // ── Auto-load when stream changes ──
 // (onchange="loadStudents()" is already on the select)
 
+// ══════════════════════════════════════════════
+// IN-MEMORY CACHE — avoids redundant Firebase reads
+// Cache is keyed by grade+stream+term+year+schoolId
+// Cache expires after 5 minutes or is invalidated on save
+// ══════════════════════════════════════════════
+const _cache = {};
+const _CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function _cacheKey(grade, stream, term, year, sid){
+  return `${sid}|${grade}|${stream}|${term}|${year}`;
+}
+function _cacheGet(key){
+  const c = _cache[key];
+  if(!c) return null;
+  if(Date.now() - c.ts > _CACHE_TTL){ delete _cache[key]; return null; }
+  return c;
+}
+function _cacheSet(key, students, savedMap, savedCount){
+  _cache[key] = { ts: Date.now(), students, savedMap: {...savedMap}, savedCount };
+}
+// Call after a successful save to update the cache in place (no re-fetch needed)
+function _cacheUpdateSave(sid, studentId, record){
+  Object.values(_cache).forEach(c=>{
+    if(c.savedMap[studentId]){
+      c.savedMap[studentId] = {...c.savedMap[studentId], ...record};
+    } else {
+      c.savedMap[studentId] = record;
+      c.savedCount = (c.savedCount||0) + 1;
+    }
+    c.ts = Date.now(); // refresh TTL
+  });
+}
+function _cacheInvalidate(){
+  Object.keys(_cache).forEach(k=>delete _cache[k]);
+}
+
 // ── Load students ──
 window.loadStudents = async function(){
   const {grade, stream: classStream} = _getClassSelectors();
@@ -920,11 +956,37 @@ window.loadStudents = async function(){
   if(loadLock) return;
   loadLock=true;
 
+  const _sid = currentUser?.schoolId || sessionStorage.getItem('cbe_school_id');
+  if(!_sid){
+    el('tblWrap').innerHTML=`<div class="empty-msg"><div class="ei">🔒</div><p>Not authenticated</p></div>`;
+    loadLock=false; return;
+  }
+
+  const ck = _cacheKey(grade, stream, term, year, _sid);
+  const cached = _cacheGet(ck);
+
+  if(cached){
+    // ── Serve from cache — no Firebase round-trip ──
+    students   = cached.students;
+    savedMap   = {...cached.savedMap};
+    savedCount = cached.savedCount;
+    el('pilS').textContent  = students.length;
+    el('pilSv').textContent = savedCount;
+    el('sheetTitle').textContent = stream ? `${grade} ${stream} — ${term} ${year}` : `${grade} — ${term} ${year}`;
+    if(!students.length){
+      const loc=stream?`${grade} ${stream}`:grade;
+      el('tblWrap').innerHTML=`<div class="empty-msg"><div class="ei">👥</div><p>No students in <strong>${loc}</strong>. Admit them first via the Admission page.</p></div>`;
+      loadLock=false; return;
+    }
+    renderTable();
+    loadLock=false;
+    toast('Loaded from cache','info');
+    return;
+  }
+
   el('tblWrap').innerHTML=`<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading ${grade}${stream?' '+stream:''}…</div></div>`;
 
   try{
-    const _sid = currentUser?.schoolId || sessionStorage.getItem('cbe_school_id');
-    if(!_sid){ el('tblWrap').innerHTML=`<div class="empty-msg"><div class="ei">🔒</div><p>Not authenticated</p></div>`; loadLock=false; return; }
     let studQuery = db.collection('students').where('grade','==',grade).where('schoolId','==',_sid);
     if(stream) studQuery = studQuery.where('stream','==',stream);
     const snap = await studQuery.get();
@@ -941,6 +1003,9 @@ window.loadStudents = async function(){
     if(stream) rsQuery = rsQuery.where('stream','==',stream);
     const rs = await rsQuery.get();
     rs.forEach(d=>{savedMap[d.data().studentId]={id:d.id,...d.data()};savedCount++;});
+
+    // ── Store in cache ──
+    _cacheSet(ck, students, savedMap, savedCount);
 
     el('pilS').textContent=students.length;
     el('pilSv').textContent=savedCount;
@@ -1301,9 +1366,14 @@ let _draftKey = null;
 
 function getDraftKey(){
   if(_draftKey) return _draftKey;
-  const sid   = currentUser?.schoolId || sessionStorage.getItem('cbe_school_id') || 'x';
-  const grade  = el('selGrade')?.value  || '';
-  const stream = el('selStream')?.value || '';
+  const sid    = currentUser?.schoolId || sessionStorage.getItem('cbe_school_id') || 'x';
+  // For teachers, grade/stream come from their profile, not DOM hidden inputs
+  const grade  = currentUser?.role === 'teacher'
+    ? (currentUser.grade  || el('selGrade')?.value  || '')
+    : (el('selGrade')?.value  || '');
+  const stream = currentUser?.role === 'teacher'
+    ? (currentUser.stream || el('selStream')?.value || '')
+    : (el('selStream')?.value || '');
   const term   = el('selTerm')?.value   || '';
   const year   = el('selYear')?.value   || '';
   _draftKey = `cbe_draft_${sid}_${grade}_${stream}_${term}_${year}`.replace(/\s/g,'_');
@@ -1341,24 +1411,41 @@ function loadDraft(){
     const draft = JSON.parse(raw);
     let restored = 0;
     students.forEach(s=>{
+      // Restore draft only for students NOT yet saved to Firestore
+      // (saved students get their data from Firestore via savedMap in renderTable)
       if(draft[s.id] && !savedMap[s.id]){
-        // Restore draft values into inputs
         const d = draft[s.id];
+        // Restore oof values first (they affect calculations)
+        SUBS.forEach(sub=>{
+          if(sub.parts){
+            sub.parts.forEach(p=>{
+              const oofInp = el(`oof_${sub.id}_${p.id}`);
+              if(oofInp && d[`oof_${sub.id}_${p.id}`]) oofInp.value = d[`oof_${sub.id}_${p.id}`];
+            });
+          } else {
+            const oofInp = el(`oof_${sub.id}`);
+            if(oofInp && d[`oof_${sub.id}`]) oofInp.value = d[`oof_${sub.id}`];
+          }
+        });
+        // Restore score values
         SUBS.forEach(sub=>{
           if(sub.parts){
             sub.parts.forEach(p=>{
               const inp = el(`${sub.id}_${p.id}_${s.id}`);
-              if(inp && d[`${sub.id}_${p.id}`]) inp.value = d[`${sub.id}_${p.id}`];
+              if(inp && d[`${sub.id}_${p.id}`] !== undefined && d[`${sub.id}_${p.id}`] !== 0)
+                inp.value = d[`${sub.id}_${p.id}`];
             });
           } else {
             const inp = el(`${sub.id}_s_${s.id}`);
-            if(inp && d[`${sub.id}_score`]) inp.value = d[`${sub.id}_score`];
+            if(inp && d[`${sub.id}_score`] !== undefined && d[`${sub.id}_score`] !== 0)
+              inp.value = d[`${sub.id}_score`];
           }
         });
         calcRow(s.id);
         restored++;
       }
     });
+    updateOofTotals();
     if(restored > 0){
       const badge = el('draftBadge');
       if(badge){
@@ -1463,6 +1550,9 @@ async function _saveRowSilent(sid){
     el('pilSv').textContent = ++savedCount;
   }
 
+  // ── Keep cache coherent — update in place instead of invalidating ──
+  _cacheUpdateSave(sid, sid, savedMap[sid]);
+
   // Mark row as saved
   el(`tr-${sid}`)?.classList.add('saved');
   const actEl = el(`act_${sid}`);
@@ -1522,6 +1612,8 @@ window.saveRow=async function(sid){
       savedMap[sid]={id:ref.id,...payload};
       el('pilSv').textContent=++savedCount;
     }
+    // ── Keep cache coherent ──
+    _cacheUpdateSave(sid, sid, savedMap[sid]);
     el(`tr-${sid}`)?.classList.add('saved');
     el(`act_${sid}`).innerHTML=`<span class="sv-done">✓</span>`;
     clearDraft(sid);

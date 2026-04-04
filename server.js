@@ -30,26 +30,28 @@ if (!TELEGRAM_BOT_TOKEN) console.warn('⚠️  TELEGRAM_BOT_TOKEN not set — no
 if (!TELEGRAM_CHAT_ID)   console.warn('⚠️  TELEGRAM_CHAT_ID not set — notifications disabled');
 
 async function sendTelegram(text) {
-  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    console.warn('[Telegram] Skipped — BOT_TOKEN or CHAT_ID missing');
+    return;
+  }
+  console.log('[Telegram] Sending message…');
   try {
-    const res = await fetch(
+    const res = await axios.post(
       `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
       {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: TELEGRAM_CHAT_ID,
-          text,
-          parse_mode: 'HTML',
-          disable_web_page_preview: true,
-        }),
+        chat_id:                  TELEGRAM_CHAT_ID,
+        text,
+        parse_mode:               'HTML',
+        disable_web_page_preview: true,
       }
     );
-    const json = await res.json();
-    if (json.ok) { console.log('📨 Telegram sent ✅'); }
-    else         { console.warn('⚠️  Telegram error:', json); }
+    if (res.data?.ok) {
+      console.log('[Telegram] ✅ Sent successfully — message_id:', res.data.result?.message_id);
+    } else {
+      console.warn('[Telegram] ⚠️  API returned not-ok:', JSON.stringify(res.data));
+    }
   } catch (err) {
-    console.warn('⚠️  Telegram failed:', err.message);
+    console.error('[Telegram] ❌ Failed:', err.response?.data || err.message);
   }
 }
 
@@ -377,8 +379,10 @@ app.post('/api/schools/approve', async (req, res) => {
 
 // ── Telegram notify (called directly from frontend) ──────────────────────────
 app.post('/api/notify', async (req, res) => {
+  console.log('[Notify] Hit — apiKey present:', !!req.body.apiKey, '| text length:', (req.body.text||'').length);
   const { text, apiKey } = req.body;
   if (apiKey !== process.env.NOTIFY_API_KEY) {
+    console.warn('[Notify] ❌ Unauthorized — key mismatch');
     return res.status(401).json({ success: false, error: 'Unauthorized' });
   }
   if (!text) return res.status(400).json({ success: false, error: 'text required' });

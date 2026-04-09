@@ -13,6 +13,7 @@
 
 
   <meta name="msvalidate.01" content="53F9D4CBAF293FA83D71044AB6B7898F" />
+  
 
 <!-- ═══ PRIMARY SEO ═══ -->
 <title>CBE Mark Sheet — Kenya CBC Digital School Management System</title>
@@ -261,6 +262,10 @@ h1{animation:fadeUp .5s .1s both}
 }
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+</head>
+  <head>
+  <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldd1q4sAAAAADga6Ediw118NWAhCHZSl-pmL2Pc"></script>
+  <!-- Your code -->
 </head>
 <body>
 
@@ -516,6 +521,14 @@ document.querySelectorAll('.step,.feat-card,.role-card').forEach(el=>{
   el.style.cssText+='opacity:0;transform:translateY(12px);transition:opacity .45s ease,transform .45s ease';
   io.observe(el);
 });
+</script>
+  <script>
+  function onClick(e) {
+    e.preventDefault();
+    grecaptcha.enterprise.ready(async () => {
+      const token = await grecaptcha.enterprise.execute('6Ldd1q4sAAAAADga6Ediw118NWAhCHZSl-pmL2Pc', {action: 'LOGIN'});
+    });
+  }
 </script>
 
 </body>

@@ -165,6 +165,10 @@ select.inp{cursor:pointer;padding-left:12px}
 @keyframes tout{to{transform:translateX(110%);opacity:0}}
 </style>
 </head>
+  <head>
+  <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldd1q4sAAAAADga6Ediw118NWAhCHZSl-pmL2Pc"></script>
+  <!-- Your code -->
+</head>
 <body>
 <div id="tc"></div>
 
@@ -1196,6 +1200,14 @@ function onCountyChange(){
 }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+<script>eruda.init();</script> 
+  <script>
+  function onClick(e) {
+    e.preventDefault();
+    grecaptcha.enterprise.ready(async () => {
+      const token = await grecaptcha.enterprise.execute('6Ldd1q4sAAAAADga6Ediw118NWAhCHZSl-pmL2Pc', {action: 'LOGIN'});
+    });
+  }
+</script>
 </body>
 </html>

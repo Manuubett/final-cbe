@@ -94,15 +94,17 @@ body.dark{--bg:#0d1017;--surface:#161a24;--surf2:#1c2030;--border:#272d3e;--text
 .spin{width:16px;height:16px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .65s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .empty{text-align:center;padding:50px 20px;color:var(--text3)}
-.cache-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:12px;background:var(--surf2);color:var(--text2);font-size:11px;border:1px solid var(--border);cursor:pointer}
-.cache-badge:hover{background:var(--alight);color:var(--accent)}
+/* Pro badge */
+.pro-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:none;text-decoration:none}
+.pro-badge.active{background:#d1fae5;color:#065f46}
+.pro-badge.inactive{background:#fef3c7;color:#92400e}
 @media(max-width:640px){.wrap{padding:12px}.form-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div id="tc"></div>
 
-<!-- NEMIS EDIT MODAL (unchanged) -->
+<!-- NEMIS EDIT MODAL -->
 <div class="modal-bg" id="nemisModal">
   <div class="modal">
     <div class="modal-head"><h3>📋 Complete NEMIS Record (Required for Export)</h3><button class="close-btn" onclick="closeNemisModal()">✕</button></div>
@@ -138,12 +140,11 @@ body.dark{--bg:#0d1017;--surface:#161a24;--surf2:#1c2030;--border:#272d3e;--text
   <div class="logo"><div class="lm" id="hdrLogo">📊</div><div><div class="lt" id="hdrSchoolName">NEMIS Manager</div><div class="ls" id="hdrSchoolSub">Junior School · Kenya CBC</div></div></div>
   <div class="hdr-r">
     <a href="admission.html" class="btn btn-outline btn-sm" style="text-decoration:none;">← Admission</a>
-    <!-- Subscription Badge and Upgrade Button -->
-    <span class="cache-badge" id="subscriptionBadge">⚠️ Free Plan</span>
-    <button class="btn btn-primary btn-sm" id="upgradeBtn" style="background:#059669;">💎 Upgrade</button>
-    <button class="btn btn-outline btn-sm" id="themeBtn">🌙</button>
+    <!-- Subscription badge — clicking goes to gate page to manage/renew -->
+    <a href="nemis-gate.html" class="pro-badge inactive" id="subscriptionBadge" title="Manage subscription">⚠️ Free Plan</a>
     <button class="btn btn-success btn-sm" id="exportNemisBtn">📎 Export NEMIS CSV</button>
     <button class="btn btn-outline btn-sm" onclick="refreshNemisData()">🔄 Refresh</button>
+    <button class="btn btn-outline btn-sm" id="themeBtn">🌙</button>
   </div>
 </header>
 
@@ -176,7 +177,6 @@ body.dark{--bg:#0d1017;--surface:#161a24;--surf2:#1c2030;--border:#272d3e;--text
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-functions-compat.js"></script>
 <script>
 firebase.initializeApp({
   apiKey:"AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
@@ -188,11 +188,10 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 const auth = firebase.auth();
-const functions = firebase.functions();
 
 let allStudents = [], filteredStudents = [], currentEditId = null;
 let _schoolId = null, _authUser = null;
-let subscriptionActive = false, subscriptionExpiry = null;
+let subscriptionActive = false;
 
 // Kenyan counties
 const kenyanCounties = ["Mombasa","Kwale","Kilifi","Tana River","Lamu","Taita-Taveta","Garissa","Wajir","Mandera","Marsabit","Isiolo","Meru","Tharaka-Nithi","Embu","Kitui","Machakos","Makueni","Nyandarua","Nyeri","Kirinyaga","Murang'a","Kiambu","Turkana","West Pokot","Samburu","Trans Nzoia","Uasin Gishu","Elgeyo-Marakwet","Nandi","Baringo","Laikipia","Nakuru","Narok","Kajiado","Kericho","Bomet","Kakamega","Vihiga","Bungoma","Busia","Siaya","Kisumu","Homa Bay","Migori","Kisii","Nyamira","Nairobi"];
@@ -209,92 +208,42 @@ function toast(msg, type = 'ok') {
   setTimeout(() => { t.style.animation = 'tout .28s ease forwards'; setTimeout(() => t.remove(), 300); }, 2800);
 }
 
-// ======================= SUBSCRIPTION LOGIC =======================
+// ── Subscription check (read-only — payment handled in nemis-gate.html) ──────
 async function loadSubscriptionStatus() {
-  if (!_schoolId) return;
+  if (!_schoolId) return false;
   try {
     const doc = await db.collection('settings').doc(_schoolId).get();
     const data = doc.data();
-    subscriptionActive = data?.subscriptionActive === true;
-    subscriptionExpiry = data?.subscriptionExpiry?.toDate() || null;
-    const badge = document.getElementById('subscriptionBadge');
+    const active = data?.subscriptionActive === true;
+    const expiry = data?.subscriptionExpiry?.toDate() || null;
     const now = new Date();
-    if (subscriptionActive && subscriptionExpiry && now < subscriptionExpiry) {
-      badge.innerHTML = '✅ Pro Plan';
-      badge.style.background = '#d1fae5';
-      badge.style.color = '#065f46';
+    subscriptionActive = active && expiry && now < expiry;
+    const badge = document.getElementById('subscriptionBadge');
+    if (subscriptionActive) {
+      badge.innerHTML = '✅ Pro Active';
+      badge.className = 'pro-badge active';
+      badge.title = 'Subscription active — click to manage';
     } else {
-      badge.innerHTML = '⚠️ Free Plan (exports limited)';
-      badge.style.background = '#fef3c7';
-      badge.style.color = '#92400e';
+      badge.innerHTML = '⚠️ Free Plan';
+      badge.className = 'pro-badge inactive';
+      badge.title = 'Subscribe to unlock exports — click to upgrade';
     }
+    return subscriptionActive;
   } catch (err) {
     console.warn('Failed to load subscription:', err);
+    return false;
   }
 }
 
-async function canExport() {
-  await loadSubscriptionStatus(); // refresh
-  const now = new Date();
-  if (subscriptionActive && subscriptionExpiry && now < subscriptionExpiry) return true;
-  
-  // Ask user to upgrade
-  const userPhone = prompt(
-    '📢 Export and NEMIS tools require a Pro subscription (KES 650/month).\n\n' +
-    'Enter your M-Pesa phone number to start payment:'
-  );
-  if (userPhone && userPhone.length >= 10) {
-    await triggerUpgrade(userPhone);
-    return false; // don't export now, wait for payment
+// ── Export — redirect to gate if not subscribed ───────────────────────────────
+async function exportNemisCSV() {
+  const active = await loadSubscriptionStatus();
+  if (!active) {
+    // Redirect to gate page — no inline prompt
+    toast('Pro subscription required for export. Redirecting...', 'err');
+    setTimeout(() => { window.location.href = 'nemis-gate.html'; }, 1200);
+    return;
   }
-  return false;
-}
-
-async function triggerUpgrade(phoneNumber) {
-  const upgradeBtn = document.getElementById('upgradeBtn');
-  const originalText = upgradeBtn.innerHTML;
-  upgradeBtn.innerHTML = '<div class="spin"></div> Processing...';
-  upgradeBtn.disabled = true;
-  try {
-    // Call Paynecta cloud function
-    const createCheckout = functions.httpsCallable('createPaynectaCheckout');
-    const result = await createCheckout({ phoneNumber, plan: 'monthly' });
-    if (result.data.success) {
-      toast(result.data.message || 'STK push sent. Check your phone and approve payment.', 'info');
-      // Start polling for subscription status change
-      let attempts = 0;
-      const interval = setInterval(async () => {
-        await loadSubscriptionStatus();
-        attempts++;
-        if (subscriptionActive && subscriptionExpiry && new Date() < subscriptionExpiry) {
-          clearInterval(interval);
-          toast('✅ Subscription activated! You can now export data.', 'ok');
-          upgradeBtn.innerHTML = originalText;
-          upgradeBtn.disabled = false;
-          // Optionally reload page or just refresh UI
-        } else if (attempts > 30) {
-          clearInterval(interval);
-          toast('Payment confirmation timed out. Please check your subscription status later.', 'info');
-          upgradeBtn.innerHTML = originalText;
-          upgradeBtn.disabled = false;
-        }
-      }, 2000);
-    } else {
-      toast(result.data.message || 'Payment initiation failed', 'err');
-      upgradeBtn.innerHTML = originalText;
-      upgradeBtn.disabled = false;
-    }
-  } catch (err) {
-    console.error(err);
-    toast('Error: ' + (err.message || 'Could not start payment'), 'err');
-    upgradeBtn.innerHTML = originalText;
-    upgradeBtn.disabled = false;
-  }
-}
-
-// Override export function with subscription check
-async function exportNemisCSVWithSubscription() {
-  if (!(await canExport())) return;
   performExport();
 }
 
@@ -310,13 +259,13 @@ function performExport() {
     if (!dateStr) return '';
     const parts = dateStr.split('-');
     if (parts.length !== 3) return dateStr;
-    return `${parts[1]}/${parts[2]}/${parts[0]}`; // MM/DD/YYYY
+    return `${parts[1]}/${parts[2]}/${parts[0]}`;
   }
   const headers = [
-    "SURNAME", "MIDDLE NAME", "FIRST NAME", "ADMISSION NUMBER", "DATE OF BIRTH",
-    "GENDER", "NATIONALITY", "BIRTH CERTIFICATE NO", "COUNTY OF BIRTH", "SUB-COUNTY",
-    "PARENT/GUARDIAN NAME", "PARENT ID NUMBER", "PARENT PHONE", "PARENT EMAIL",
-    "LEARNER TYPE", "SPECIAL NEEDS CATEGORY"
+    "SURNAME","MIDDLE NAME","FIRST NAME","ADMISSION NUMBER","DATE OF BIRTH",
+    "GENDER","NATIONALITY","BIRTH CERTIFICATE NO","COUNTY OF BIRTH","SUB-COUNTY",
+    "PARENT/GUARDIAN NAME","PARENT ID NUMBER","PARENT PHONE","PARENT EMAIL",
+    "LEARNER TYPE","SPECIAL NEEDS CATEGORY"
   ];
   const rows = allStudents.map(s => {
     const { surname, firstName, middleName } = splitName(s.name);
@@ -338,9 +287,7 @@ function performExport() {
     ];
   });
   const csvRows = [headers.map(h => `"${h}"`).join(',')];
-  rows.forEach(row => {
-    csvRows.push(row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','));
-  });
+  rows.forEach(row => { csvRows.push(row.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')); });
   const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -349,7 +296,7 @@ function performExport() {
   toast(`Exported ${allStudents.length} students in NEMIS format.`, 'ok');
 }
 
-// ======================= ORIGINAL NEMIS LOGIC =======================
+// ── Auth ──────────────────────────────────────────────────────────────────────
 auth.onAuthStateChanged(async user => {
   if (!user) { window.location.href = 'admin.html'; return; }
   _authUser = user;
@@ -435,7 +382,7 @@ function renderNemisTable() {
 }
 function initials(name) { return (name || '?').split(' ').slice(0,2).map(w => w[0] || '').join('').toUpperCase(); }
 function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-function formatDate(dateStr) { if (!dateStr) return ''; return dateStr.includes('-') ? dateStr : dateStr; }
+function formatDate(dateStr) { return dateStr || ''; }
 
 window.openNemisModal = function(studentId) {
   const student = allStudents.find(s => s.id === studentId);
@@ -450,6 +397,7 @@ window.openNemisModal = function(studentId) {
   document.getElementById('modalDob').value = student.dob || '';
   document.getElementById('modalNationality').value = student.nationality || 'Kenyan';
   document.getElementById('modalBirthCert').value = student.birthCertNo || '';
+  populateCountySelect();
   document.getElementById('modalCounty').value = student.homeCounty || '';
   document.getElementById('modalSubCounty').value = student.subCounty || '';
   document.getElementById('modalParentName').value = student.parentName || '';
@@ -458,7 +406,6 @@ window.openNemisModal = function(studentId) {
   document.getElementById('modalParentEmail').value = student.parentEmail || '';
   document.getElementById('modalLearnerType').value = student.learnerType || 'Regular';
   document.getElementById('modalSpecialNeeds').value = student.specialNeeds || '';
-  populateCountySelect();
   document.getElementById('nemisModal').classList.add('open');
 };
 window.closeNemisModal = function() { document.getElementById('nemisModal').classList.remove('open'); currentEditId = null; };
@@ -493,12 +440,8 @@ window.saveNemisData = async function() {
 };
 window.refreshNemisData = function() { loadStudentsForNemis(); toast('Refreshed from Firestore', 'info'); };
 
-// Attach export button with subscription check
-document.getElementById('exportNemisBtn').addEventListener('click', exportNemisCSVWithSubscription);
-document.getElementById('upgradeBtn').addEventListener('click', () => {
-  const phone = prompt('Enter your M-Pesa phone number (e.g. 0712345678) to upgrade to Pro:');
-  if (phone && phone.length >= 10) triggerUpgrade(phone);
-});
+// Wire up export button
+document.getElementById('exportNemisBtn').addEventListener('click', exportNemisCSV);
 
 // Theme
 document.getElementById('themeBtn').addEventListener('click', () => {

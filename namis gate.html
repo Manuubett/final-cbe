@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="theme-color" content="#1a56db">
+<title>NEMIS Access | CBE Mark Sheet System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e1a;
+  --surface:#111827;
+  --surf2:#1a2236;
+  --border:#1e2d4a;
+  --text:#f0f4ff;
+  --text2:#8aa0c8;
+  --text3:#3d5278;
+  --accent:#2563eb;
+  --accent-h:#1d4ed8;
+  --glow:rgba(37,99,235,.35);
+  --green:#10b981;
+  --green-glow:rgba(16,185,129,.2);
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --r:12px;
+}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  font-size:14px;
+  overflow-x:hidden;
+}
+
+/* --- animated grid bg --- */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(37,99,235,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(37,99,235,.04) 1px,transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;
+  z-index:0;
+}
+body::after{
+  content:'';
+  position:fixed;
+  top:-40%;left:50%;
+  transform:translateX(-50%);
+  width:800px;height:500px;
+  background:radial-gradient(ellipse,rgba(37,99,235,.12) 0%,transparent 70%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* --- header --- */
+header{
+  position:relative;z-index:10;
+  padding:0 28px;height:58px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  background:rgba(10,14,26,.8);
+  backdrop-filter:blur(12px);
+}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{
+  width:34px;height:34px;
+  background:var(--accent);
+  border-radius:9px;
+  display:grid;place-items:center;
+  font-size:15px;
+  box-shadow:0 0 18px var(--glow);
+}
+.logo-text{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.3px}
+.logo-sub{font-size:10px;color:var(--text3)}
+.hdr-actions{display:flex;align-items:center;gap:8px}
+
+/* --- main layout --- */
+main{
+  position:relative;z-index:1;
+  flex:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:40px 20px;
+}
+.gate-wrap{
+  width:100%;
+  max-width:860px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+  border:1px solid var(--border);
+  border-radius:20px;
+  overflow:hidden;
+  background:var(--surface);
+  box-shadow:0 0 80px rgba(0,0,0,.6),0 0 0 1px var(--border);
+  animation:riseIn .45s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes riseIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* --- LEFT PANEL --- */
+.left-panel{
+  background:linear-gradient(155deg,#0f1e3a 0%,#0a1225 100%);
+  padding:44px 36px;
+  display:flex;flex-direction:column;
+  border-right:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.left-panel::before{
+  content:'';
+  position:absolute;top:-60px;right:-60px;
+  width:220px;height:220px;
+  background:radial-gradient(circle,rgba(37,99,235,.2) 0%,transparent 70%);
+  pointer-events:none;
+}
+.feature-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(37,99,235,.12);
+  border:1px solid rgba(37,99,235,.25);
+  color:#93bbff;
+  padding:5px 12px;
+  border-radius:20px;
+  font-size:11px;font-weight:600;
+  letter-spacing:.3px;
+  text-transform:uppercase;
+  width:fit-content;
+  margin-bottom:22px;
+}
+.left-panel h2{
+  font-family:'Syne',sans-serif;
+  font-size:28px;font-weight:800;
+  line-height:1.15;
+  color:#fff;
+  margin-bottom:12px;
+}
+.left-panel h2 span{color:#60a5fa}
+.left-panel p{
+  font-size:13.5px;color:var(--text2);
+  line-height:1.65;
+  margin-bottom:28px;
+}
+.feature-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.feature-list li{
+  display:flex;align-items:flex-start;gap:10px;
+  font-size:13px;color:var(--text2);
+}
+.feat-icon{
+  width:22px;height:22px;min-width:22px;
+  border-radius:6px;
+  background:rgba(16,185,129,.12);
+  border:1px solid rgba(16,185,129,.2);
+  display:grid;place-items:center;
+  font-size:12px;
+  margin-top:1px;
+}
+.feat-icon.blue{background:rgba(37,99,235,.12);border-color:rgba(37,99,235,.25)}
+.feat-icon.amber{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.2)}
+.nemis-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(16,185,129,.08);
+  border:1px solid rgba(16,185,129,.15);
+  color:#34d399;
+  padding:6px 12px;border-radius:8px;
+  font-size:12px;font-weight:600;
+  width:fit-content;
+}
+.price-display{
+  display:flex;align-items:baseline;gap:5px;
+  margin-top:auto;padding-top:20px;
+  border-top:1px solid var(--border);
+}
+.price-amt{
+  font-family:'Syne',sans-serif;
+  font-size:36px;font-weight:800;
+  color:#fff;
+}
+.price-period{font-size:12.5px;color:var(--text3)}
+.price-note{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* --- RIGHT PANEL --- */
+.right-panel{
+  padding:44px 36px;
+  display:flex;flex-direction:column;
+  background:var(--surface);
+}
+.right-panel h3{
+  font-family:'Syne',sans-serif;
+  font-size:20px;font-weight:700;
+  color:var(--text);
+  margin-bottom:6px;
+}
+.right-panel .sub-h{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.5}
+
+/* form */
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.form-group label{font-size:12px;font-weight:600;color:var(--text2);letter-spacing:.2px}
+.form-group label .req{color:#f87171;margin-left:2px}
+.form-input{
+  padding:10px 14px;
+  background:#0f1829;
+  border:1.5px solid var(--border);
+  border-radius:var(--r);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:13.5px;
+  outline:none;
+  transition:border-color .15s,box-shadow .15s;
+}
+.form-input::placeholder{color:var(--text3)}
+.form-input:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(37,99,235,.15);
+}
+
+/* phone input with prefix */
+.phone-wrap{display:flex;gap:0}
+.phone-prefix{
+  padding:10px 12px;
+  background:#0c1526;
+  border:1.5px solid var(--border);
+  border-right:none;
+  border-radius:var(--r) 0 0 var(--r);
+  font-size:13px;color:var(--text2);
+  display:grid;place-items:center;
+  white-space:nowrap;
+}
+.phone-wrap .form-input{border-radius:0 var(--r) var(--r) 0;flex:1}
+
+/* submit btn */
+.pay-btn{
+  width:100%;
+  padding:13px;
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  border-radius:var(--r);
+  font-family:'Syne',sans-serif;
+  font-size:14px;font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:4px;
+  box-shadow:0 0 24px var(--glow);
+  letter-spacing:.2px;
+  position:relative;
+  overflow:hidden;
+}
+.pay-btn::before{
+  content:'';
+  position:absolute;top:0;left:-100%;
+  width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+  transition:left .5s;
+}
+.pay-btn:hover{background:var(--accent-h);transform:translateY(-1px);box-shadow:0 4px 32px var(--glow)}
+.pay-btn:hover::before{left:100%}
+.pay-btn:active{transform:translateY(0)}
+.pay-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+/* already subscribed btn */
+.check-btn{
+  width:100%;
+  padding:11px;
+  background:transparent;
+  color:var(--text2);
+  border:1.5px solid var(--border);
+  border-radius:var(--r);
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;font-weight:500;
+  cursor:pointer;
+  transition:all .15s;
+  margin-top:10px;
+}
+.check-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(37,99,235,.04)}
+
+/* divider */
+.divider{
+  display:flex;align-items:center;gap:10px;
+  color:var(--text3);font-size:11.5px;
+  margin:16px 0;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* status area */
+.status-area{
+  min-height:44px;
+  margin-top:14px;
+  padding:11px 14px;
+  border-radius:var(--r);
+  font-size:13px;
+  display:none;
+  align-items:center;
+  gap:9px;
+  animation:fadeIn .2s ease;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.status-area.pending{display:flex;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);color:#fcd34d}
+.status-area.success{display:flex;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);color:#6ee7b7}
+.status-area.error{display:flex;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);color:#fca5a5}
+.status-area.info{display:flex;background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.2);color:#93c5fd}
+.status-text{flex:1;line-height:1.5}
+
+/* trust badges */
+.trust-row{
+  display:flex;align-items:center;gap:14px;
+  margin-top:20px;padding-top:16px;
+  border-top:1px solid var(--border);
+  flex-wrap:wrap;
+}
+.trust-item{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;color:var(--text3);
+}
+
+/* spinner */
+.spin{
+  width:14px;height:14px;
+  border:2px solid rgba(255,255,255,.2);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:sp .65s linear infinite;
+  flex-shrink:0;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* --- subscription active state --- */
+#activeView{display:none}
+#payView{display:flex;flex-direction:column}
+
+.sub-active-card{
+  background:rgba(16,185,129,.06);
+  border:1.5px solid rgba(16,185,129,.18);
+  border-radius:14px;
+  padding:24px;
+  text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.check-circle{
+  width:56px;height:56px;
+  border-radius:50%;
+  background:rgba(16,185,129,.12);
+  border:2px solid rgba(16,185,129,.3);
+  display:grid;place-items:center;
+  font-size:22px;
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.sub-active-card h4{
+  font-family:'Syne',sans-serif;
+  font-size:18px;font-weight:700;color:#fff;
+}
+.sub-active-card p{font-size:13px;color:var(--text2);line-height:1.5}
+.expiry-pill{
+  background:rgba(16,185,129,.1);
+  border:1px solid rgba(16,185,129,.2);
+  color:#34d399;
+  padding:5px 14px;border-radius:20px;
+  font-size:12px;font-weight:600;
+}
+.go-btn{
+  width:100%;
+  padding:13px;
+  background:var(--green);
+  color:#fff;
+  border:none;
+  border-radius:var(--r);
+  font-family:'Syne',sans-serif;
+  font-size:14px;font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+  box-shadow:0 0 24px var(--green-glow);
+  letter-spacing:.2px;
+  margin-top:8px;
+}
+.go-btn:hover{background:#059669;transform:translateY(-1px);box-shadow:0 4px 28px var(--green-glow)}
+
+/* responsive */
+@media(max-width:680px){
+  .gate-wrap{grid-template-columns:1fr}
+  .left-panel{border-right:none;border-bottom:1px solid var(--border);padding:30px 24px}
+  .right-panel{padding:30px 24px}
+  .left-panel h2{font-size:22px}
+  .price-display{padding-top:16px}
+}
+
+/* toast */
+#tc{position:fixed;top:70px;right:18px;z-index:999;display:flex;flex-direction:column;gap:7px}
+.t{
+  display:flex;align-items:center;gap:9px;
+  padding:10px 15px;border-radius:10px;
+  font-size:13px;font-weight:500;
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
+  animation:tin .25s ease;
+  max-width:300px;
+}
+.t.ok{background:#064e3b;color:#ecfdf5;border:1px solid rgba(16,185,129,.3)}
+.t.err{background:#450a0a;color:#fef2f2;border:1px solid rgba(239,68,68,.3)}
+.t.info{background:#1e3a5f;color:#dbeafe;border:1px solid rgba(37,99,235,.3)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tout{to{transform:translateX(110%);opacity:0}}
+</style>
+</head>
+<body>
+<div id="tc"></div>
+
+<header>
+  <a href="index.html" class="logo" style="text-decoration:none">
+    <div class="logo-mark">📊</div>
+    <div>
+      <div class="logo-text" id="hdrSchoolName">CBE System</div>
+      <div class="logo-sub">Junior School · Kenya CBC</div>
+    </div>
+  </a>
+  <div class="hdr-actions">
+    <a href="admin.html" class="check-btn" style="width:auto;padding:7px 14px;font-size:12.5px;display:inline-flex;align-items:center;gap:5px;text-decoration:none;margin-top:0;border-radius:8px;color:var(--text2);border:1.5px solid var(--border);">← Dashboard</a>
+  </div>
+</header>
+
+<main>
+  <div class="gate-wrap">
+
+    <!-- LEFT: Feature showcase -->
+    <div class="left-panel">
+      <div class="feature-badge">🇰🇪 NEMIS Integration</div>
+      <h2>Unlock <span>NEMIS</span><br>Data Tools</h2>
+      <p>Export student records in the exact format required by Kenya's NEMIS portal. Bulk upload ready, CBC compliant.</p>
+      <ul class="feature-list">
+        <li><span class="feat-icon">✓</span><span>Complete NEMIS field management — DOB, nationality, birth cert, county</span></li>
+        <li><span class="feat-icon blue">↓</span><span>One-click CSV export in official NEMIS bulk upload format</span></li>
+        <li><span class="feat-icon">✓</span><span>Real-time field completion tracker — see who's missing what</span></li>
+        <li><span class="feat-icon amber">⚡</span><span>Parent/guardian data capture: ID, phone, email</span></li>
+        <li><span class="feat-icon blue">✓</span><span>Special needs learner category support</span></li>
+        <li><span class="feat-icon">↓</span><span>All 47 Kenyan counties and sub-county dropdowns pre-loaded</span></li>
+      </ul>
+      <div class="nemis-tag">✅ NEMIS bulk upload compatible</div>
+      <div class="price-display">
+        <div>
+          <div style="display:flex;align-items:baseline;gap:6px">
+            <span class="price-amt">KES 650</span>
+            <span class="price-period">/ month</span>
+          </div>
+          <div class="price-note">Paid via M-Pesa · Cancel anytime</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Payment form -->
+    <div class="right-panel">
+
+      <!-- PAY VIEW -->
+      <div id="payView">
+        <h3>Activate Pro Access</h3>
+        <p class="sub-h">Enter your M-Pesa number below. You'll receive an STK push to approve payment of <strong style="color:var(--text)">KES 650</strong>.</p>
+
+        <div class="form-group">
+          <label>M-Pesa Phone Number <span class="req">*</span></label>
+          <div class="phone-wrap">
+            <span class="phone-prefix">🇰🇪 +254</span>
+            <input type="tel" class="form-input" id="phoneInput" placeholder="712 345 678" maxlength="10" inputmode="numeric">
+          </div>
+        </div>
+
+        <button class="pay-btn" id="payBtn" onclick="initiatePayment()">
+          <span>📱 Send M-Pesa STK Push</span>
+        </button>
+
+        <div class="status-area" id="statusArea">
+          <span id="statusIcon"></span>
+          <span class="status-text" id="statusText"></span>
+        </div>
+
+        <div class="divider">already subscribed?</div>
+
+        <button class="check-btn" onclick="checkExistingSubscription()">
+          🔍 Check My Subscription Status
+        </button>
+
+        <div class="trust-row">
+          <span class="trust-item">🔒 Secure via Paynecta</span>
+          <span class="trust-item">📱 M-Pesa STK Push</span>
+          <span class="trust-item">⚡ Instant access</span>
+        </div>
+      </div>
+
+      <!-- ACTIVE VIEW -->
+      <div id="activeView">
+        <div class="sub-active-card">
+          <div class="check-circle">✓</div>
+          <h4>Pro Access Active</h4>
+          <p>Your NEMIS tools are fully unlocked. Export student data in NEMIS format anytime.</p>
+          <div class="expiry-pill" id="expiryPill">Valid · Loading...</div>
+        </div>
+        <button class="go-btn" onclick="goToNemis()">Open NEMIS Manager →</button>
+        <button class="check-btn" onclick="goBack()" style="margin-top:10px">← Back to Dashboard</button>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
+  authDomain:"bett-294a2.firebaseapp.com",
+  projectId:"bett-294a2",
+  storageBucket:"bett-294a2.appspot.com",
+  messagingSenderId:"1055511650032",
+  appId:"1:1055511650032:web:7e0f9c28e58515f549ac35"
+});
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+const SERVER = 'https://instasend-backend.onrender.com';
+let _schoolId = null, _userId = null;
+let pollInterval = null;
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+function toast(msg, type='ok'){
+  const t = document.createElement('div');
+  t.className = `t ${type}`;
+  t.innerHTML = `<span>${type==='ok'?'✅':type==='err'?'❌':'ℹ️'}</span><span>${msg}</span>`;
+  document.getElementById('tc').appendChild(t);
+  setTimeout(()=>{t.style.animation='tout .25s ease forwards';setTimeout(()=>t.remove(),300)},3000);
+}
+function setStatus(type, icon, text){
+  const a = document.getElementById('statusArea');
+  a.className = 'status-area ' + type;
+  document.getElementById('statusIcon').textContent = icon;
+  document.getElementById('statusText').innerHTML = text;
+}
+function clearStatus(){
+  document.getElementById('statusArea').className = 'status-area';
+}
+function setPayBtn(loading, text='📱 Send M-Pesa STK Push'){
+  const btn = document.getElementById('payBtn');
+  if(loading){
+    btn.innerHTML = '<div class="spin"></div><span>Processing...</span>';
+    btn.disabled = true;
+  } else {
+    btn.innerHTML = `<span>${text}</span>`;
+    btn.disabled = false;
+  }
+}
+
+// ── auth ──────────────────────────────────────────────────────────────────────
+auth.onAuthStateChanged(async user => {
+  if(!user){ window.location.href='admin.html'; return; }
+  _userId = user.uid;
+  const stored = sessionStorage.getItem('cbe_school_id');
+  _schoolId = stored || user.uid;
+
+  // Load school name
+  try{
+    const s = await db.collection('settings').doc(_schoolId).get();
+    if(s.exists && s.data().name)
+      document.getElementById('hdrSchoolName').textContent = s.data().name;
+  } catch(e){}
+
+  // Check subscription on load
+  await silentCheckSubscription();
+});
+
+// ── subscription check ────────────────────────────────────────────────────────
+async function silentCheckSubscription(){
+  try{
+    const snap = await db.collection('settings').doc(_schoolId).get();
+    const data = snap.data() || {};
+    const active = data.subscriptionActive === true;
+    const expiry = data.subscriptionExpiry?.toDate?.() || null;
+    if(active && expiry && new Date() < expiry){
+      showActiveView(expiry);
+    }
+  } catch(e){}
+}
+
+async function checkExistingSubscription(){
+  setStatus('pending','⏳','Checking your subscription status...');
+  try{
+    const snap = await db.collection('settings').doc(_schoolId).get();
+    const data = snap.data() || {};
+    const active = data.subscriptionActive === true;
+    const expiry = data.subscriptionExpiry?.toDate?.() || null;
+    if(active && expiry && new Date() < expiry){
+      showActiveView(expiry);
+    } else {
+      setStatus('info','ℹ️','No active subscription found. Subscribe below to access NEMIS tools.');
+    }
+  } catch(e){
+    setStatus('error','❌','Could not check status. Please try again.');
+  }
+}
+
+function showActiveView(expiry){
+  document.getElementById('payView').style.display='none';
+  document.getElementById('activeView').style.display='flex';
+  document.getElementById('activeView').style.flexDirection='column';
+  const fmt = expiry ? expiry.toLocaleDateString('en-KE',{day:'numeric',month:'short',year:'numeric'}) : '—';
+  document.getElementById('expiryPill').textContent = `Active until ${fmt}`;
+}
+
+// ── payment ───────────────────────────────────────────────────────────────────
+async function initiatePayment(){
+  clearStatus();
+  const raw = document.getElementById('phoneInput').value.trim().replace(/\s/g,'');
+  if(!raw || raw.length < 9){
+    setStatus('error','⚠️','Please enter a valid M-Pesa phone number.');
+    return;
+  }
+  // normalise: strip leading 0 or 254
+  let phone = raw.replace(/^0/,'').replace(/^254/,'');
+  if(phone.length !== 9){
+    setStatus('error','⚠️','Phone must be 9 digits after the country prefix (e.g. 712345678).');
+    return;
+  }
+  const fullPhone = '0' + phone; // pass as 07XXXXXXXX to server
+
+  setPayBtn(true);
+  setStatus('pending','⏳','Sending STK push to your phone...');
+
+  try{
+    const res = await fetch(`${SERVER}/api/stk-push`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        amount: 650,
+        phone: fullPhone,
+        userId: _schoolId,
+        type: 'nemis_subscription'
+      })
+    });
+    const data = await res.json();
+
+    if(data.success && data.txRef){
+      setStatus('pending','📱',`<strong>STK push sent!</strong> Check your phone and enter your M-Pesa PIN. Waiting for confirmation...`);
+      setPayBtn(false,'✓ Waiting for payment...');
+      document.getElementById('payBtn').disabled = true;
+      startPolling(data.txRef);
+    } else {
+      const errMsg = data.error?.message || data.message || 'STK push failed. Try again.';
+      setStatus('error','❌', errMsg);
+      setPayBtn(false);
+      toast(errMsg, 'err');
+    }
+  } catch(e){
+    setStatus('error','❌','Network error. Check your connection and try again.');
+    setPayBtn(false);
+    toast('Network error: ' + e.message, 'err');
+  }
+}
+
+function startPolling(txRef){
+  let attempts = 0;
+  const MAX = 40; // ~80 seconds
+  clearInterval(pollInterval);
+  pollInterval = setInterval(async()=>{
+    attempts++;
+    try{
+      const res = await fetch(`${SERVER}/api/pay/status/${txRef}`);
+      const data = await res.json();
+      if(data.status === 'confirmed'){
+        clearInterval(pollInterval);
+        // activate subscription in Firestore
+        await activateSubscription(txRef, data.payment?.mpesaCode);
+      } else if(data.status === 'failed' || data.status === 'cancelled'){
+        clearInterval(pollInterval);
+        setStatus('error','❌','Payment was not completed. Please try again.');
+        setPayBtn(false);
+      } else if(attempts >= MAX){
+        clearInterval(pollInterval);
+        setStatus('info','⏰','Confirmation timed out. If you paid, click "Check My Subscription Status" below.');
+        setPayBtn(false,'📱 Send M-Pesa STK Push');
+      }
+    } catch(e){
+      // silent — keep polling
+    }
+  }, 2000);
+}
+
+async function activateSubscription(txRef, mpesaCode){
+  try{
+    // Set expiry 31 days from now
+    const expiry = new Date();
+    expiry.setDate(expiry.getDate() + 31);
+    await db.collection('settings').doc(_schoolId).set({
+      subscriptionActive: true,
+      subscriptionExpiry: expiry,
+      lastPaymentTxRef: txRef,
+      lastMpesaCode: mpesaCode || null,
+      subscriptionUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    },{ merge: true });
+    toast('🎉 Payment confirmed! Redirecting to NEMIS...', 'ok');
+    setStatus('success','✅','Payment confirmed! Access activated.');
+    setTimeout(goToNemis, 1800);
+  } catch(e){
+    setStatus('success','✅',`Payment confirmed (${mpesaCode||txRef}). Click below to check and proceed.`);
+    setPayBtn(false,'📱 Re-send STK Push');
+    toast('Payment received. Please check subscription status.', 'info');
+  }
+}
+
+function goToNemis(){ window.location.href = 'nemis.html'; }
+function goBack(){ window.location.href = 'admin.html'; }
+
+// phone input — digits only
+document.getElementById('phoneInput').addEventListener('input', function(){
+  this.value = this.value.replace(/\D/g,'');
+});
+// enter key
+document.getElementById('phoneInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') initiatePayment();
+});
+</script>
+</body>
+</html>

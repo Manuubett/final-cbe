@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#1a56db">
+<title>NEMIS Data Management | Junior School CBE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Familjen+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#eef1f7;--surface:#fff;--surf2:#f5f7fb;--border:#e1e6ef;
+  --text:#141b2d;--text2:#526079;--text3:#9eabbe;
+  --accent:#1a56db;--ah:#1447c0;--alight:#eff4ff;
+  --green:#059669;--glight:#d1fae5;
+  --red:#dc2626;--rlight:#fee2e2;
+  --amber:#d97706;--amlight:#fef3c7;
+  --sh:0 1px 3px rgba(0,0,0,.05);--sh2:0 4px 20px rgba(0,0,0,.08);
+  --r:10px;--r2:6px
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13.5px;min-height:100vh}
+header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;box-shadow:var(--sh)
+}
+.logo{display:flex;align-items:center;gap:10px}
+.lm{width:32px;height:32px;background:var(--accent);border-radius:8px;display:grid;place-items:center;color:#fff;font-size:16px}
+.lt{font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;letter-spacing:-.3px}
+.ls{font-size:10px;color:var(--text3)}
+.hdr-r{display:flex;align-items:center;gap:8px}
+.wrap{max-width:1400px;margin:0 auto;padding:22px 24px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--ah);box-shadow:0 4px 10px rgba(26,86,219,.25)}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--text2)}
+.btn-outline:hover{background:var(--bg);color:var(--text)}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:hover{background:#047857}
+.btn-sm{padding:5px 11px;font-size:12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:20px}
+.card-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surf2)}
+.card-head h3{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:1100px}
+thead th{padding:9px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:1.5px solid var(--border);background:var(--surf2);white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:12.5px}
+tbody tr:hover td{background:#f8faff}
+.tag{display:inline-block;padding:2px 7px;border-radius:8px;font-size:10.5px;font-weight:700}
+.tag-grade{background:var(--alight);color:var(--accent)}
+.tag-stream{background:#e0f2fe;color:#0369a1}
+.tag-missing{background:var(--rlight);color:var(--red)}
+.tag-complete{background:var(--glight);color:var(--green)}
+.av{width:28px;height:28px;border-radius:7px;background:var(--alight);color:var(--accent);font-size:10px;font-weight:800;display:grid;place-items:center}
+.sc{display:flex;align-items:center;gap:8px}
+.sn{font-weight:600}
+.stats-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.stat-pill{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 13px;font-size:12px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:5px}
+.stat-pill .sv{font-weight:700;color:var(--text);font-size:13px}
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surf2)}
+.search{display:flex;align-items:center;gap:7px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r2);padding:6px 11px;min-width:230px}
+.search input{border:none;background:none;outline:none;font-family:inherit;font-size:13px;width:100%}
+.fsel{padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r2);font-family:inherit;font-size:12.5px;background:var(--surface);cursor:pointer}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;display:none;place-items:center;backdrop-filter:blur(2px)}
+.modal-bg.open{display:grid}
+.modal{background:var(--surface);border-radius:14px;box-shadow:0 16px 48px rgba(0,0,0,.18);width:620px;max-width:95vw;overflow:hidden;animation:popIn .22s cubic-bezier(.34,1.56,.64,1)}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-body{padding:20px;max-height:70vh;overflow-y:auto}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:9px}
+.close-btn{padding:5px;border-radius:6px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px}
+.close-btn:hover{background:var(--bg);color:var(--text)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label.fl{font-size:12px;font-weight:600;color:var(--text2)}
+label.fl .req{color:var(--red);margin-left:2px}
+input.fi,select.fi{padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--r2);font-family:inherit;font-size:13px;background:var(--surface);outline:none}
+input.fi:focus,select.fi:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,86,219,.08)}
+#tc{position:fixed;top:68px;right:18px;z-index:999;display:flex;flex-direction:column;gap:7px}
+.t{display:flex;align-items:center;gap:9px;padding:10px 15px;border-radius:var(--r2);font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.15);animation:tin .28s ease}
+.t.ok{background:#064e3b;color:#ecfdf5;border-left:3px solid var(--green)}
+.t.err{background:#7f1d1d;color:#fef2f2;border-left:3px solid var(--red)}
+@keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tout{to{transform:translateX(110%);opacity:0}}
+body.dark{--bg:#0d1017;--surface:#161a24;--surf2:#1c2030;--border:#272d3e;--text:#e2e8f5;--text2:#7a8aa8;--text3:#434f65;--alight:#172050}
+.spin{width:16px;height:16px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .65s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:50px 20px;color:var(--text3)}
+@media(max-width:640px){.wrap{padding:12px}.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="tc"></div>
+
+<!-- NEMIS EDIT MODAL -->
+<div class="modal-bg" id="nemisModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>📋 Complete NEMIS Record (Required for Export)</h3>
+      <button class="close-btn" onclick="closeNemisModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="nemisForm">
+        <div class="form-grid">
+          <div class="form-group full"><label class="fl">Student Name</label><input class="fi" id="modalName" readonly style="background:var(--surf2);"></div>
+          <div class="form-group"><label class="fl">Admission No.</label><input class="fi" id="modalAdm" readonly></div>
+          <div class="form-group"><label class="fl">Gender</label><input class="fi" id="modalGender" readonly></div>
+          <div class="form-group"><label class="fl">Grade</label><input class="fi" id="modalGrade" readonly></div>
+          <div class="form-group"><label class="fl">Stream</label><input class="fi" id="modalStream" readonly></div>
+          <div class="form-group"><label class="fl">Academic Year</label><input class="fi" id="modalYear" readonly></div>
+          
+          <div class="form-group"><label class="fl">📅 Date of Birth <span class="req">*</span></label><input type="date" class="fi" id="modalDob"></div>
+          <div class="form-group"><label class="fl">🌍 Nationality <span class="req">*</span></label><input class="fi" id="modalNationality" placeholder="e.g. Kenyan" value="Kenyan"></div>
+          <div class="form-group"><label class="fl">📄 Birth Certificate No. / UPI <span class="req">*</span></label><input class="fi" id="modalBirthCert" placeholder="e.g. 12345678"></div>
+          <div class="form-group"><label class="fl">🏠 Home County <span class="req">*</span></label>
+            <select class="fi" id="modalCounty"><option value="">Select County</option></select>
+          </div>
+          <div class="form-group"><label class="fl">📍 Sub-County <span class="req">*</span></label><input class="fi" id="modalSubCounty" placeholder="e.g. Kasarani"></div>
+          <div class="form-group"><label class="fl">👪 Parent/Guardian Name</label><input class="fi" id="modalParentName" placeholder="Full name"></div>
+          <div class="form-group"><label class="fl">📞 Parent Phone</label><input class="fi" id="modalParentPhone" placeholder="07XXXXXXXX"></div>
+          <div class="form-group"><label class="fl">🆔 Parent/Guardian ID No. <span class="req">*</span></label><input class="fi" id="modalParentId" placeholder="ID Number (e.g. 12345678)"></div>
+          <div class="form-group"><label class="fl">✉️ Parent Email</label><input class="fi" id="modalParentEmail" type="email" placeholder="parent@example.com"></div>
+          <div class="form-group"><label class="fl">👩‍🏫 Learner Type</label>
+            <select class="fi" id="modalLearnerType"><option value="Regular">Regular</option><option value="Special Needs">Special Needs</option></select>
+          </div>
+          <div class="form-group"><label class="fl">❤️ Special Needs Category</label><input class="fi" id="modalSpecialNeeds" placeholder="e.g. Visual impairment, Physical disability"></div>
+        </div>
+        <div style="margin-top:12px;font-size:11px;color:var(--text3);">* Required fields for NEMIS bulk upload (DOB, Nationality, Birth Cert, County, Sub-county, Parent ID)</div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeNemisModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNemisData()">💾 Save NEMIS Data</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="logo"><div class="lm" id="hdrLogo">📊</div><div><div class="lt" id="hdrSchoolName">NEMIS Manager</div><div class="ls" id="hdrSchoolSub">Junior School · Kenya CBC</div></div></div>
+  <div class="hdr-r">
+    <a href="admission.html" class="btn btn-outline btn-sm" style="text-decoration:none;">← Admission</a>
+    <button class="btn btn-outline btn-sm" id="themeBtn">🌙</button>
+    <button class="btn btn-success btn-sm" onclick="exportNemisCSV()">📎 Export NEMIS CSV</button>
+    <button class="btn btn-outline btn-sm" onclick="refreshNemisData()">🔄 Refresh</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <div class="card-head"><h3>🇰🇪 NEMIS Data Management – Required Fields Completion</h3><span style="font-size:11px;">Edit each student to fill missing NEMIS fields</span></div>
+    <div class="toolbar">
+      <div class="search"><span class="si-ico">🔍</span><input type="text" id="searchNemis" placeholder="Search by name or admission..." oninput="filterNemisTable()"></div>
+      <select class="fsel" id="filterNemisGrade" onchange="filterNemisTable()"><option value="">All Grades</option><option>Grade 1</option><option>Grade 2</option><option>Grade 3</option><option>Grade 4</option><option>Grade 5</option><option>Grade 6</option><option>Grade 7</option><option>Grade 8</option><option>Grade 9</option></select>
+      <select class="fsel" id="filterCompletion" onchange="filterNemisTable()"><option value="">All Status</option><option value="complete">Complete ✓</option><option value="incomplete">Incomplete ⚠️</option></select>
+      <span style="margin-left:auto;font-size:11.5px;color:var(--text3);" id="nemisCountLabel"></span>
+    </div>
+    <div style="padding:10px 16px;border-bottom:1px solid var(--border);">
+      <div class="stats-row" id="nemisStatsRow">
+        <div class="stat-pill">👥 Total <span class="sv" id="statTotal">0</span></div>
+        <div class="stat-pill">✅ NEMIS Complete <span class="sv" id="statComplete">0</span></div>
+        <div class="stat-pill">⚠️ Missing Fields <span class="sv" id="statIncomplete">0</span></div>
+        <div class="stat-pill">📋 Pending DOB <span class="sv" id="statMissingDob">0</span></div>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table id="nemisTable">
+        <thead>
+          <tr><th>#</th><th>Student</th><th>Adm No</th><th>Grade/Stream</th><th>📅 DOB</th><th>📄 Birth Cert/UPI</th><th>🏠 County</th><th>🆔 Parent ID</th><th>Status</th><th style="width:70px">Actions</th></tr>
+        </thead>
+        <tbody id="nemisTbody"><tr><td colspan="10"><div class="empty"><div class="ei">⏳</div><p>Loading students...</p></div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
+  authDomain:"bett-294a2.firebaseapp.com",
+  projectId:"bett-294a2",
+  storageBucket:"bett-294a2.appspot.com",
+  messagingSenderId:"1055511650032",
+  appId:"1:1055511650032:web:7e0f9c28e58515f549ac35"
+});
+const db=firebase.firestore(), auth=firebase.auth();
+
+let allStudents=[], filteredStudents=[], currentEditId=null;
+let _schoolId=null, _authUser=null;
+
+// Kenyan counties list
+const kenyanCounties=["Mombasa","Kwale","Kilifi","Tana River","Lamu","Taita-Taveta","Garissa","Wajir","Mandera","Marsabit","Isiolo","Meru","Tharaka-Nithi","Embu","Kitui","Machakos","Makueni","Nyandarua","Nyeri","Kirinyaga","Murang'a","Kiambu","Turkana","West Pokot","Samburu","Trans Nzoia","Uasin Gishu","Elgeyo-Marakwet","Nandi","Baringo","Laikipia","Nakuru","Narok","Kajiado","Kericho","Bomet","Kakamega","Vihiga","Bungoma","Busia","Siaya","Kisumu","Homa Bay","Migori","Kisii","Nyamira","Nairobi"];
+function populateCountySelect(){ const sel=document.getElementById('modalCounty'); if(sel){ sel.innerHTML='<option value="">Select County</option>'+kenyanCounties.map(c=>`<option value="${c}">${c}</option>`).join(''); } }
+
+function toast(msg,type='ok'){ const t=document.createElement('div'); t.className=`t ${type}`; t.innerHTML=`<span>${type==='ok'?'✅':type==='err'?'❌':'ℹ️'}</span>${msg}`; document.getElementById('tc').appendChild(t); setTimeout(()=>{t.style.animation='tout .28s ease forwards';setTimeout(()=>t.remove(),300);},2800); }
+
+auth.onAuthStateChanged(async user=>{
+  if(!user){ window.location.href='admin.html'; return; }
+  _authUser=user;
+  const stored=sessionStorage.getItem('cbe_school_id');
+  _schoolId=stored || user.uid;
+  sessionStorage.setItem('cbe_school_id',_schoolId);
+  try{
+    const snap=await db.collection('approvedSchools').doc(_schoolId).get();
+    if(snap.exists && snap.data().status==='suspended'){ window.location.href='admin.html'; return; }
+  }catch(e){}
+  loadSchoolInfo();
+  loadStudentsForNemis();
+});
+
+async function loadSchoolInfo(){
+  try{
+    const snap=await db.collection('settings').doc(_schoolId).get();
+    if(snap.exists){
+      const s=snap.data();
+      if(s.name) document.getElementById('hdrSchoolName').innerText=s.name;
+      if(s.motto||s.county) document.getElementById('hdrSchoolSub').innerText=(s.motto||'')+(s.county?` · ${s.county}`:'')+' · NEMIS';
+      if(s.logoUrl) document.getElementById('hdrLogo').innerHTML=`<img src="${s.logoUrl}" style="width:100%;height:100%;object-fit:contain;border-radius:inherit" onerror="this.parentElement.textContent='📊'">`;
+    }
+  }catch(e){}
+}
+
+async function loadStudentsForNemis(){
+  if(!_schoolId){ document.getElementById('nemisTbody').innerHTML=`<tr><td colspan="10"><div class="empty"><div class="ei">🔒</div><p>Authentication error</p></div></td></tr>`; return; }
+  document.getElementById('nemisTbody').innerHTML=`<tr><td colspan="10"><div class="empty"><div class="ei">⏳</div><p>Fetching student records...</p></div></td></tr>`;
+  try{
+    const snap=await db.collection('students').where('schoolId','==',_schoolId).get();
+    allStudents=[];
+    snap.forEach(doc=>{
+      let data=doc.data();
+      allStudents.push({id:doc.id,...data});
+    });
+    allStudents.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    updateNemisStatsAndRender();
+  }catch(e){
+    document.getElementById('nemisTbody').innerHTML=`<tr><td colspan="10"><div class="empty"><div class="ei">❌</div><p>${e.message}</p></div></td></tr>`;
+    toast('Failed to load students: '+e.message,'err');
+  }
+}
+
+function isNemisComplete(s){
+  return !!(s.dob && s.nationality && s.birthCertNo && s.homeCounty && s.subCounty && s.parentIdNo);
+}
+function updateNemisStatsAndRender(){
+  const completeCount=allStudents.filter(s=>isNemisComplete(s)).length;
+  const incompleteCount=allStudents.length-completeCount;
+  const missingDob=allStudents.filter(s=>!s.dob).length;
+  document.getElementById('statTotal').innerText=allStudents.length;
+  document.getElementById('statComplete').innerText=completeCount;
+  document.getElementById('statIncomplete').innerText=incompleteCount;
+  document.getElementById('statMissingDob').innerText=missingDob;
+  filterNemisTable();
+}
+function filterNemisTable(){
+  const q=document.getElementById('searchNemis').value.toLowerCase();
+  const gradeFilter=document.getElementById('filterNemisGrade').value;
+  const completion=document.getElementById('filterCompletion').value;
+  filteredStudents=allStudents.filter(s=>
+    (!q || s.name?.toLowerCase().includes(q) || (s.admissionNumber||'').toLowerCase().includes(q)) &&
+    (!gradeFilter || s.grade===gradeFilter) &&
+    (completion==='' || (completion==='complete'? isNemisComplete(s): !isNemisComplete(s)))
+  );
+  document.getElementById('nemisCountLabel').innerText=`${filteredStudents.length} / ${allStudents.length}`;
+  renderNemisTable();
+}
+function renderNemisTable(){
+  const tbody=document.getElementById('nemisTbody');
+  if(!filteredStudents.length){ tbody.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="ei">👥</div><p>No students match filters</p></div></td></tr>`; return; }
+  tbody.innerHTML=filteredStudents.map((s,i)=>`
+    <tr>
+      <td style="color:var(--text3);font-weight:700;">${i+1}</td>
+      <td><div class="sc"><div class="av">${initials(s.name)}</div><div class="sn">${escapeHtml(s.name||'')}</div></div></td>
+      <td><code style="background:var(--surf2);padding:2px 6px;border-radius:4px;">${s.admissionNumber||''}</code></td>
+      <td><span class="tag tag-grade">${s.grade||'?'}</span> ${s.stream?`<span class="tag tag-stream">${s.stream}</span>`:''}</td>
+      <td>${s.dob?formatDate(s.dob):'<span class="tag tag-missing">Missing</span>'}</td>
+      <td>${s.birthCertNo?escapeHtml(s.birthCertNo):'<span class="tag tag-missing">Missing</span>'}</td>
+      <td>${s.homeCounty?escapeHtml(s.homeCounty):'<span class="tag tag-missing">Missing</span>'}</td>
+      <td>${s.parentIdNo?escapeHtml(s.parentIdNo):'<span class="tag tag-missing">Missing</span>'}</td>
+      <td>${isNemisComplete(s)?'<span class="tag tag-complete">✓ Complete</span>':'<span class="tag tag-missing">⚠️ Incomplete</span>'}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="openNemisModal('${s.id}')">✏️ Edit NEMIS</button></td>
+    </tr>
+  `).join('');
+}
+function initials(name){ return (name||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase(); }
+function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g,function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+function formatDate(dateStr){ if(!dateStr) return ''; if(dateStr.includes('-')) return dateStr; return dateStr; }
+
+window.openNemisModal=function(studentId){
+  const student=allStudents.find(s=>s.id===studentId);
+  if(!student) return;
+  currentEditId=studentId;
+  document.getElementById('modalName').value=student.name||'';
+  document.getElementById('modalAdm').value=student.admissionNumber||'';
+  document.getElementById('modalGender').value=student.gender||'';
+  document.getElementById('modalGrade').value=student.grade||'';
+  document.getElementById('modalStream').value=student.stream||'';
+  document.getElementById('modalYear').value=student.year||'';
+  document.getElementById('modalDob').value=student.dob||'';
+  document.getElementById('modalNationality').value=student.nationality||'Kenyan';
+  document.getElementById('modalBirthCert').value=student.birthCertNo||'';
+  document.getElementById('modalCounty').value=student.homeCounty||'';
+  document.getElementById('modalSubCounty').value=student.subCounty||'';
+  document.getElementById('modalParentName').value=student.parentName||'';
+  document.getElementById('modalParentPhone').value=student.parentPhone||'';
+  document.getElementById('modalParentId').value=student.parentIdNo||'';
+  document.getElementById('modalParentEmail').value=student.parentEmail||'';
+  document.getElementById('modalLearnerType').value=student.learnerType||'Regular';
+  document.getElementById('modalSpecialNeeds').value=student.specialNeeds||'';
+  populateCountySelect();
+  document.getElementById('nemisModal').classList.add('open');
+};
+window.closeNemisModal=function(){ document.getElementById('nemisModal').classList.remove('open'); currentEditId=null; };
+window.saveNemisData=async function(){
+  if(!currentEditId){ toast('No student selected','err'); return; }
+  const dob=document.getElementById('modalDob').value;
+  const nationality=document.getElementById('modalNationality').value.trim();
+  const birthCertNo=document.getElementById('modalBirthCert').value.trim();
+  const homeCounty=document.getElementById('modalCounty').value;
+  const subCounty=document.getElementById('modalSubCounty').value.trim();
+  const parentName=document.getElementById('modalParentName').value.trim();
+  const parentPhone=document.getElementById('modalParentPhone').value.trim();
+  const parentIdNo=document.getElementById('modalParentId').value.trim();
+  const parentEmail=document.getElementById('modalParentEmail').value.trim();
+  const learnerType=document.getElementById('modalLearnerType').value;
+  const specialNeeds=document.getElementById('modalSpecialNeeds').value.trim();
+  
+  if(!dob){ toast('Date of Birth is required for NEMIS','err'); return; }
+  if(!nationality){ toast('Nationality is required','err'); return; }
+  if(!birthCertNo){ toast('Birth Certificate Number / UPI is required','err'); return; }
+  if(!homeCounty){ toast('Home County is required','err'); return; }
+  if(!subCounty){ toast('Sub-County is required','err'); return; }
+  if(!parentIdNo){ toast('Parent/Guardian ID Number is required','err'); return; }
+  
+  try{
+    const updateData={
+      dob, nationality, birthCertNo, homeCounty, subCounty,
+      parentName: parentName||null, parentPhone: parentPhone||null, parentIdNo, parentEmail: parentEmail||null,
+      learnerType, specialNeeds: specialNeeds||null,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    };
+    await db.collection('students').doc(currentEditId).update(updateData);
+    const idx=allStudents.findIndex(s=>s.id===currentEditId);
+    if(idx!==-1){
+      allStudents[idx]={...allStudents[idx],...updateData};
+    }
+    updateNemisStatsAndRender();
+    toast(`NEMIS data saved for ${allStudents[idx]?.name||'student'}`);
+    closeNemisModal();
+  }catch(e){ toast('Error saving: '+e.message,'err'); }
+};
+
+window.exportNemisCSV=function(){
+  if(!allStudents.length){ toast('No student data to export','err'); return; }
+  
+  function splitName(full){
+    const parts = (full || '').trim().split(/\s+/);
+    if(parts.length === 1) return { surname: parts[0], firstName: '', middleName: '' };
+    if(parts.length === 2) return { surname: parts[1], firstName: parts[0], middleName: '' };
+    return { surname: parts.pop(), firstName: parts[0], middleName: parts.slice(1).join(' ') };
+  }
+  function toNemisDate(dateStr){
+    if(!dateStr) return '';
+    const parts = dateStr.split('-');
+    if(parts.length !== 3) return dateStr;
+    return `${parts[1]}/${parts[2]}/${parts[0]}`; // MM/DD/YYYY
+  }
+  
+  const headers = [
+    "SURNAME", "MIDDLE NAME", "FIRST NAME", "ADMISSION NUMBER", "DATE OF BIRTH",
+    "GENDER", "NATIONALITY", "BIRTH CERTIFICATE NO", "COUNTY OF BIRTH", "SUB-COUNTY",
+    "PARENT/GUARDIAN NAME", "PARENT ID NUMBER", "PARENT PHONE", "PARENT EMAIL",
+    "LEARNER TYPE", "SPECIAL NEEDS CATEGORY"
+  ];
+  
+  const rows = allStudents.map(s => {
+    const { surname, firstName, middleName } = splitName(s.name);
+    return [
+      surname, middleName, firstName,
+      s.admissionNumber || '',
+      toNemisDate(s.dob),
+      s.gender || '',
+      s.nationality || '',
+      s.birthCertNo || '',
+      s.homeCounty || '',
+      s.subCounty || '',
+      s.parentName || '',
+      s.parentIdNo || '',
+      s.parentPhone || '',
+      s.parentEmail || '',
+      s.learnerType || 'Regular',
+      s.specialNeeds || ''
+    ];
+  });
+  
+  const csvRows = [headers.map(h => `"${h}"`).join(',')];
+  rows.forEach(row => {
+    csvRows.push(row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','));
+  });
+  
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `NEMIS_Upload_${_schoolId}_${new Date().toISOString().slice(0,19)}.csv`;
+  link.click();
+  toast(`Exported ${allStudents.length} students in NEMIS format (MM/DD/YYYY, split names)`);
+};
+window.refreshNemisData=function(){ loadStudentsForNemis(); toast('Refreshed from Firestore','info'); };
+
+// Theme
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  document.body.classList.toggle('dark');
+  const btn=document.getElementById('themeBtn');
+  btn.textContent=document.body.classList.contains('dark')?'☀️':'🌙';
+  localStorage.setItem('cbe_theme',document.body.classList.contains('dark')?'dark':'light');
+});
+if(localStorage.getItem('cbe_theme')==='dark'){ document.body.classList.add('dark'); document.getElementById('themeBtn').textContent='☀️'; }
+</script>
+</body>
+</html>

@@ -98,6 +98,12 @@
   to   = "/marksheet"
   status = 301
 
+
+  [[redirects]]
+  from = "/nemis-gate"
+  to   = "/nemis-gate.html"
+  status = 200
+  
 [[redirects]]
   from = "/admission.html"
   to   = "/admission"

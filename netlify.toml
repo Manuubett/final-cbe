@@ -16,8 +16,6 @@
 
 # ══════════════════════════════════════════════════════════════
 #  REDIRECTS
-#  ⚠️ ORDER MATTERS — Netlify stops at first match.
-#  The /* catch-all MUST be LAST.
 # ══════════════════════════════════════════════════════════════
 
 [[redirects]]
@@ -45,7 +43,7 @@
   status = 301
   force  = true
 
-# ── .html → clean URL ──
+# ── .html → clean URL (301 permanent) ──
 [[redirects]]
   from = "/index.html"
   to   = "/"
@@ -142,7 +140,7 @@
   status = 301
   force  = true
 
-# ── Clean URL → actual .html file ──
+# ── Clean URL → actual .html file (200 rewrite) ──
 [[redirects]]
   from = "/login"
   to   = "/login.html"
@@ -216,15 +214,6 @@
 [[redirects]]
   from = "/notify-test"
   to   = "/notify-test.html"
-  status = 200
-
-# ── Catch-all SPA fallback ──
-# ⚠️ MUST BE LAST — real files (.js, .css, images) are served
-# by Netlify directly before redirects are checked, so they
-# are never affected by this rule.
-[[redirects]]
-  from = "/*"
-  to   = "/index.html"
   status = 200
 
 # ══════════════════════════════════════════════════════════════

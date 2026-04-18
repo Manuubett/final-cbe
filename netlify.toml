@@ -131,6 +131,19 @@
   status = 301
   force  = true
 
+# ── NEW: renew page ──
+[[redirects]]
+  from = "/renew.html"
+  to   = "/renew"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from = "/pay.html"
+  to   = "/renew"
+  status = 301
+  force  = true
+
 # ── Serve clean URLs → actual .html files ──
 [[redirects]]
   from = "/login"
@@ -200,6 +213,12 @@
 [[redirects]]
   from = "/notify-test"
   to   = "/notify-test.html"
+  status = 200
+
+# ── NEW: renew clean URL ──
+[[redirects]]
+  from = "/renew"
+  to   = "/renew.html"
   status = 200
 
 # ══════════════════════════════════════════════════════════════
@@ -337,6 +356,25 @@
   for = "/approval.html"
   [headers.values]
     Cache-Control = "no-store, private"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/approval"
+  [headers.values]
+    Cache-Control = "no-store, private"
+    X-Robots-Tag = "noindex, nofollow"
+
+# ── NEW: renew page — no cache (payment page, always fresh) ──
+[[headers]]
+  for = "/renew.html"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, private"
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/renew"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, private"
     X-Robots-Tag = "noindex, nofollow"
 
 # ── Public pages — allow caching ──

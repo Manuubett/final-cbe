@@ -380,7 +380,7 @@ select.inp{cursor:pointer;padding-left:12px}
           </div>
 
           <div id="screen4DashCta" style="margin:20px 0">
-            <a href="/final-cbe/admin" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;border-radius:var(--r2);text-decoration:none;font-size:14px;font-weight:800;box-shadow:0 4px 14px rgba(26,86,219,.3)">
+            <a href="/admin" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;border-radius:var(--r2);text-decoration:none;font-size:14px;font-weight:800;box-shadow:0 4px 14px rgba(26,86,219,.3)">
               Go to Dashboard →
             </a>
           </div>
@@ -602,7 +602,7 @@ async function createAccount(){
     log('error','Account creation failed',e.message);
     btn.disabled=false; txt.textContent='Create Account →';
     const msg = e.code==='auth/email-already-in-use'
-      ? 'This email is already registered. <a href="/final-cbe/admin" style="color:var(--red-tx);font-weight:700">Sign in instead →</a>'
+      ? 'This email is already registered. <a href="/admin" style="color:var(--red-tx);font-weight:700">Sign in instead →</a>'
       : e.code==='auth/invalid-email' ? 'Invalid email address.' : e.message;
     el('acctErrMsg').innerHTML=msg;
     el('acctErr').classList.add('show');
@@ -761,7 +761,7 @@ async function submitDetails(){
     localStorage.removeItem(SAVE_KEY);
     log('info','Registration complete — auto-approved, redirecting to dashboard');
     toast('🎉 Your school is now active! Redirecting…');
-    setTimeout(()=>{ window.location.href = '/final-cbe/admin'; }, 1500);
+    setTimeout(()=>{ window.location.href = '/admin'; }, 1500);
 
   }catch(e){
     log('error','Submit failed',e.message);
@@ -776,7 +776,7 @@ function listenForOwnerResponse(uid){
     if(!snap.exists) return;
     const d = snap.data();
     if(d.status==='approved'){
-      setTimeout(()=>{ window.location.href = '/final-cbe/admin'; }, 1500);
+      setTimeout(()=>{ window.location.href = '/admin'; }, 1500);
       return;
     }
     if(d.status==='suspended'){
@@ -908,11 +908,11 @@ auth.onAuthStateChanged(async u=>{
 
       if(userProfile.role==='admin' && userProfile.status==='active' && userProfile.approved){
         log('info','Active approved admin — redirecting to dashboard');
-        window.location.href = '/final-cbe/admin'; return;
+        window.location.href = '/admin'; return;
       }
 
       if(userProfile.role==='teacher'){
-        if(userProfile.status==='active'){ window.location.href='/final-cbe/marksheet'; return; }
+        if(userProfile.status==='active'){ window.location.href='/marksheet'; return; }
         toast(userProfile.status==='pending' ? '⏳ Your teacher account is pending approval.' : '🚫 Your account has been suspended.','err');
         await auth.signOut(); goToStep(0); return;
       }
@@ -920,7 +920,7 @@ auth.onAuthStateChanged(async u=>{
       const snap = await db.collection('approvedSchools').doc(u.uid).get();
       if(snap.exists){
         const d = snap.data();
-        if(d.status==='approved'){ window.location.href='/final-cbe/admin'; return; }
+        if(d.status==='approved'){ window.location.href='/admin'; return; }
         if(d.status==='suspended'){
           el('subRef').textContent = u.uid.slice(0,16).toUpperCase();
           goToStep(4); el('stepsBar').style.display='none';
@@ -946,7 +946,7 @@ auth.onAuthStateChanged(async u=>{
         el('stepsBar').style.display = 'none';
         restoreSchoolDetails();
       } else {
-        window.location.href='/final-cbe/admin';
+        window.location.href='/admin';
       }
     } else {
       log('warn','User authenticated but no profile found',u.uid);

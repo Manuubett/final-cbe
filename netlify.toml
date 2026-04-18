@@ -8,52 +8,44 @@
   publish = "."
   functions = "netlify/functions"
 
-# ── Pretty URLs — Netlify strips .html automatically ──
 [build.processing]
   skip_processing = false
 
 [build.processing.html]
   pretty_urls = true
 
+# ══════════════════════════════════════════════════════════════
+#  REDIRECTS
+#  ⚠️ ORDER MATTERS — Netlify stops at first match.
+#  The /* catch-all MUST be LAST.
+# ══════════════════════════════════════════════════════════════
+
+[[redirects]]
+  from   = "/sitemap.xml"
+  to     = "/sitemap.xml"
+  status = 200
+  force  = true
+
 # ── Force HTTPS ──
-
 [[redirects]]
-  from = "/sitemap.xml"
-  to = "/sitemap.xml"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-  # ── subscription-guard.js — no cache so updates deploy instantly ──
-[[headers]]
-  for = "/subscription-guard.js"
-  [headers.values]
-    Cache-Control = "no-store, no-cache, must-revalidate"
-    X-Robots-Tag = "noindex, nofollow"
-  
-[[redirects]]
-  from = "http://bett.website/*"
-  to   = "https://bett.website/:splat"
+  from   = "http://bett.website/*"
+  to     = "https://bett.website/:splat"
   status = 301
   force  = true
 
 [[redirects]]
-  from = "http://www.bett.website/*"
-  to   = "https://bett.website/:splat"
+  from   = "http://www.bett.website/*"
+  to     = "https://bett.website/:splat"
   status = 301
   force  = true
 
 [[redirects]]
-  from = "https://www.bett.website/*"
-  to   = "https://bett.website/:splat"
+  from   = "https://www.bett.website/*"
+  to     = "https://bett.website/:splat"
   status = 301
   force  = true
 
-# ── Redirect .html to clean URL ──
+# ── .html → clean URL ──
 [[redirects]]
   from = "/index.html"
   to   = "/"
@@ -103,6 +95,18 @@
   force  = true
 
 [[redirects]]
+  from = "/renew.html"
+  to   = "/renew"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from = "/pay.html"
+  to   = "/renew"
+  status = 301
+  force  = true
+
+[[redirects]]
   from = "/demo.html"
   to   = "/demo"
   status = 301
@@ -138,7 +142,7 @@
   status = 301
   force  = true
 
-# ── Serve clean URLs → actual .html files ──
+# ── Clean URL → actual .html file ──
 [[redirects]]
   from = "/login"
   to   = "/login.html"
@@ -172,6 +176,11 @@
 [[redirects]]
   from = "/registration"
   to   = "/registration.html"
+  status = 200
+
+[[redirects]]
+  from = "/renew"
+  to   = "/renew.html"
   status = 200
 
 [[redirects]]
@@ -209,11 +218,20 @@
   to   = "/notify-test.html"
   status = 200
 
+# ── Catch-all SPA fallback ──
+# ⚠️ MUST BE LAST — real files (.js, .css, images) are served
+# by Netlify directly before redirects are checked, so they
+# are never affected by this rule.
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200
+
 # ══════════════════════════════════════════════════════════════
-#  SECURITY HEADERS
+#  HEADERS
 # ══════════════════════════════════════════════════════════════
 
-# ── Global headers — ALL pages ──
+# ── Global security headers ──
 [[headers]]
   for = "/*"
   [headers.values]
@@ -253,100 +271,126 @@
       https://*.onesignal.com
       https://api.telegram.org
       https://instasend-backend.onrender.com
-      https://api.intasend.com;'''
+      https://api.intasend.com
+      https://api.ipify.org;'''
+
+# ── subscription-guard.js — never cache so updates go live instantly ──
+[[headers]]
+  for = "/subscription-guard.js"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate"
+    X-Robots-Tag  = "noindex, nofollow"
 
 # ── Sensitive pages — no cache, no index ──
 [[headers]]
   for = "/admin.html"
   [headers.values]
     Cache-Control = "no-store, no-cache, must-revalidate, private"
-    X-Robots-Tag = "noindex, nofollow, noarchive"
+    X-Robots-Tag  = "noindex, nofollow, noarchive"
 
 [[headers]]
   for = "/admin"
   [headers.values]
     Cache-Control = "no-store, no-cache, must-revalidate, private"
-    X-Robots-Tag = "noindex, nofollow, noarchive"
+    X-Robots-Tag  = "noindex, nofollow, noarchive"
 
 [[headers]]
   for = "/owner.html"
   [headers.values]
     Cache-Control = "no-store, no-cache, must-revalidate, private"
-    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet"
+    X-Robots-Tag  = "noindex, nofollow, noarchive, nosnippet"
 
 [[headers]]
   for = "/owner"
   [headers.values]
     Cache-Control = "no-store, no-cache, must-revalidate, private"
-    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet"
+    X-Robots-Tag  = "noindex, nofollow, noarchive, nosnippet"
 
 [[headers]]
   for = "/db-cleaner.html"
   [headers.values]
     Cache-Control = "no-store, no-cache, must-revalidate, private"
-    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet"
+    X-Robots-Tag  = "noindex, nofollow, noarchive, nosnippet"
 
 [[headers]]
   for = "/db-cleaner"
   [headers.values]
     Cache-Control = "no-store, no-cache, must-revalidate, private"
-    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet"
+    X-Robots-Tag  = "noindex, nofollow, noarchive, nosnippet"
 
 [[headers]]
   for = "/school-monitor.html"
   [headers.values]
     Cache-Control = "no-store, private"
-    X-Robots-Tag = "noindex, nofollow"
+    X-Robots-Tag  = "noindex, nofollow"
 
 [[headers]]
   for = "/school-monitor"
   [headers.values]
     Cache-Control = "no-store, private"
-    X-Robots-Tag = "noindex, nofollow"
+    X-Robots-Tag  = "noindex, nofollow"
 
 [[headers]]
   for = "/marksheet.html"
   [headers.values]
     Cache-Control = "no-store, private"
-    X-Robots-Tag = "noindex, nofollow"
+    X-Robots-Tag  = "noindex, nofollow"
 
 [[headers]]
   for = "/marksheet"
   [headers.values]
     Cache-Control = "no-store, private"
-    X-Robots-Tag = "noindex, nofollow"
+    X-Robots-Tag  = "noindex, nofollow"
 
 [[headers]]
   for = "/analysis.html"
   [headers.values]
     Cache-Control = "no-store, private"
-    X-Robots-Tag = "noindex, nofollow"
+    X-Robots-Tag  = "noindex, nofollow"
 
 [[headers]]
   for = "/analysis"
   [headers.values]
     Cache-Control = "no-store, private"
-    X-Robots-Tag = "noindex, nofollow"
+    X-Robots-Tag  = "noindex, nofollow"
 
 [[headers]]
   for = "/admission.html"
   [headers.values]
     Cache-Control = "no-store, private"
-    X-Robots-Tag = "noindex, nofollow"
+    X-Robots-Tag  = "noindex, nofollow"
 
 [[headers]]
   for = "/admission"
   [headers.values]
     Cache-Control = "no-store, private"
-    X-Robots-Tag = "noindex, nofollow"
+    X-Robots-Tag  = "noindex, nofollow"
 
 [[headers]]
   for = "/approval.html"
   [headers.values]
     Cache-Control = "no-store, private"
-    X-Robots-Tag = "noindex, nofollow"
+    X-Robots-Tag  = "noindex, nofollow"
 
-# ── Public pages — allow caching ──
+[[headers]]
+  for = "/approval"
+  [headers.values]
+    Cache-Control = "no-store, private"
+    X-Robots-Tag  = "noindex, nofollow"
+
+[[headers]]
+  for = "/renew.html"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, private"
+    X-Robots-Tag  = "noindex, nofollow"
+
+[[headers]]
+  for = "/renew"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, private"
+    X-Robots-Tag  = "noindex, nofollow"
+
+# ── Public pages ──
 [[headers]]
   for = "/index.html"
   [headers.values]

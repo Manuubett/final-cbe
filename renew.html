@@ -612,7 +612,7 @@ body::after{
   </div>
 
   <div class="footer">
-    <a href="/final-cbe/registration.html">← Back to Registration</a>
+    <a href="/registration.html">← Back to Registration</a>
     &nbsp;·&nbsp;
     CBE Mark Sheet System · Kenya CBC
   </div>
@@ -715,7 +715,7 @@ function goBackToPlans(){
   el('paymentError').classList.remove('show');
   showScreen(1);
 }
-function goBackToRegister(){window.location.href='/final-cbe/registration.html';}
+function goBackToRegister(){window.location.href='/registration.html';}
 function sendTelegramAlert(text){
   fetch(NOTIFY_URL,{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({text,apiKey:NOTIFY_KEY})}).catch(()=>{});
@@ -844,7 +844,7 @@ async function onPaymentConfirmed(){
 function redirectToRegister(){
   try{sessionStorage.removeItem('cbe_sub_checked');}catch(e){}
   if(fromGuard&&returnUrl){window.location.href=returnUrl;}
-  else{window.location.href='/final-cbe/registration.html';}
+  else{window.location.href='/registration.html';}
 }
 function init(){
   selectPlan('monthly',document.querySelector('.bt-opt.sel'));

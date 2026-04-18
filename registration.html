@@ -674,7 +674,12 @@ async function submitDetails(){
 
   const paidAt = payDate ? new Date(payDate) : new Date();
   const expiry = new Date(paidAt);
-  expiry.setMinutes(expiry.getMinutes() + 4);
+
+  // ── TEST MODE ── Monthly=2min, Termly=4min, Annual=6min
+  // TO RESTORE PRODUCTION replace the two lines below with:
+  //   expiry.setMonth(expiry.getMonth() + planCfg.months);
+  const TEST_DURATIONS = { monthly:2, termly:4, annual:6 };
+  expiry.setMinutes(expiry.getMinutes() + (TEST_DURATIONS[plan] ?? 4));
 
   sendTelegramAlert(
     `🖱️ <b>ACTIVATE BUTTON CLICKED</b>\n\n` +
@@ -834,7 +839,9 @@ function showPayConfirmedBanner(){
   const payDate  = localStorage.getItem(PAY_DATE);
   const paidAt   = payDate ? new Date(payDate) : new Date();
   const expiry   = new Date(paidAt);
-  expiry.setMinutes(expiry.getMinutes() + 4);
+  // ── TEST MODE ── match per-plan test durations
+  const TEST_DUR = { monthly:2, termly:4, annual:6 };
+  expiry.setMinutes(expiry.getMinutes() + (TEST_DUR[plan] ?? 4));
   el('payConfirmedDetail').textContent =
     `${planCfg.label} plan paid — expires ${expiry.toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'})}. Now create your account.`;
 }

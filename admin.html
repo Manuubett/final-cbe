@@ -165,6 +165,11 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
 .confirm-icon{font-size:36px;text-align:center;margin-bottom:10px}
 .confirm-msg{font-size:13px;color:var(--text2);text-align:center;line-height:1.7}
 
+/* FIX 1: Alert styles missing from this page — needed for Add Teacher error banner */
+.alert{display:none;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:var(--r2);font-size:12px;font-weight:500;line-height:1.5;margin-bottom:14px}
+.alert.show{display:flex}
+.alert.err{background:var(--red-bg);border:1px solid #fca5a5;color:var(--red-tx)}
+
 .pending-banner{
   background:var(--surface);border:1.5px solid #fcd34d;
   border-left:4px solid var(--amber);border-radius:var(--r);
@@ -465,6 +470,7 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
         <button class="modal-close" onclick="closeAddTeacher()">✕</button>
       </div>
       <div class="modal-body">
+        <!-- FIX 1: alert CSS now defined above — this will actually show errors -->
         <div class="alert err" id="addTeacherErr"><span>⚠️</span><span id="addTeacherErrMsg"></span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div class="mfield"><label>First Name *</label><input class="minp" id="atFirst" placeholder="Mary"></div>
@@ -536,9 +542,12 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
 
 </div><!-- /screenDash -->
 
+<!-- FIX 4: school-settings.js loaded BEFORE main script so applySchoolSettings()
+     is defined by the time auth resolves and calls it -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="school-settings.js"></script>
 <script src="/subscription-guard.js"></script>
 <script>
 firebase.initializeApp({
@@ -565,7 +574,7 @@ function show(screen){
   if(screen === 'Login'){
     if(_redirecting) return;
     _redirecting = true;
-    window.location.href = 'registration.html';
+    window.location.href = '/register';
     return;
   }
   const target = el('screen'+screen);
@@ -629,11 +638,19 @@ auth.onAuthStateChanged(async u => {
     el('adminName').textContent = '👤 ' + (profile.fullName || profile.email || '');
 
     show('Dash');
+    detectNewSchool(u.uid);  // clears stale cache if this is a different school
     checkSchoolSetup();
 
     loadTeachers();
     loadResultsCount();
-    applySchoolSettings(db).catch(()=>{});
+
+    // FIX 4: Guard with typeof before calling — school-settings.js is now
+    // loaded above this script so this should always be defined, but the
+    // guard prevents a crash if the file ever fails to load
+    if(typeof applySchoolSettings === 'function'){
+      applySchoolSettings(db).catch(()=>{});
+    }
+
     _patchTeachersSchoolId(_schoolId).catch(()=>{});
     _trackSession(u, profile).catch(()=>{});
 
@@ -647,14 +664,28 @@ auth.onAuthStateChanged(async u => {
 });
 
 async function doLogout(){
+  // FIX 3: Cancel Firestore snapshot listener before signing out
+  if(_teachersUnsub){ _teachersUnsub(); _teachersUnsub = null; }
+
   await _endSession().catch(()=>{});
+
+  // Preserve cbe_last_school_uid intentionally — we need it to survive logout
+  // so detectNewSchool() can compare on the next login from a different account
+  const lastUid = _schoolId || localStorage.getItem('cbe_last_school_uid');
+
   _schoolId=null; window._schoolId=null;
   localStorage.removeItem('cbe_user_role');
   localStorage.removeItem('cbe_pending_uid');
   localStorage.removeItem('cbe_pending_email');
+  localStorage.removeItem('cbe_school_setup_done');
+  localStorage.removeItem('cbe_streams');
+  localStorage.removeItem('cbe_streams_ts');
   sessionStorage.removeItem('cbe_school_id');
-  // Clear subscription guard cache on logout
   try { sessionStorage.removeItem('cbe_sub_checked'); } catch(_){}
+
+  // Re-stamp so next login can detect a school switch
+  if(lastUid) localStorage.setItem('cbe_last_school_uid', lastUid);
+
   _redirecting = false;
   await auth.signOut();
 }
@@ -665,6 +696,41 @@ let   _idleTimer = null, _warnTimer = null, _warnEl = null;
 
 function clearSessionCache(){
   ['cbe_streams','cbe_streams_ts'].forEach(k=>localStorage.removeItem(k));
+}
+
+// ── NEW SCHOOL DETECTION ─────────────────────────────────────────────────────
+// When the same device is used to register multiple schools, stale localStorage
+// keys (cbe_last_school_uid, cbe_school_setup_done, stream cache etc.) from the
+// previous school would make the system think setup is already done and skip
+// the gate entirely. This function detects a UID mismatch and wipes all
+// school-specific cache before anything else runs.
+function detectNewSchool(currentUid){
+  const lastUid = localStorage.getItem('cbe_last_school_uid');
+
+  if(lastUid && lastUid !== currentUid){
+    // Different school on this device — purge all school-specific cache
+    log('info', 'New school detected — clearing stale cache', { lastUid, currentUid });
+
+    const keysToRemove = [
+      'cbe_school_setup_done',
+      'cbe_streams',
+      'cbe_streams_ts',
+      'cbe_user_role',
+      'cbe_reg_details',
+      'cbe_reg_uid',
+      'cbe_reg_email',
+    ];
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+
+    // Also clear sessionStorage guard cache so subscription is re-checked
+    try { sessionStorage.removeItem('cbe_sub_checked'); } catch(_){}
+    try { sessionStorage.removeItem('cbe_school_id'); } catch(_){}
+
+    toast('🏫 New school account detected — setting up fresh environment…', 'info');
+  }
+
+  // Always stamp the current UID so the next login can detect a switch
+  localStorage.setItem('cbe_last_school_uid', currentUid);
 }
 
 async function checkSchoolSetup(){
@@ -1122,15 +1188,26 @@ async function saveAddTeacher(){
       btn.disabled=false; btn.textContent='➕ Add Teacher'; return;
     }
     const uid=data.localId;
-    await db.collection('users').doc(uid).set({
-      firstName:first, lastName:last, fullName:`${first} ${last}`,
-      email, tscNumber:tsc||null, grade, stream,
-      role:'teacher', status:'active', schoolId:_schoolId,
-      schoolName:_schoolName||window.schoolSettings?.name||'',
-      addedByAdmin:true, createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    });
-    toast(`✅ ${first} ${last} added — ${grade} ${stream} · Share password: ${pass}`);
-    closeAddTeacher();
+
+    // FIX 2: Firestore write in its own try/catch — if it fails, warn admin
+    // that a ghost Auth account now exists with no Firestore profile
+    try{
+      await db.collection('users').doc(uid).set({
+        firstName:first, lastName:last, fullName:`${first} ${last}`,
+        email, tscNumber:tsc||null, grade, stream,
+        role:'teacher', status:'active', schoolId:_schoolId,
+        schoolName:_schoolName||window.schoolSettings?.name||'',
+        addedByAdmin:true, createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      toast(`✅ ${first} ${last} added — ${grade} ${stream} · Share password: ${pass}`);
+      closeAddTeacher();
+    }catch(fsErr){
+      // Auth account was created but Firestore write failed
+      // Admin must be warned — the teacher can authenticate but has no profile
+      el('addTeacherErrMsg').textContent=`⚠️ Auth account created but profile save failed: ${fsErr.message}. Please check Firestore and delete the Auth user if needed.`;
+      el('addTeacherErr').classList.add('show');
+      log('error','Ghost Auth account created — Firestore write failed', {uid, email, error: fsErr.message});
+    }
   }catch(e){
     el('addTeacherErrMsg').textContent=e.message;
     el('addTeacherErr').classList.add('show');
@@ -1192,7 +1269,6 @@ async function _endSession(){
   _sessionId=null;
 }
 </script>
-<script src="school-settings.js"></script>
 
 <!-- FORCE SETUP OVERLAY -->
 <div class="overlay" id="setupOverlay" style="z-index:1000;background:rgba(6,12,28,.92);backdrop-filter:blur(16px)">

@@ -35,13 +35,13 @@
   };
 
   // FIX 1: Correct base path for GitHub Pages project site
-  const BASE       = '/final-cbe';
+  const BASE       = '';  // Netlify: no subfolder prefix
   const RENEW_URL  = BASE + '/renew.html?from=guard';
   const LOGIN_URL  = BASE + '/registration.html';
 
-  const WARN_DAYS  = 7;
+  const WARN_DAYS  = 0;   // TEST: set to 7 for production
   const GUARD_KEY  = 'cbe_sub_checked';
-  const GUARD_TTL  = 5 * 60 * 1000;   // 5 minutes
+  const GUARD_TTL  = 20 * 1000;       // TEST: 20s — set to 5*60*1000 for production
 
   // ── INJECT STYLES ───────────────────────────────────────────────────────────
   const style = document.createElement('style');

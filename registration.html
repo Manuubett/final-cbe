@@ -125,7 +125,7 @@ select.inp{cursor:pointer;padding-left:12px}
 .footer{text-align:center;font-size:12px;color:var(--text3);margin-top:18px;line-height:1.8}
 .footer a{color:var(--accent);text-decoration:none;font-weight:600}
 
-#screen0 .btn-outline{display:flex;align-items:center;justify-content:center;height:40px;width:100%;background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:var(--r2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .14s}
+#screen0 .btn-outline{display:flex;align-items:center;justify-content:height:40px;width:100%;background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:var(--r2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .14s}
 #screen0 .btn-outline:hover{background:var(--bg)}
 
 #tc{position:fixed;top:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
@@ -220,7 +220,7 @@ select.inp{cursor:pointer;padding-left:12px}
     </div>
   </div>
 
-  <!-- ══ SCREEN 1: WAITING FOR PAYMENT (No plan selection - just instructions) ══ -->
+  <!-- ══ SCREEN 1: WAITING FOR PAYMENT ══ -->
   <div class="screen" id="screen1">
     <div class="card">
       <div class="card-head">
@@ -380,7 +380,7 @@ select.inp{cursor:pointer;padding-left:12px}
           </div>
 
           <div id="screen4DashCta" style="margin:20px 0">
-            <a href="/admin" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;border-radius:var(--r2);text-decoration:none;font-size:14px;font-weight:800;box-shadow:0 4px 14px rgba(26,86,219,.3)">
+            <a href="/final-cbe/admin" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;border-radius:var(--r2);text-decoration:none;font-size:14px;font-weight:800;box-shadow:0 4px 14px rgba(26,86,219,.3)">
               Go to Dashboard →
             </a>
           </div>
@@ -431,9 +431,9 @@ function sendTelegramAlert(text){
 }
 
 const PLANS = {
-  monthly:  { label:'Monthly',  duration:'1 Month',   months:1,  amount:1,    display:'Ksh 1,499' },
-  termly:   { label:'Termly',   duration:'3 Months',  months:3,  amount:1,    display:'Ksh 3,999' },
-  annual:   { label:'Annual',   duration:'12 Months', months:12, amount:1,    display:'Ksh 14,388' },
+  monthly:  { label:'Monthly',  duration:'1 Month',   months:1,  amount:1499,  display:'Ksh 1,499' },
+  termly:   { label:'Termly',   duration:'3 Months',  months:3,  amount:3999,  display:'Ksh 3,999' },
+  annual:   { label:'Annual',   duration:'12 Months', months:12, amount:14388, display:'Ksh 14,388' },
 };
 
 const SAVE_KEY      = 'cbe_reg_details';
@@ -446,11 +446,9 @@ const PAY_PLAN      = 'cbe_pay_plan';
 let currentStep = 1, _createdUid = null, _regUnsub = null;
 
 function startNewRegistration(){
-  // Clear any existing payment session
   clearPaymentSession();
   localStorage.removeItem('cbe_reg_uid');
   localStorage.removeItem('cbe_reg_email');
-  // Go to payment instruction screen
   goToStep(1);
 }
 
@@ -459,7 +457,6 @@ function clearPaymentSession(){
 }
 
 function goToRenewalPage(){
-  // Navigate to renew.html relative to current page, preserving directory
   const base = window.location.href.replace(/\/[^/]*$/, '/');
   window.location.href = base + 'renew.html?from=register';
 }
@@ -605,7 +602,7 @@ async function createAccount(){
     log('error','Account creation failed',e.message);
     btn.disabled=false; txt.textContent='Create Account →';
     const msg = e.code==='auth/email-already-in-use'
-      ? 'This email is already registered. <a href="/admin" style="color:var(--red-tx);font-weight:700">Sign in instead →</a>'
+      ? 'This email is already registered. <a href="/final-cbe/admin" style="color:var(--red-tx);font-weight:700">Sign in instead →</a>'
       : e.code==='auth/invalid-email' ? 'Invalid email address.' : e.message;
     el('acctErrMsg').innerHTML=msg;
     el('acctErr').classList.add('show');
@@ -677,8 +674,7 @@ async function submitDetails(){
 
   const paidAt = payDate ? new Date(payDate) : new Date();
   const expiry = new Date(paidAt);
- // TESTING — expires in 4 minutes
-expiry.setMinutes(expiry.getMinutes() + 4);
+  expiry.setMinutes(expiry.getMinutes() + 4);
 
   sendTelegramAlert(
     `🖱️ <b>ACTIVATE BUTTON CLICKED</b>\n\n` +
@@ -765,7 +761,7 @@ expiry.setMinutes(expiry.getMinutes() + 4);
     localStorage.removeItem(SAVE_KEY);
     log('info','Registration complete — auto-approved, redirecting to dashboard');
     toast('🎉 Your school is now active! Redirecting…');
-    setTimeout(()=>{ window.location.href = '/admin'; }, 1500);
+    setTimeout(()=>{ window.location.href = '/final-cbe/admin'; }, 1500);
 
   }catch(e){
     log('error','Submit failed',e.message);
@@ -780,7 +776,7 @@ function listenForOwnerResponse(uid){
     if(!snap.exists) return;
     const d = snap.data();
     if(d.status==='approved'){
-      setTimeout(()=>{ window.location.href = '/admin'; }, 1500);
+      setTimeout(()=>{ window.location.href = '/final-cbe/admin'; }, 1500);
       return;
     }
     if(d.status==='suspended'){
@@ -802,24 +798,23 @@ function showOwnerBanner(type, title, msg, contact){
   if(contact){ const wa=banner.querySelector('.ob-wa'); if(wa) wa.href=contact; }
 }
 
-// ─── CHECK FOR PAYMENT CONFIRMATION ─────────────────────────────────────────
-// Register page listens for payment confirmation from renew.html
+// ─── ROUTING LOGIC ──────────────────────────────────────────────────────────
 async function checkPaymentAndRoute(){
-  const payOk = localStorage.getItem(PAY_CONFIRMED) === 'true';
+  const payOk      = localStorage.getItem(PAY_CONFIRMED) === 'true';
   const savedEmail = localStorage.getItem('cbe_reg_email');
   const savedUid   = localStorage.getItem('cbe_reg_uid');
 
-  console.log('🔍 Checking payment status:', { payOk, savedEmail, savedUid });
-
-  // PRIORITY 1: Payment just confirmed → go to account creation
+  // ── FIX: Payment confirmation ALWAYS wins — check it first, unconditionally ──
+  // Even if savedEmail/savedUid exist from a prior visit, a fresh payment
+  // must route to account creation (screen 2), not the login screen.
   if(payOk){
-    log('info','✅ Payment confirmed! Routing to account creation (step 2)');
+    log('info','✅ Payment confirmed — routing to account creation (step 2)');
     showPayConfirmedBanner();
     goToStep(2);
     return;
   }
 
-  // PRIORITY 2: Returning registered user → show login
+  // Only fall back to returning-user login when there is NO active payment session
   if(savedEmail || savedUid){
     log('info','Returning user detected — showing login screen');
     goToStep(0);
@@ -828,7 +823,7 @@ async function checkPaymentAndRoute(){
     return;
   }
 
-  // New visitor → show payment instruction screen
+  // Brand-new visitor — show payment instructions
   log('info','New visitor — showing payment instruction screen');
   goToStep(1);
 }
@@ -839,20 +834,18 @@ function showPayConfirmedBanner(){
   const payDate  = localStorage.getItem(PAY_DATE);
   const paidAt   = payDate ? new Date(payDate) : new Date();
   const expiry   = new Date(paidAt);
- // TESTING — expires in 4 minutes
-expiry.setMinutes(expiry.getMinutes() + 4);
+  expiry.setMinutes(expiry.getMinutes() + 4);
   el('payConfirmedDetail').textContent =
     `${planCfg.label} plan paid — expires ${expiry.toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'})}. Now create your account.`;
 }
 
-// Listen for URL parameters (in case of redirect with payment data)
 function checkUrlForPayment(){
   const urlParams = new URLSearchParams(window.location.search);
   const paymentSuccess = urlParams.get('payment') === 'success';
   const txRef = urlParams.get('txRef');
-  
+
   if(paymentSuccess && txRef && !localStorage.getItem(PAY_CONFIRMED)){
-    console.log('📱 Payment success detected from URL!');
+    log('info','Payment success detected from URL params');
     localStorage.setItem(PAY_CONFIRMED, 'true');
     if(txRef) localStorage.setItem(PAY_TXREF, txRef);
     const plan = urlParams.get('plan');
@@ -860,35 +853,42 @@ function checkUrlForPayment(){
     const phone = urlParams.get('phone');
     if(phone) localStorage.setItem(PAY_PHONE, phone);
     localStorage.setItem(PAY_DATE, new Date().toISOString());
-    
-    // Remove the query params from URL without reloading
     window.history.replaceState({}, document.title, window.location.pathname);
-    
-    // Check again
-    checkPaymentAndRoute();
   }
 }
 
-// Initialize — wait for Firebase auth to settle (max 3s) before routing
-// This prevents auth from overriding a payment return
+// ─── AUTH STATE ──────────────────────────────────────────────────────────────
+// Run URL check immediately — before Firebase auth fires
+checkUrlForPayment();
+
 let _authSettled = false;
-let _routeTimer = setTimeout(()=>{
+const _routeTimer = setTimeout(()=>{
   if(!_authSettled){
     _authSettled = true;
-    checkUrlForPayment();
     checkPaymentAndRoute();
   }
-}, 3000); // fallback if Firebase takes too long
-
-checkUrlForPayment();
+}, 3000);
 
 auth.onAuthStateChanged(async u=>{
   clearTimeout(initTimeout);
   clearTimeout(_routeTimer);
 
+  // ── FIX: If a payment session is active, NEVER let auth override it ──
+  // This was the root cause: auth fired after routing to screen2 and
+  // redirected the user back to the login screen (screen0).
+  const payOk = localStorage.getItem(PAY_CONFIRMED) === 'true';
+  if(payOk){
+    if(!_authSettled){
+      _authSettled = true;
+      showPayConfirmedBanner();
+      goToStep(2);
+    }
+    // No further auth processing — payment session takes full control
+    return;
+  }
+
   if(!_authSettled){
     _authSettled = true;
-    // Auth has settled — now it's safe to route
     checkPaymentAndRoute();
   }
 
@@ -897,12 +897,9 @@ auth.onAuthStateChanged(async u=>{
     if(currentStep>=2 && currentStep<=4){ log('warn','User logged out during registration'); goToStep(0); }
     return;
   }
+
   log('info','User authenticated',u.email);
   _createdUid = u.uid;
-
-  // If payment was just confirmed, don't redirect — let account creation proceed
-  const payOk = localStorage.getItem(PAY_CONFIRMED) === 'true';
-  if(payOk && currentStep === 2) return;
 
   try{
     const userSnap = await db.collection('users').doc(u.uid).get();
@@ -910,12 +907,12 @@ auth.onAuthStateChanged(async u=>{
       const userProfile = userSnap.data();
 
       if(userProfile.role==='admin' && userProfile.status==='active' && userProfile.approved){
-        log('info','Active approved admin — redirecting to /admin');
-        window.location.href = '/admin'; return;
+        log('info','Active approved admin — redirecting to dashboard');
+        window.location.href = '/final-cbe/admin'; return;
       }
 
       if(userProfile.role==='teacher'){
-        if(userProfile.status==='active'){ window.location.href='/marksheet'; return; }
+        if(userProfile.status==='active'){ window.location.href='/final-cbe/marksheet'; return; }
         toast(userProfile.status==='pending' ? '⏳ Your teacher account is pending approval.' : '🚫 Your account has been suspended.','err');
         await auth.signOut(); goToStep(0); return;
       }
@@ -923,7 +920,7 @@ auth.onAuthStateChanged(async u=>{
       const snap = await db.collection('approvedSchools').doc(u.uid).get();
       if(snap.exists){
         const d = snap.data();
-        if(d.status==='approved'){ window.location.href='/admin'; return; }
+        if(d.status==='approved'){ window.location.href='/final-cbe/admin'; return; }
         if(d.status==='suspended'){
           el('subRef').textContent = u.uid.slice(0,16).toUpperCase();
           goToStep(4); el('stepsBar').style.display='none';
@@ -949,7 +946,7 @@ auth.onAuthStateChanged(async u=>{
         el('stepsBar').style.display = 'none';
         restoreSchoolDetails();
       } else {
-        window.location.href='/admin';
+        window.location.href='/final-cbe/admin';
       }
     } else {
       log('warn','User authenticated but no profile found',u.uid);

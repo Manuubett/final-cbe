@@ -1,150 +1,109 @@
 /**
  * CBE Mark Sheet System — Subscription Guard
  * Copyright © 2026 Bett Emanuel — https://bett.website
- *
- * DROP THIS SCRIPT INTO ANY PROTECTED PAGE:
- *   <script src="/final-cbe/subscription-guard.js"></script>
- *
- * What it does:
- *  - Checks if user is logged in → if not, sends to /final-cbe/registration.html
- *  - Checks if user is suspended → blocks with overlay
- *  - Reads subscription.expiresAt from Firestore
- *  - If expired → blocks page and redirects to /final-cbe/renew.html?from=guard
- *  - If expiring within 7 days → shows a dismissible warning banner
- *  - If active → does nothing, page loads normally
- *
- * FIXES APPLIED:
- *  1. Correct base path for GitHub Pages (/final-cbe)
- *  2. Removed dead redirectToRenew() — overlay button uses addEventListener
- *  3. Inline onclick strings replaced with addEventListener (CSP-safe)
- *  4. Cache cleared on every auth state change (prevents cross-user bleed)
- *  5. Suspended user check added
- *  6. Same-tab renewal detection — clears cache immediately if pay just completed
+ * Fixed: clean URLs, Firebase reuse, redirect logging
  */
-
 (function () {
 
-  // ── CONFIG ──────────────────────────────────────────────────────────────────
-  const FIREBASE_CONFIG = {
-    apiKey:            "AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
-    authDomain:        "bett-294a2.firebaseapp.com",
-    projectId:         "bett-294a2",
-    storageBucket:     "bett-294a2.appspot.com",
-    messagingSenderId: "1055511650032",
-    appId:             "1:1055511650032:web:7e0f9c28e58515f549ac35"
-  };
-
-  // FIX 1: Correct base path for GitHub Pages project site
-  const BASE       = '';  // Netlify: no subfolder prefix
-  const RENEW_URL  = BASE + '/renew.html?from=guard';
-  const LOGIN_URL  = BASE + '/registration.html';
-
-  const WARN_DAYS  = 0;   // TEST: set to 7 for production
+  const BASE       = '';
+  const RENEW_URL  = BASE + '/renew?from=guard';      // FIX: clean URL, no .html
+  const LOGIN_URL  = BASE + '/register';              // FIX: clean URL
+  const WARN_DAYS  = 7;
   const GUARD_KEY  = 'cbe_sub_checked';
-  const GUARD_TTL  = 20 * 1000;       // TEST: 20s — set to 5*60*1000 for production
+  const GUARD_TTL  = 5 * 60 * 1000;                  // 5 minutes cache
 
-  // ── INJECT STYLES ───────────────────────────────────────────────────────────
+  // ── Styles ──────────────────────────────────────────────────────────────────
   const style = document.createElement('style');
   style.textContent = `
     #cbe-guard-overlay {
-      position: fixed; inset: 0; z-index: 99999;
-      background: rgba(15,23,42,0.82); backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center;
+      position:fixed;inset:0;z-index:99999;
+      background:rgba(15,23,42,0.88);backdrop-filter:blur(6px);
+      display:flex;align-items:center;justify-content:center;
     }
     #cbe-guard-box {
-      background: #fff; border-radius: 12px; padding: 32px 28px;
-      max-width: 380px; width: 90%; text-align: center;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.3);
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      background:#fff;border-radius:14px;padding:36px 30px;
+      max-width:380px;width:90%;text-align:center;
+      box-shadow:0 24px 64px rgba(0,0,0,.4);
+      font-family:'Plus Jakarta Sans',sans-serif;
+      animation:guardPop .3s cubic-bezier(.175,.885,.32,1.275);
     }
-    #cbe-guard-box .g-icon  { font-size: 52px; margin-bottom: 14px; }
-    #cbe-guard-box .g-title { font-size: 20px; font-weight: 800; color: #131c2e; margin-bottom: 8px; }
-    #cbe-guard-box .g-msg   { font-size: 13px; color: #4f6080; line-height: 1.7; margin-bottom: 22px; }
-    #cbe-guard-box .g-exp   {
-      display: inline-block; background: #fee2e2; color: #991b1b;
-      border-radius: 6px; padding: 4px 12px; font-size: 12px;
-      font-weight: 700; margin-bottom: 18px;
-    }
-    #cbe-guard-box .g-exp.suspended {
-      background: #fef3c7; color: #92400e;
-    }
+    @keyframes guardPop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+    #cbe-guard-box .g-icon  {font-size:56px;margin-bottom:16px}
+    #cbe-guard-box .g-title {font-size:21px;font-weight:800;color:#131c2e;margin-bottom:8px;font-family:'Familjen Grotesk',sans-serif}
+    #cbe-guard-box .g-msg   {font-size:13px;color:#4f6080;line-height:1.75;margin-bottom:18px}
+    #cbe-guard-box .g-exp   {display:inline-block;background:#fee2e2;color:#991b1b;border-radius:6px;padding:4px 14px;font-size:12px;font-weight:700;margin-bottom:20px}
+    #cbe-guard-box .g-exp.suspended{background:#fef3c7;color:#92400e}
     #cbe-guard-btn {
-      display: block; width: 100%; padding: 13px;
-      background: linear-gradient(135deg, #1a56db, #2563eb);
-      color: #fff; border: none; border-radius: 8px;
-      font-size: 15px; font-weight: 800; cursor: pointer;
-      box-shadow: 0 4px 14px rgba(26,86,219,.35);
-      font-family: inherit;
+      display:block;width:100%;padding:14px;
+      background:linear-gradient(135deg,#1a56db,#2563eb);
+      color:#fff;border:none;border-radius:8px;
+      font-size:15px;font-weight:800;cursor:pointer;
+      box-shadow:0 4px 16px rgba(26,86,219,.35);
+      font-family:inherit;transition:opacity .15s;
     }
-    #cbe-guard-btn:hover { opacity: .92; }
-    #cbe-guard-btn.suspended-btn {
-      background: linear-gradient(135deg, #d97706, #f59e0b);
-      box-shadow: 0 4px 14px rgba(217,119,6,.35);
-    }
-
+    #cbe-guard-btn:hover{opacity:.9}
+    #cbe-guard-btn.suspended-btn{background:linear-gradient(135deg,#d97706,#f59e0b);box-shadow:0 4px 14px rgba(217,119,6,.35)}
     #cbe-warn-banner {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-      background: linear-gradient(135deg, #fef3c7, #fde68a);
-      border-bottom: 2px solid #f59e0b;
-      padding: 10px 16px; display: flex;
-      align-items: center; justify-content: space-between; gap: 12px;
-      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px;
-      color: #92400e; font-weight: 600;
-      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      position:fixed;top:0;left:0;right:0;z-index:9999;
+      background:linear-gradient(135deg,#fef3c7,#fde68a);
+      border-bottom:2px solid #f59e0b;
+      padding:10px 18px;display:flex;align-items:center;
+      justify-content:space-between;gap:12px;
+      font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;
+      color:#92400e;font-weight:600;
+      box-shadow:0 2px 10px rgba(0,0,0,.12);
     }
-    #cbe-warn-banner .wb-left  { display: flex; align-items: center; gap: 8px; }
-    #cbe-warn-banner .wb-renew {
-      padding: 6px 16px; background: #d97706; color: #fff;
-      border: none; border-radius: 6px; font-size: 12px;
-      font-weight: 800; cursor: pointer; white-space: nowrap;
-      font-family: inherit;
-    }
-    #cbe-warn-banner .wb-close {
-      background: none; border: none; font-size: 18px;
-      cursor: pointer; color: #b45309; line-height: 1; padding: 0 4px;
-    }
-    body.cbe-has-banner { padding-top: 52px !important; }
+    #cbe-warn-banner .wb-left{display:flex;align-items:center;gap:8px}
+    #cbe-warn-banner .wb-renew{padding:6px 18px;background:#d97706;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;font-family:inherit}
+    #cbe-warn-banner .wb-close{background:none;border:none;font-size:20px;cursor:pointer;color:#b45309;line-height:1;padding:0 4px}
+    body.cbe-has-banner{padding-top:52px!important}
   `;
   document.head.appendChild(style);
 
-  // ── HELPERS ─────────────────────────────────────────────────────────────────
+  // ── Cache helpers ────────────────────────────────────────────────────────────
+  function getCached(){
+    try{
+      const raw=sessionStorage.getItem(GUARD_KEY);
+      if(!raw) return null;
+      const obj=JSON.parse(raw);
+      if(Date.now()-obj.ts>GUARD_TTL){sessionStorage.removeItem(GUARD_KEY);return null;}
+      return obj;
+    }catch{return null;}
+  }
+  function setCache(status,expiresAt,daysLeft){
+    try{sessionStorage.setItem(GUARD_KEY,JSON.stringify({status,expiresAt,daysLeft,ts:Date.now()}));}catch{}
+  }
+  function clearCache(){
+    try{sessionStorage.removeItem(GUARD_KEY);}catch{}
+  }
 
-  // FIX 5: Separate suspended overlay with WhatsApp contact button
-  function showSuspendedOverlay() {
-    document.body.style.overflow = 'hidden';
-    const overlay = document.createElement('div');
-    overlay.id = 'cbe-guard-overlay';
-    overlay.innerHTML = `
+  // ── UI helpers ───────────────────────────────────────────────────────────────
+  function showSuspendedOverlay(){
+    document.body.style.overflow='hidden';
+    const ov=document.createElement('div');
+    ov.id='cbe-guard-overlay';
+    ov.innerHTML=`
       <div id="cbe-guard-box">
         <div class="g-icon">🚫</div>
         <div class="g-title">Account Suspended</div>
-        <div class="g-exp suspended">Account Suspended</div>
-        <div class="g-msg">
-          Your school account has been suspended.<br>
-          Please contact support to resolve this.
-        </div>
-        <button id="cbe-guard-btn" class="suspended-btn">
-          💬 Contact Support on WhatsApp
-        </button>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-
-    // FIX 3: addEventListener instead of inline onclick string
-    overlay.querySelector('#cbe-guard-btn')
-      .addEventListener('click', () => {
-        window.location.href = 'https://wa.me/254704518130';
-      });
+        <div class="g-exp suspended">Suspended</div>
+        <div class="g-msg">Your school account has been suspended.<br>Please contact support to resolve this.</div>
+        <button id="cbe-guard-btn" class="suspended-btn">💬 Contact Support on WhatsApp</button>
+      </div>`;
+    document.body.appendChild(ov);
+    ov.querySelector('#cbe-guard-btn').addEventListener('click',()=>{
+      window.location.href='https://wa.me/254704518130';
+    });
   }
 
-  function showExpiredOverlay(expiresAt) {
-    document.body.style.overflow = 'hidden';
-    const overlay = document.createElement('div');
-    overlay.id = 'cbe-guard-overlay';
-    const expStr = expiresAt
-      ? new Date(expiresAt).toLocaleDateString('en-KE', { day: 'numeric', month: 'long', year: 'numeric' })
+  function showExpiredOverlay(expiresAt){
+    document.body.style.overflow='hidden';
+    const ov=document.createElement('div');
+    ov.id='cbe-guard-overlay';
+    const expStr=expiresAt
+      ? new Date(expiresAt).toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'})
       : '—';
-    overlay.innerHTML = `
+    ov.innerHTML=`
       <div id="cbe-guard-box">
         <div class="g-icon">🔒</div>
         <div class="g-title">Subscription Expired</div>
@@ -152,182 +111,125 @@
         <div class="g-msg">
           Your CBE Mark Sheet subscription has expired.<br>
           Renew now to continue accessing the system.<br>
-          <strong>Your data is safe</strong> — nothing is deleted.
+          <strong style="color:#131c2e">Your data is safe</strong> — nothing is deleted.
         </div>
-        <button id="cbe-guard-btn">Renew Subscription →</button>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-
-    // FIX 3: addEventListener instead of inline onclick string (CSP-safe)
-    overlay.querySelector('#cbe-guard-btn')
-      .addEventListener('click', () => {
-        window.location.href = RENEW_URL;
-      });
+        <button id="cbe-guard-btn">🔄 Renew Subscription →</button>
+      </div>`;
+    document.body.appendChild(ov);
+    ov.querySelector('#cbe-guard-btn').addEventListener('click',()=>{
+      console.log('[Guard] Redirecting to renew:', RENEW_URL);
+      window.location.href=RENEW_URL;
+    });
   }
 
-  function showWarningBanner(daysLeft, expiresAt) {
-    const expStr = new Date(expiresAt).toLocaleDateString('en-KE', {
-      day: 'numeric', month: 'long', year: 'numeric'
-    });
-    const banner = document.createElement('div');
-    banner.id = 'cbe-warn-banner';
-    banner.innerHTML = `
+  function showWarningBanner(daysLeft,expiresAt){
+    if(document.getElementById('cbe-warn-banner')) return;
+    const expStr=new Date(expiresAt).toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'});
+    const banner=document.createElement('div');
+    banner.id='cbe-warn-banner';
+    banner.innerHTML=`
       <div class="wb-left">
         <span>⚠️</span>
-        <span>Your subscription expires in <strong>${daysLeft} day${daysLeft !== 1 ? 's' : ''}</strong> (${expStr}). Renew before access is blocked.</span>
+        <span>Subscription expires in <strong>${daysLeft} day${daysLeft!==1?'s':''}</strong> (${expStr}). Renew before access is blocked.</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <button class="wb-renew">Renew Now</button>
         <button class="wb-close" title="Dismiss">×</button>
-      </div>
-    `;
+      </div>`;
     document.body.prepend(banner);
     document.body.classList.add('cbe-has-banner');
-
-    // FIX 3: addEventListener for banner buttons (CSP-safe)
-    banner.querySelector('.wb-renew')
-      .addEventListener('click', () => {
-        window.location.href = RENEW_URL;
-      });
-    banner.querySelector('.wb-close')
-      .addEventListener('click', () => {
-        banner.remove();
-        document.body.classList.remove('cbe-has-banner');
-      });
+    banner.querySelector('.wb-renew').addEventListener('click',()=>{ window.location.href=RENEW_URL; });
+    banner.querySelector('.wb-close').addEventListener('click',()=>{ banner.remove(); document.body.classList.remove('cbe-has-banner'); });
   }
 
-  function redirectToLogin() {
-    window.location.href = LOGIN_URL;
-  }
+  function redirectToLogin(){ window.location.href=LOGIN_URL; }
 
-  // ── CACHE ────────────────────────────────────────────────────────────────────
-  function getCached() {
-    try {
-      const raw = sessionStorage.getItem(GUARD_KEY);
-      if (!raw) return null;
-      const obj = JSON.parse(raw);
-      if (Date.now() - obj.ts > GUARD_TTL) { sessionStorage.removeItem(GUARD_KEY); return null; }
-      return obj;
-    } catch { return null; }
-  }
-
-  function setCache(status, expiresAt, daysLeft) {
-    try {
-      sessionStorage.setItem(GUARD_KEY, JSON.stringify({
-        status, expiresAt, daysLeft, ts: Date.now()
-      }));
-    } catch {}
-  }
-
-  function clearCache() {
-    try { sessionStorage.removeItem(GUARD_KEY); } catch {}
-  }
-
-  // ── MAIN GUARD ───────────────────────────────────────────────────────────────
-  function runGuard(uid) {
-
-    // FIX 6: Same-tab renewal detection
-    // The storage event doesn't fire in the same tab that set the value,
-    // so we check localStorage directly here to catch same-tab renewals.
-    if (localStorage.getItem('cbe_pay_confirmed') === 'true') {
-      clearCache();
+  // ── Apply guard result ───────────────────────────────────────────────────────
+  function applyResult(status,expiresAt,daysLeft){
+    console.log('[Guard] Status:', status, '| daysLeft:', daysLeft, '| expiresAt:', expiresAt);
+    if(status==='suspended'){
+      showSuspendedOverlay();
+    } else if(status==='expired'){
+      showExpiredOverlay(expiresAt);
+    } else if(status==='warning'){
+      showWarningBanner(daysLeft,expiresAt);
     }
+    // active → do nothing
+  }
 
-    // Use cache if still fresh
-    const cached = getCached();
-    if (cached) {
-      applyResult(cached.status, cached.expiresAt, cached.daysLeft);
+  // ── Main Firestore check ─────────────────────────────────────────────────────
+  function runGuard(uid){
+    // If payment just completed in this tab — clear cache
+    if(localStorage.getItem('cbe_pay_confirmed')==='true') clearCache();
+
+    const cached=getCached();
+    if(cached){
+      console.log('[Guard] Using cached result:', cached.status);
+      applyResult(cached.status,cached.expiresAt,cached.daysLeft);
       return;
     }
 
-    // Fetch live from Firestore
-    firebase.firestore()
-      .collection('users')
-      .doc(uid)
-      .get()
-      .then(snap => {
-        if (!snap.exists) { redirectToLogin(); return; }
+    console.log('[Guard] Fetching subscription from Firestore for uid:', uid);
 
-        const data = snap.data();
+    // FIX: Use existing firebase app — do NOT call initializeApp
+    const db = firebase.firestore();
+    db.collection('users').doc(uid).get()
+      .then(snap=>{
+        if(!snap.exists){ redirectToLogin(); return; }
+        const data=snap.data();
 
-        // FIX 5: Check suspension before subscription dates
-        if (data.suspended === true) {
-          setCache('suspended', null, 0);
-          applyResult('suspended', null, 0);
+        if(data.suspended===true){
+          setCache('suspended',null,0);
+          applyResult('suspended',null,0);
           return;
         }
 
-        const sub = data.subscription;
-
-        // No subscription record at all
-        if (!sub || !sub.expiresAt) {
-          setCache('expired', null, 0);
-          applyResult('expired', null, 0);
+        const sub=data.subscription;
+        if(!sub || !sub.expiresAt){
+          console.log('[Guard] No subscription record found — treating as expired');
+          setCache('expired',null,0);
+          applyResult('expired',null,0);
           return;
         }
 
-        const expiresAt = sub.expiresAt.toDate
-          ? sub.expiresAt.toDate()
-          : new Date(sub.expiresAt);
-        const now      = new Date();
-        const msLeft   = expiresAt - now;
-        const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+        const expiresAt=sub.expiresAt.toDate ? sub.expiresAt.toDate() : new Date(sub.expiresAt);
+        const now=new Date();
+        const msLeft=expiresAt-now;
+        const daysLeft=Math.ceil(msLeft/(1000*60*60*24));
 
         let status;
-        if (msLeft <= 0)             status = 'expired';
-        else if (daysLeft <= WARN_DAYS) status = 'warning';
-        else                          status = 'active';
+        if(msLeft<=0)              status='expired';
+        else if(daysLeft<=WARN_DAYS) status='warning';
+        else                         status='active';
 
-        setCache(status, expiresAt.toISOString(), daysLeft);
-        applyResult(status, expiresAt.toISOString(), daysLeft);
+        console.log('[Guard] Subscription expires:', expiresAt.toISOString(), '| daysLeft:', daysLeft, '| status:', status);
+        setCache(status,expiresAt.toISOString(),daysLeft);
+        applyResult(status,expiresAt.toISOString(),daysLeft);
       })
-      .catch(err => {
-        // On Firestore error allow access — will retry on next load
-        console.warn('[CBE Guard] Firestore error:', err.message);
+      .catch(err=>{
+        console.warn('[Guard] Firestore error — allowing access:', err.message);
       });
   }
 
-  function applyResult(status, expiresAt, daysLeft) {
-    if (status === 'suspended') {
-      showSuspendedOverlay();
-    } else if (status === 'expired') {
-      showExpiredOverlay(expiresAt);
-    } else if (status === 'warning') {
-      showWarningBanner(daysLeft, expiresAt);
-    }
-    // 'active' → do nothing, page loads normally
-  }
-
-  // ── BOOT ─────────────────────────────────────────────────────────────────────
-  function boot() {
-    if (typeof firebase === 'undefined' || !firebase.auth) {
-      setTimeout(boot, 300);
+  // ── Boot ─────────────────────────────────────────────────────────────────────
+  function boot(){
+    // Wait until firebase is ready (host page calls initializeApp before guard runs)
+    if(typeof firebase==='undefined' || !firebase.apps || !firebase.apps.length){
+      setTimeout(boot,200);
       return;
     }
 
-    firebase.auth().onAuthStateChanged(user => {
-      // FIX 4: Always clear cache on auth state change
-      // Prevents user A's cached result bleeding into user B's session
-      // when two people share the same browser (e.g. school office PC)
-      clearCache();
-
-      if (!user) {
-        redirectToLogin();
-        return;
-      }
-
+    firebase.auth().onAuthStateChanged(user=>{
+      clearCache(); // always clear on auth change
+      if(!user){ redirectToLogin(); return; }
       runGuard(user.uid);
     });
   }
 
-  // FIX 4 (cross-tab): Clear cache when renewal completes in another tab
-  window.addEventListener('storage', e => {
-    if (e.key === 'cbe_pay_confirmed' && e.newValue === 'true') {
-      clearCache();
-    }
+  // Cross-tab renewal detection
+  window.addEventListener('storage',e=>{
+    if(e.key==='cbe_pay_confirmed' && e.newValue==='true') clearCache();
   });
 
   boot();
-
 })();

@@ -190,6 +190,17 @@
   to   = "/notify-test.html"
   status = 200
 
+[[redirects]]
+  from = "/renew.html"
+  to   = "/renew"
+  status = 301
+  force  = true
+
+[[redirects]]
+  from = "/renew"
+  to   = "/renew.html"
+  status = 200
+
 # ══════════════════════════════════════════════════════════════
 #  SECURITY HEADERS
 # ══════════════════════════════════════════════════════════════

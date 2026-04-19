@@ -186,9 +186,58 @@
 
         const sub=data.subscription;
         if(!sub || !sub.expiresAt){
-          console.log('[Guard] No subscription record found — treating as expired');
-          setCache('expired',null,0);
-          applyResult('expired',null,0);
+
+          // ── LEGACY USER HANDLING ──────────────────────────────────────────
+          // Users who paid via the old one-time system have no subscription record.
+          // Grant them 3 months from their account creation date (createdAt).
+          // If createdAt is also missing, grant 3 months from now as a fallback.
+
+          const createdAt = data.createdAt
+            ? (data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt))
+            : null;
+
+          // Also check payments collection for any confirmed payment
+          const paid = data.paid === true || data.approved === true;
+
+          if(paid && createdAt){
+            // Calculate legacy expiry: createdAt + 3 months
+            const legacyExpiry = new Date(createdAt);
+            legacyExpiry.setMonth(legacyExpiry.getMonth() + 3);
+
+            const now      = new Date();
+            const msLeft   = legacyExpiry - now;
+            const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+
+            console.log('[Guard] Legacy user — createdAt:', createdAt.toISOString(),
+              '| legacyExpiry:', legacyExpiry.toISOString(), '| daysLeft:', daysLeft);
+
+            // Write subscription to Firestore so next check is faster
+            // and owner can see the expiry date in their dashboard
+            firebase.firestore().collection('users').doc(uid).set({
+              subscription: {
+                plan:      'legacy',
+                status:    'active',
+                paidAt:    firebase.firestore.Timestamp.fromDate(createdAt),
+                expiresAt: firebase.firestore.Timestamp.fromDate(legacyExpiry),
+                lastTxRef: data.txRef || data.mpesaRef || 'legacy-payment',
+                migratedAt: firebase.firestore.FieldValue.serverTimestamp()
+              }
+            },{ merge: true }).catch(()=>{});
+
+            let status;
+            if(msLeft <= 0)              status = 'expired';
+            else if(daysLeft <= WARN_DAYS) status = 'warning';
+            else                           status = 'active';
+
+            setCache(status, legacyExpiry.toISOString(), daysLeft);
+            applyResult(status, legacyExpiry.toISOString(), daysLeft);
+            return;
+          }
+
+          // No payment record at all — expired
+          console.log('[Guard] No subscription and no payment record — treating as expired');
+          setCache('expired', null, 0);
+          applyResult('expired', null, 0);
           return;
         }
 

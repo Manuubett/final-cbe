@@ -457,9 +457,10 @@ function clearPaymentSession(){
 }
 
 function goToRenewalPage(){
-  const base = window.location.href.replace(/\/[^/]*$/, '/');
-  window.location.href = base + 'renew.html?from=register';
+  window.location.href = '/renew?from=register';
 }
+
+
 
 function toast(msg, type='ok'){
   const t = document.createElement('div'); t.className = `t ${type}`;

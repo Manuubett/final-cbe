@@ -205,7 +205,7 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
 .pov-pulse{width:6px;height:6px;border-radius:50%;background:#f59e0b;flex-shrink:0;animation:ppulse 2s infinite}
 @keyframes ppulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
 
-/* ── Renewal detected banner (shows above overlay briefly) ── */
+/* ── Renewal detected banner ── */
 #renewalDetectedBanner{
   display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);
   background:#064e3b;color:#ecfdf5;border:1.5px solid #10b981;
@@ -749,10 +749,9 @@ async function doLogout(){
 // ══ PAYMENT GATE — FIXED ══════════════════════════════════════════════
 
 /**
- * Real-time listener on approvedSchools doc.
- * Hides overlay when: status==='approved' OR (status==='active' AND expiry is future).
- * Shows overlay when: status==='suspended' OR message is non-empty OR expiry has passed.
- * After renewal, the Firestore write updates subscriptionExpiry → snapshot fires → overlay hides automatically.
+ * FIX 1: Renewal detection runs FIRST, before message/status checks.
+ * A valid future expiry always wins — even if owner forgot to clear message.
+ * First-load case is handled separately from renewal-detected case.
  */
 function _listenPayment(schoolId){
   if(_ownerMsgUnsub){ _ownerMsgUnsub(); _ownerMsgUnsub=null; }
@@ -763,58 +762,69 @@ function _listenPayment(schoolId){
     .onSnapshot(snap=>{
       if(!snap.exists){ _hidePayment(); return; }
       const d=snap.data();
+      const newExpiry=d.subscriptionExpiry?.toDate?.();
+      const now=new Date();
+
+      // ── Step 1: Renewal detection — check expiry FIRST before anything else ──
+      // This ensures a renewed subscription always wins even if message is still set.
+      if(newExpiry && newExpiry > now){
+        if(_lastKnownExpiry && newExpiry > _lastKnownExpiry){
+          // Expiry moved forward → admin approved a renewal
+          log('info','Renewal detected via snapshot',newExpiry.toISOString());
+          _lastKnownExpiry=newExpiry;
+          _showRenewalBanner();
+          _clearExpiryTimers();
+          _hidePayment();
+          return;
+        }
+        // First load with a valid future expiry — record it and schedule expiry check
+        if(!_lastKnownExpiry){
+          _lastKnownExpiry=newExpiry;
+        }
+      }
+
       log('info','Payment gate snapshot',{
         status:d.status,
         hasMsg:!!(d.message?.trim()),
-        expiresAt:d.subscriptionExpiry?.toDate?.()?.toISOString?.()
+        expiresAt:newExpiry?.toISOString?.()
       });
 
-      // 1. Explicitly suspended by owner → always show gate
+      // ── Step 2: Explicitly suspended by owner ──
       if(d.status==='suspended'){
         _showPaymentGate(d,'Your account has been suspended. Please contact the administrator to reactivate.');
         return;
       }
 
-      // 2. Owner sent a message (renewal demand) → show gate
-      if(d.message&&d.message.trim()){
-        _showPaymentGate(d,d.message);
+      // ── Step 3: Subscription still valid — skip message check entirely ──
+      // Owner may forget to clear message after renewal; expiry is the source of truth.
+      if(newExpiry && newExpiry > now){
+        _scheduleExpiryCheck(schoolId, newExpiry);
+        _hidePayment();
         return;
       }
 
-      // 3. Check subscription expiry timestamp
-      if(d.subscriptionExpiry){
-        const expiresAt=d.subscriptionExpiry.toDate();
-        const now=new Date();
-
-        // Detect renewal: expiry moved to the future compared to what we had before
-        if(_lastKnownExpiry && expiresAt > _lastKnownExpiry && expiresAt > now){
-          log('info','Renewal detected via snapshot — expiry extended',expiresAt.toISOString());
-          _showRenewalBanner();
-          _lastKnownExpiry=expiresAt;
-          _clearExpiryTimers();
-          _hidePayment();
-          return;
-        }
-        _lastKnownExpiry=expiresAt;
-
-        if(expiresAt<=now){
-          // Already expired
-          _showPaymentGate(d,'Your subscription has expired. Please renew to continue using the system.');
-          // Poll every 30s so the overlay disappears the moment renewal is approved
-          _startRenewalPoll(schoolId);
-          return;
-        }
-
-        // Still active — schedule a check exactly when it expires
-        _scheduleExpiryCheck(schoolId,expiresAt);
+      // ── Step 4: Expired — show gate with owner message if available ──
+      if(newExpiry && newExpiry <= now){
+        const msg=(d.message&&d.message.trim())
+          ? d.message
+          : 'Your subscription has expired. Please renew to continue using the system.';
+        _showPaymentGate(d, msg);
+        _startRenewalPoll(schoolId);
+        return;
       }
 
-      // 4. All clear — hide gate
+      // ── Step 5: No expiry set at all — fall back to message check ──
+      if(d.message && d.message.trim()){
+        _showPaymentGate(d, d.message);
+        return;
+      }
+
+      // ── Step 6: All clear ──
       _hidePayment();
 
     }, e=>{
       log('warn','Payment gate listener error',e.message);
-      // On Firestore error, don't block the user
+      // On Firestore error don't block the user
       _hidePayment();
     });
 }
@@ -866,7 +876,6 @@ function _scheduleExpiryCheck(schoolId, expiresAt){
   log('info',`Subscription expires in ${Math.round(msUntil/1000)}s — auto-check scheduled`);
   _expiryCheckTimer=setTimeout(()=>{
     log('info','Expiry timer fired — re-evaluating subscription');
-    // Re-read the doc; if it hasn't been renewed the snapshot condition will show the gate
     db.collection('approvedSchools').doc(schoolId).get()
       .then(snap=>{
         if(!snap.exists){ _hidePayment(); return; }
@@ -881,9 +890,9 @@ function _scheduleExpiryCheck(schoolId, expiresAt){
 }
 
 /**
- * Poll every 30s while expired, watching for the moment subscriptionExpiry is updated.
- * This is the safety net — the onSnapshot listener will already catch it
- * if the admin is on the same page when the renewal write happens.
+ * FIX 3: Poll every 30s while expired.
+ * Clear timers immediately on detection, then update _lastKnownExpiry
+ * before hiding so subsequent snapshots correctly detect the NEXT renewal.
  */
 function _startRenewalPoll(schoolId){
   if(_expiryPollTimer) return; // already polling
@@ -896,7 +905,8 @@ function _startRenewalPoll(schoolId){
       const newExpiry=d.subscriptionExpiry?.toDate?.();
       if(newExpiry&&newExpiry>new Date()&&d.status!=='suspended'){
         log('info','Renewal detected via poll — hiding gate');
-        clearInterval(_expiryPollTimer); _expiryPollTimer=null;
+        // FIX 3: clear timers first, then update state, then hide
+        _clearExpiryTimers();
         _lastKnownExpiry=newExpiry;
         _showRenewalBanner();
         _hidePayment();
@@ -915,6 +925,8 @@ function _showRenewalBanner(){
 }
 
 // ── Submit renewal request ──
+// FIX 2: Clear the `message` field so the snapshot re-evaluates expiry cleanly
+//         and doesn't loop back into _showPaymentGate via the message check.
 async function submitRenewalRequest(){
   const phone=(el('povPhone')?.value||'').trim();
   const paymentName=(el('povPayName')?.value||'').trim().toUpperCase();
@@ -925,12 +937,15 @@ async function submitRenewalRequest(){
   txt.innerHTML='<div class="spin-sm"></div> Sending…';
   log('info','Renewal request submitted',{phone,paymentName});
   try{
+    // FIX 2: include message:'' so the owner message is cleared on submission,
+    // preventing the snapshot from re-triggering the gate via the message check.
     await db.collection('approvedSchools').doc(_schoolId).update({
       renewalRequest:{
         phone,paymentName,
         submittedAt:firebase.firestore.FieldValue.serverTimestamp(),
         schoolName:window.schoolSettings?.name||_schoolId
-      }
+      },
+      message: ''
     });
     db.collection('ownerLog').add({
       type:'renewal_request',

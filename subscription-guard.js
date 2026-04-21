@@ -17,7 +17,8 @@
  *       < 24 hours → red bar with HH:MM:SS countdown
  *       Reaches 0  → immediately shows the gate (no page refresh needed)
  *   • Polls Firestore every 30 s while expired so renewal is detected promptly.
- *   • Resets cleanly when the school renews — hides gate, shows green banner.
+ *   • On renewal → hides gate, shows green banner, RELOADS the current page
+ *     so the user lands back exactly where they were (fully functional).
  *
  * Requirements:
  *   • Firebase compat SDK (app + firestore + auth) must already be loaded.
@@ -27,10 +28,11 @@
  *       3. auth.currentUser.uid      (waited for if not yet available)
  *
  * Configuration (set before loading this script if you want non-defaults):
- *   window.CBE_GUARD_WARN_DAYS   = 7;    // days before expiry to show warning bar
- *   window.CBE_GUARD_POLL_MS     = 30000; // renewal poll interval while expired
- *   window.CBE_GUARD_RENEW_PATH  = '/renew'; // where the Renew button points
+ *   window.CBE_GUARD_WARN_DAYS   = 7;      // days before expiry to show warning bar
+ *   window.CBE_GUARD_POLL_MS     = 30000;  // renewal poll interval while expired
+ *   window.CBE_GUARD_RENEW_PATH  = '/renew';
  *   window.CBE_GUARD_WA_NUMBER   = '254704518130';
+ *   window.CBE_GUARD_RELOAD_MS   = 2500;   // ms to wait before reload on renewal
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -42,20 +44,23 @@
   const POLL_MS     = window.CBE_GUARD_POLL_MS    ?? 30_000;
   const RENEW_PATH  = window.CBE_GUARD_RENEW_PATH ?? '/renew';
   const WA_NUMBER   = window.CBE_GUARD_WA_NUMBER  ?? '254704518130';
-  const OVERLAY_ID  = '__cbe_sub_overlay';
-  const STATUSBAR_ID= '__cbe_sub_bar';
-  const BANNER_ID   = '__cbe_renewal_banner';
+  const RELOAD_MS   = window.CBE_GUARD_RELOAD_MS  ?? 2_500; // delay before page reload on renewal
+
+  const OVERLAY_ID   = '__cbe_sub_overlay';
+  const STATUSBAR_ID = '__cbe_sub_bar';
+  const BANNER_ID    = '__cbe_renewal_banner';
 
   // ── Internal state ─────────────────────────────────────────────────────────
   let _schoolId         = null;
   let _lastKnownExpiry  = null;
   let _renewalShown     = false;
+  let _gateIsOpen       = false;   // track whether gate is currently blocking the user
   let _firestoreUnsub   = null;
-  let _expiryTimer      = null;   // one-shot: fires exactly at expiry moment
-  let _pollTimer        = null;   // 30s interval while expired
-  let _countdownTimer   = null;   // 1s interval: live warning bar tick
-  let _expiredTickTimer = null;   // 60s interval: "expired X ago" inside gate
-  let _pageLabel        = '';     // e.g. "Admission" — used in log messages
+  let _expiryTimer      = null;
+  let _pollTimer        = null;
+  let _countdownTimer   = null;
+  let _expiredTickTimer = null;
+  let _pageLabel        = '';
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   function _log(msg, data){
@@ -75,14 +80,12 @@
   }
 
   // ── Resolve schoolId ────────────────────────────────────────────────────────
-  // Tries immediately; if auth hasn't resolved yet waits for onAuthStateChanged.
   function _resolveSchoolId(cb){
     if(window._schoolId){ cb(window._schoolId); return; }
     const sid = sessionStorage.getItem('cbe_school_id');
     if(sid){ cb(sid); return; }
     const auth = _getAuth();
     if(!auth){ _log('No Firebase auth — guard skipped'); return; }
-    // Wait up to one auth cycle
     const unsub = auth.onAuthStateChanged(u => {
       unsub();
       if(u){ cb(u.uid); }
@@ -90,7 +93,6 @@
     });
   }
 
-  // Detect current page name from URL for nicer log messages
   function _detectPageLabel(){
     const p = window.location.pathname.split('/').pop().replace(/\.html$/,'').replace(/-/g,' ');
     return p ? p.charAt(0).toUpperCase()+p.slice(1) : 'Page';
@@ -190,6 +192,21 @@
       }
       .__cbe-signout:hover{border-color:#cbd5e1;color:#64748b}
 
+      /* ── Restoring access state (shown while waiting to reload) ── */
+      .__cbe-restoring{
+        padding:14px 20px 18px;text-align:center;
+        display:none;flex-direction:column;align-items:center;gap:10px;
+      }
+      .__cbe-restoring.cbe-show{display:flex}
+      .__cbe-restore-spin{
+        width:28px;height:28px;border-radius:50%;
+        border:3px solid rgba(26,86,219,.2);border-top-color:#1a56db;
+        animation:__cbe_spin .65s linear infinite;
+      }
+      @keyframes __cbe_spin{to{transform:rotate(360deg)}}
+      .__cbe-restore-msg{font-size:13px;color:#4a5578;font-weight:600}
+      .__cbe-restore-sub{font-size:11px;color:#9aaabb;margin-top:2px}
+
       /* ── Warning bar ── */
       #${STATUSBAR_ID}{
         display:none;position:fixed;bottom:0;left:0;right:0;z-index:99998;
@@ -216,7 +233,7 @@
       .__cbe-bar-renew{
         padding:5px 14px;border-radius:5px;font-family:inherit;
         font-size:11.5px;font-weight:700;cursor:pointer;border:none;
-        white-space:nowrap;flex-shrink:0;
+        white-space:nowrap;flex-shrink:0;text-decoration:none;display:inline-block;
       }
       #${STATUSBAR_ID}.cbe-warn  .__cbe-bar-renew{background:#f97316;color:#fff}
       #${STATUSBAR_ID}.cbe-urgent .__cbe-bar-renew{background:#ef4444;color:#fff}
@@ -256,12 +273,12 @@
     ov.innerHTML = `
       <div class="__cbe-card">
         <div class="__cbe-top">
-          <div class="__cbe-lock">🔒</div>
-          <div class="__cbe-title">Subscription Required</div>
+          <div class="__cbe-lock" id="__cbe_lock_icon">🔒</div>
+          <div class="__cbe-title" id="__cbe_card_title">Subscription Required</div>
           <div class="__cbe-school" id="__cbe_school_name">Your School</div>
           <div class="__cbe-page-badge" id="__cbe_page_badge"></div>
         </div>
-        <div class="__cbe-body">
+        <div class="__cbe-body" id="__cbe_card_body">
           <p class="__cbe-msg" id="__cbe_msg">
             Your subscription has expired. Renew now to continue — your data is safe.
           </p>
@@ -270,7 +287,17 @@
           </a>
         </div>
         <div class="__cbe-expired-ago" id="__cbe_expired_ago"></div>
-        <div class="__cbe-actions">
+
+        <!-- Shown while reloading after renewal -->
+        <div class="__cbe-restoring" id="__cbe_restoring">
+          <div class="__cbe-restore-spin"></div>
+          <div>
+            <div class="__cbe-restore-msg">✅ Subscription active — restoring access…</div>
+            <div class="__cbe-restore-sub" id="__cbe_restore_page">Returning to your page</div>
+          </div>
+        </div>
+
+        <div class="__cbe-actions" id="__cbe_card_actions">
           <a class="__cbe-wa"
              href="https://wa.me/${WA_NUMBER}?text=Hello%2C+I+need+help+renewing+my+CBE+Mark+Sheet+subscription."
              target="_blank" rel="noopener">
@@ -296,10 +323,10 @@
     // Renewal banner
     const bn = document.createElement('div');
     bn.id = BANNER_ID;
-    bn.textContent = '🎉 Renewal detected — access restored!';
+    bn.textContent = '🎉 Renewal detected — restoring access…';
     document.body.appendChild(bn);
 
-    // Global helpers called from onclick attributes
+    // Global helpers
     window.__cbeSignOut = async function(){
       try{
         const auth = _getAuth();
@@ -315,13 +342,25 @@
   }
 
   // ── Shortcut getters ───────────────────────────────────────────────────────
-  const _ov    = () => document.getElementById(OVERLAY_ID);
-  const _bar   = () => document.getElementById(STATUSBAR_ID);
-  const _bn    = () => document.getElementById(BANNER_ID);
-  const _el    = id => document.getElementById(id);
+  const _ov  = () => document.getElementById(OVERLAY_ID);
+  const _bar = () => document.getElementById(STATUSBAR_ID);
+  const _bn  = () => document.getElementById(BANNER_ID);
+  const _el  = id  => document.getElementById(id);
 
-  // ── Show / hide gate ───────────────────────────────────────────────────────
+  // ── Show gate ──────────────────────────────────────────────────────────────
   function _showGate(d, message){
+    // Reset card to default (blocked) state in case it was in "restoring" mode
+    const body    = _el('__cbe_card_body');
+    const actions = _el('__cbe_card_actions');
+    const restore = _el('__cbe_restoring');
+    const lockIcon= _el('__cbe_lock_icon');
+    const title   = _el('__cbe_card_title');
+    if(body)    body.style.display    = '';
+    if(actions) actions.style.display = '';
+    if(restore) restore.classList.remove('cbe-show');
+    if(lockIcon) lockIcon.textContent = '🔒';
+    if(title)   title.textContent    = 'Subscription Required';
+
     const sn = _el('__cbe_school_name');
     if(sn) sn.textContent = d?.schoolName || window.schoolSettings?.name || '—';
 
@@ -334,28 +373,71 @@
     const ov = _ov();
     if(ov && !ov.classList.contains('cbe-show')){
       ov.classList.add('cbe-show');
-      _log('Gate shown — '+_pageLabel);
+      _gateIsOpen = true;
+      _log('Gate shown');
     }
   }
 
-  function _hideGate(){
+  // ── Hide gate — RELOAD the page so the user returns to full functionality ──
+  // If the gate was open (user was blocked), we show a "restoring" spinner
+  // for RELOAD_MS ms, then reload. If it was never open (e.g. initial load
+  // was fine), we just silently do nothing.
+  function _hideGate(isRenewal = false){
     const ov = _ov();
+    const wasOpen = _gateIsOpen;
+
     if(ov && ov.classList.contains('cbe-show')){
-      ov.classList.remove('cbe-show');
-      _log('Gate hidden — access restored');
-      // Small toast if the page has a toast function
-      if(typeof toast === 'function') toast('✅ Access restored — subscription active');
+      if(isRenewal){
+        // Switch card to "restoring" state instead of abruptly closing
+        _showRestoringState();
+      } else {
+        ov.classList.remove('cbe-show');
+      }
     }
+
+    _gateIsOpen = false;
+
     // Clear expired-ago display
     const ago = _el('__cbe_expired_ago');
     if(ago){ ago.classList.remove('cbe-show'); ago.innerHTML=''; }
-    _clearAllTimers();
+
+    // Stop poll + expiry timers (but NOT the countdown — it should keep ticking)
+    if(_pollTimer)        { clearInterval(_pollTimer);    _pollTimer=null; }
+    if(_expiryTimer)      { clearTimeout(_expiryTimer);   _expiryTimer=null; }
+    if(_expiredTickTimer) { clearInterval(_expiredTickTimer); _expiredTickTimer=null; }
+
+    // If renewal was detected while the gate was blocking the user → reload the page
+    // This restores the page to a fully working state (data, listeners, UI all fresh)
+    if(isRenewal && wasOpen){
+      _log(`Reloading page in ${RELOAD_MS}ms to restore full access`);
+      setTimeout(()=>{
+        window.location.reload();
+      }, RELOAD_MS);
+    }
+  }
+
+  // ── Restoring state — swap gate card content to spinner ───────────────────
+  function _showRestoringState(){
+    const body    = _el('__cbe_card_body');
+    const actions = _el('__cbe_card_actions');
+    const restore = _el('__cbe_restoring');
+    const lockIcon= _el('__cbe_lock_icon');
+    const title   = _el('__cbe_card_title');
+    const sub     = _el('__cbe_restore_page');
+
+    if(body)    body.style.display    = 'none';
+    if(actions) actions.style.display = 'none';
+    if(restore) restore.classList.add('cbe-show');
+    if(lockIcon) lockIcon.textContent = '✅';
+    if(title)   title.textContent    = 'Access Restored!';
+    if(sub)     sub.textContent      = `Returning to ${_pageLabel || 'your page'}…`;
   }
 
   // ── Warning bar ────────────────────────────────────────────────────────────
   function _showBar(timerStr, isUrgent){
     const b = _bar(); if(!b) return;
-    _el('__cbe_bar_timer').textContent = timerStr;
+    const t = _el('__cbe_bar_timer');
+    if(t) t.textContent = timerStr;
     b.className = isUrgent ? `cbe-show cbe-urgent` : `cbe-show cbe-warn`;
   }
 
@@ -369,34 +451,35 @@
     if(_renewalShown) return;
     _renewalShown = true;
     const bn = _bn(); if(!bn) return;
-    bn.style.display   = 'block';
-    bn.style.opacity   = '1';
+    bn.style.display    = 'block';
+    bn.style.opacity    = '1';
     bn.style.transition = '';
-    setTimeout(()=>{ bn.style.opacity='0'; bn.style.transition='opacity .6s'; }, 3000);
+    setTimeout(()=>{ bn.style.opacity='0'; bn.style.transition='opacity .6s'; }, 2000);
     setTimeout(()=>{
       bn.style.display='none'; bn.style.opacity=''; bn.style.transition='';
-      _renewalShown = false; // allow next renewal on same session
-    }, 3700);
+      _renewalShown = false;
+    }, 2700);
   }
 
-  // ── Clear all timers ───────────────────────────────────────────────────────
+  // ── Clear ALL timers ───────────────────────────────────────────────────────
   function _clearAllTimers(){
-    if(_expiryTimer)      { clearTimeout(_expiryTimer);     _expiryTimer=null; }
-    if(_pollTimer)        { clearInterval(_pollTimer);       _pollTimer=null; }
-    if(_countdownTimer)   { clearInterval(_countdownTimer);  _countdownTimer=null; }
-    if(_expiredTickTimer) { clearInterval(_expiredTickTimer);_expiredTickTimer=null; }
+    if(_expiryTimer)      { clearTimeout(_expiryTimer);      _expiryTimer=null; }
+    if(_pollTimer)        { clearInterval(_pollTimer);        _pollTimer=null; }
+    if(_countdownTimer)   { clearInterval(_countdownTimer);   _countdownTimer=null; }
+    if(_expiredTickTimer) { clearInterval(_expiredTickTimer); _expiredTickTimer=null; }
   }
 
-  // ── Full cleanup (on logout or page unload) ────────────────────────────────
+  // ── Full cleanup ───────────────────────────────────────────────────────────
   function _cleanup(){
     if(_firestoreUnsub){ _firestoreUnsub(); _firestoreUnsub=null; }
     _clearAllTimers();
-    _lastKnownExpiry  = null;
-    _renewalShown     = false;
+    _lastKnownExpiry = null;
+    _renewalShown    = false;
+    _gateIsOpen      = false;
   }
 
   // ══════════════════════════════════════════════════════════════════
-  //  LIVE COUNTDOWN  (ticks every second — no refresh needed)
+  //  LIVE COUNTDOWN  (ticks every second)
   // ══════════════════════════════════════════════════════════════════
   function _startLiveCountdown(expiresAt){
     if(_countdownTimer){ clearInterval(_countdownTimer); _countdownTimer=null; }
@@ -405,14 +488,13 @@
       const msLeft = expiresAt - new Date();
 
       if(msLeft <= 0){
-        // Expired while user was on this page — act immediately
         _log('Live countdown reached zero — triggering expiry check');
         _stopLiveCountdown();
         _hideBar();
         const db = _getDb();
         if(!db || !_schoolId) return;
         db.collection('approvedSchools').doc(_schoolId).get().then(snap=>{
-          if(!snap.exists){ return; }
+          if(!snap.exists) return;
           const d   = snap.data();
           const exp = d.subscriptionExpiry?.toDate?.();
           if(!exp || exp <= new Date()){
@@ -429,12 +511,8 @@
       const daysLeft  = msLeft / 86_400_000;
       const hoursLeft = msLeft / 3_600_000;
 
-      if(daysLeft > WARN_DAYS){
-        _hideBar();
-        return;
-      }
+      if(daysLeft > WARN_DAYS){ _hideBar(); return; }
 
-      // Build the timer label
       let timerStr;
       if(hoursLeft < 24){
         const h = Math.floor(msLeft / 3_600_000);
@@ -450,7 +528,7 @@
       _showBar(timerStr, hoursLeft < 24);
     }
 
-    tick(); // immediate first tick — no 1-second blank
+    tick();
     _countdownTimer = setInterval(tick, 1_000);
   }
 
@@ -481,7 +559,7 @@
     _expiredTickTimer = setInterval(renderAgo, 60_000);
   }
 
-  // ── Schedule one-shot timer to fire exactly at expiry ─────────────────────
+  // ── One-shot timer: fires exactly at expiry moment ─────────────────────────
   function _scheduleExpiryCheck(expiresAt){
     if(_expiryTimer){ clearTimeout(_expiryTimer); _expiryTimer=null; }
     const msUntil = expiresAt - new Date();
@@ -504,27 +582,27 @@
           _startRenewalPoll();
         }
       }).catch(()=>{});
-    }, msUntil + 500); // +0.5 s buffer
+    }, msUntil + 500);
   }
 
-  // ── Renewal poll — Firestore read every 30 s while expired ────────────────
+  // ── Renewal poll — reads Firestore every POLL_MS while expired ────────────
   function _startRenewalPoll(){
-    if(_pollTimer) return; // already running
+    if(_pollTimer) return;
     _log(`Renewal poll started (${POLL_MS/1000}s interval)`);
     _pollTimer = setInterval(async ()=>{
       const db = _getDb(); if(!db || !_schoolId) return;
       try{
-        const snap    = await db.collection('approvedSchools').doc(_schoolId).get();
+        const snap     = await db.collection('approvedSchools').doc(_schoolId).get();
         if(!snap.exists) return;
         const d        = snap.data();
         const newExpiry= d.subscriptionExpiry?.toDate?.();
         if(newExpiry && newExpiry > new Date() && d.status !== 'suspended'){
-          _log('Renewal detected via poll');
+          _log('Renewal detected via poll — reloading page');
           _clearAllTimers();
           _lastKnownExpiry = newExpiry;
           _renewalShown    = false;
           _showRenewalBanner();
-          _hideGate();
+          _hideGate(true); // true = isRenewal → triggers reload
           _startLiveCountdown(newExpiry);
         }
       }catch(_){}
@@ -534,17 +612,6 @@
   // ══════════════════════════════════════════════════════════════════
   //  MAIN FIRESTORE LISTENER
   // ══════════════════════════════════════════════════════════════════
-
-  /**
-   * Decision order — do NOT reorder:
-   *   1. No doc          → hide gate
-   *   2. Renewal expiry  → renewal detected
-   *   3. Suspended       → show gate (admin-blocked)
-   *   4. Valid expiry    → hide gate, start countdown + expiry timer
-   *   5. Expired         → show gate, start poll
-   *   6. Message only    → show gate, start poll  (legacy / manual block)
-   *   7. All clear       → hide gate
-   */
   function _startListener(schoolId){
     if(_firestoreUnsub){ _firestoreUnsub(); _firestoreUnsub=null; }
     _clearAllTimers();
@@ -562,14 +629,14 @@
         const now       = new Date();
         const newExpiry = d.subscriptionExpiry?.toDate?.() || null;
 
-        // Step 1 — Renewal detection (expiry moved forward)
+        // Step 1 — Renewal detection (expiry moved forward while on this page)
         if(newExpiry && newExpiry > now){
           if(_lastKnownExpiry && newExpiry > _lastKnownExpiry){
             _log('Renewal detected via snapshot', newExpiry.toISOString());
             _clearAllTimers();
             _lastKnownExpiry = newExpiry;
             _showRenewalBanner();
-            _hideGate();
+            _hideGate(true); // isRenewal = true → shows spinner, then reloads
             _startLiveCountdown(newExpiry);
             return;
           }
@@ -588,7 +655,7 @@
         if(newExpiry && newExpiry > now){
           _scheduleExpiryCheck(newExpiry);
           _startLiveCountdown(newExpiry);
-          _hideGate();
+          _hideGate(false);
           return;
         }
 
@@ -604,21 +671,21 @@
           return;
         }
 
-        // Step 5 — No expiry, message-only gate
+        // Step 5 — No expiry, message-only gate (legacy manual block)
         if(d.message?.trim()){
           _stopLiveCountdown();
           _hideBar();
           _showGate(d, d.message);
-          _startRenewalPoll(); // so user isn't permanently stuck
+          _startRenewalPoll();
           return;
         }
 
         // Step 6 — All clear
-        _hideGate();
+        _hideGate(false);
 
       }, err=>{
         _log('Listener error — not blocking user', err.message);
-        _hideGate();
+        _hideGate(false);
       });
   }
 
@@ -633,33 +700,35 @@
       _startListener(uid);
     });
 
-    // Re-check if the host page sets window._schoolId late (e.g. after auth callback)
+    // Watch for window._schoolId being set late (after auth callback)
     let _didStart = false;
-    Object.defineProperty(window, '_schoolId', {
-      configurable: true,
-      set(v){
-        Object.defineProperty(window, '_schoolId', {value:v, configurable:true, writable:true});
-        if(!_didStart && v){
-          _didStart   = true;
-          _schoolId   = v;
-          _startListener(v);
-        }
-      },
-      get(){ return _schoolId; }
-    });
+    try{
+      Object.defineProperty(window, '_schoolId', {
+        configurable: true,
+        set(v){
+          Object.defineProperty(window, '_schoolId', {value:v, configurable:true, writable:true});
+          if(!_didStart && v){
+            _didStart = true;
+            _schoolId = v;
+            _startListener(v);
+          }
+        },
+        get(){ return _schoolId; }
+      });
+    }catch(_){
+      // Property may already be defined — that's fine, _resolveSchoolId covers it
+    }
 
-    // Cleanup on tab close
     window.addEventListener('beforeunload', _cleanup);
   }
 
-  // Run immediately if DOM is ready, otherwise wait
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', _init);
   } else {
     _init();
   }
 
-  // Expose for external reset (e.g. called from doLogout on any page)
+  // Public API
   window._cbeGuardCleanup = _cleanup;
   window._cbeGuardRestart = (uid) => { _schoolId=uid; _startListener(uid); };
 

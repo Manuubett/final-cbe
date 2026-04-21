@@ -174,36 +174,15 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
 .pov-title{font-family:'Familjen Grotesk',sans-serif;font-size:17px;font-weight:800;margin-bottom:4px;position:relative;z-index:1;letter-spacing:-.2px}
 .pov-school-tag{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);padding:2px 12px;border-radius:20px;font-size:11px;color:rgba(255,255,255,.8);position:relative;z-index:1;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pov-body{padding:16px 20px 0}
-.pov-msg-box{background:#fffbeb;border:1px solid #fcd34d;border-left:3px solid #f59e0b;border-radius:8px;padding:10px 14px;margin-bottom:14px}
-.pov-msg-from{font-size:9.5px;font-weight:800;color:#92400e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
-.pov-msg-text{font-size:12.5px;color:#1e293b;line-height:1.65;white-space:pre-line}
-.pov-mpesa-strip{display:flex;align-items:center;gap:10px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 14px;margin-bottom:14px;flex-wrap:wrap}
-.pov-mpesa-item{display:flex;flex-direction:column;gap:1px}
-.pov-mpesa-lbl{font-size:9px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:.4px}
-.pov-mpesa-val{font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;color:#15803d}
-.pov-mpesa-sep{width:1px;height:28px;background:#86efac;flex-shrink:0}
-.pov-form{margin-bottom:14px}
-.pov-form-label{font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;display:block}
-.pov-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.pov-inp{height:36px;padding:0 10px;border:1.5px solid #e2e8f0;border-radius:7px;font-family:inherit;font-size:12.5px;color:#1e293b;background:#f8fafc;outline:none;width:100%;transition:border-color .14s}
-.pov-inp:focus{border-color:#1a56db;background:#fff;box-shadow:0 0 0 3px rgba(26,86,219,.08)}
-.pov-inp::placeholder{color:#94a3b8}
-.pov-submit-btn{width:100%;height:38px;background:linear-gradient(135deg,#1a56db,#1447c0);color:#fff;border:none;border-radius:7px;font-family:'Familjen Grotesk',sans-serif;font-size:13.5px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .14s;box-shadow:0 3px 10px rgba(26,86,219,.3)}
-.pov-submit-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 5px 14px rgba(26,86,219,.4)}
-.pov-submit-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
-.pov-submitted{display:none;text-align:center;padding:6px 0 12px}
-.pov-submitted.show{display:block}
-.pov-sub-icon{font-size:32px;margin-bottom:6px}
-.pov-sub-title{font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;color:#1e293b;margin-bottom:4px}
-.pov-sub-msg{font-size:12px;color:#64748b;line-height:1.6}
+.pov-exp-msg{font-size:13px;color:#4a5578;line-height:1.75;margin-bottom:18px;text-align:center}
+.pov-renew-btn{width:100%;height:44px;background:linear-gradient(135deg,#1a56db,#1447c0);color:#fff;border:none;border-radius:8px;font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;box-shadow:0 4px 14px rgba(26,86,219,.35);text-decoration:none;margin-bottom:10px}
+.pov-renew-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(26,86,219,.45)}
 .pov-actions{padding:0 20px 18px;display:flex;gap:8px}
 .pov-wa-btn{flex:1;padding:9px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;border:none;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;transition:all .14s}
 .pov-wa-btn:hover{background:#15803d}
 .pov-logout-btn{padding:9px 14px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;background:none;border:1.5px solid #e2e8f0;color:#94a3b8;transition:all .14s}
 .pov-logout-btn:hover{border-color:#cbd5e1;color:#64748b}
-.pov-wait-bar{background:#f8fafc;border-top:1px solid #f1f5f9;padding:8px 20px;display:flex;align-items:center;gap:7px;font-size:11px;color:#94a3b8}
-.pov-pulse{width:6px;height:6px;border-radius:50%;background:#f59e0b;flex-shrink:0;animation:ppulse 2s infinite}
-@keyframes ppulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
 
 /* ── Renewal detected banner ── */
 #renewalDetectedBanner{
@@ -248,59 +227,18 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
         <div class="pov-title">Subscription Required</div>
         <div class="pov-school-tag" id="povSchoolName">Your School</div>
       </div>
-      <div class="pov-body">
-        <div class="pov-msg-box">
-          <div class="pov-msg-from">📩 Message from Administrator</div>
-          <div class="pov-msg-text" id="povMsgText">Your subscription payment is due. Please pay and submit your confirmation below.</div>
-        </div>
-        <div class="pov-mpesa-strip">
-          <div class="pov-mpesa-item">
-            <span class="pov-mpesa-lbl">Till Number</span>
-            <span class="pov-mpesa-val">4585402</span>
-          </div>
-          <div class="pov-mpesa-sep"></div>
-          <div class="pov-mpesa-item">
-            <span class="pov-mpesa-lbl">Amount</span>
-            <span class="pov-mpesa-val">Ksh 2,599</span>
-          </div>
-          <div class="pov-mpesa-sep"></div>
-          <div class="pov-mpesa-item">
-            <span class="pov-mpesa-lbl">Business</span>
-            <span class="pov-mpesa-val" style="font-size:12px">CBE Mark Sheet</span>
-          </div>
-        </div>
-        <div class="pov-form" id="povForm">
-          <span class="pov-form-label">Submit your payment confirmation</span>
-          <div class="pov-fields">
-            <div style="display:flex;flex-direction:column;gap:3px">
-              <span style="font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.4px">Your Phone</span>
-              <input class="pov-inp" id="povPhone" placeholder="07XX XXX XXX" type="tel">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:3px">
-              <span style="font-size:9px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.4px">M-Pesa Payment Name</span>
-              <input class="pov-inp" id="povPayName" placeholder="e.g. JANE WANJIKU" oninput="this.value=this.value.toUpperCase()" style="text-transform:uppercase">
-            </div>
-          </div>
-          <div style="font-size:10.5px;color:#94a3b8;margin-bottom:8px;line-height:1.5">Enter the <strong>sender name</strong> exactly as shown in your M-Pesa confirmation message.</div>
-          <button class="pov-submit-btn" id="povSubmitBtn" onclick="submitRenewalRequest()">
-            <span id="povSubmitTxt">📤 Send Approval Request</span>
-          </button>
-        </div>
-        <div class="pov-submitted" id="povSubmitted">
-          <div class="pov-sub-icon">⏳</div>
-          <div class="pov-sub-title">Request Sent — Awaiting Approval</div>
-          <div class="pov-sub-msg">Your payment details have been sent to the administrator.<br>This screen will close automatically once approved.</div>
+      <div class="pov-body" style="padding:20px 20px 4px">
+        <p class="pov-exp-msg" id="povMsgText">Your subscription has expired. Renew now to continue using the system — your data is safe.</p>
+        <a class="pov-renew-btn" id="povRenewBtn" href="/renew?from=guard">🔄 Renew Subscription Now →</a>
+        <div style="text-align:center;margin-bottom:16px">
+          <a href="https://wa.me/254704518130?text=Hello%2C%20I%20need%20help%20renewing%20my%20CBE%20Mark%20Sheet%20subscription."
+             target="_blank" class="pov-wa-btn" style="display:inline-flex;width:auto;padding:8px 20px;font-size:12px">
+            💬 Need help? WhatsApp us
+          </a>
         </div>
       </div>
-      <div class="pov-actions">
-        <a class="pov-wa-btn"
-           href="https://wa.me/254704518130?text=Hello%2C%20I%20have%20paid%20for%20CBE%20Mark%20Sheet%20renewal%20via%20M-Pesa%20Till%204585402.%20Please%20reactivate%20my%20account."
-           target="_blank">💬 WhatsApp</a>
-        <button class="pov-logout-btn" onclick="doLogout()">← Sign Out</button>
-      </div>
-      <div class="pov-wait-bar">
-        <div class="pov-pulse"></div>
-        Waiting for administrator approval — this clears automatically
+      <div class="pov-actions" style="padding-top:0">
+        <button class="pov-logout-btn" style="width:100%;text-align:center" onclick="doLogout()">← Sign out</button>
       </div>
     </div>
   </div>
@@ -833,20 +771,11 @@ function _showPaymentGate(d, message){
   const nameEl=el('povSchoolName');
   if(nameEl) nameEl.textContent=d.schoolName||window.schoolSettings?.name||'—';
   const msgEl=el('povMsgText');
-  if(msgEl) msgEl.textContent=message;
+  if(msgEl && message) msgEl.textContent=message;
   const ov=el('paymentOverlay');
   if(ov&&!ov.classList.contains('show')){
-    // Reset form to default state so they can re-submit
-    const form=el('povForm'),sub=el('povSubmitted');
-    if(form) form.style.display='';
-    if(sub)  sub.classList.remove('show');
-    const sBtn=el('povSubmitBtn'),sTxt=el('povSubmitTxt');
-    if(sBtn){ sBtn.disabled=false; }
-    if(sTxt){ sTxt.textContent='📤 Send Approval Request'; }
-    const phoneInp=el('povPhone');
-    if(phoneInp&&d.phone&&!phoneInp.value) phoneInp.value=d.phone;
     ov.classList.add('show');
-    log('info','Payment gate shown');
+    log('info','Payment gate shown — redirecting to renew page on click');
   }
 }
 
@@ -924,48 +853,7 @@ function _showRenewalBanner(){
   setTimeout(()=>{ b.style.display='none'; b.style.opacity=''; b.style.transition=''; },3700);
 }
 
-// ── Submit renewal request ──
-// FIX 2: Clear the `message` field so the snapshot re-evaluates expiry cleanly
-//         and doesn't loop back into _showPaymentGate via the message check.
-async function submitRenewalRequest(){
-  const phone=(el('povPhone')?.value||'').trim();
-  const paymentName=(el('povPayName')?.value||'').trim().toUpperCase();
-  if(!phone){ toast('Enter your phone number','err'); el('povPhone')?.focus(); return; }
-  if(!paymentName){ toast('Enter the M-Pesa payment name','err'); el('povPayName')?.focus(); return; }
-  const btn=el('povSubmitBtn'),txt=el('povSubmitTxt');
-  btn.disabled=true;
-  txt.innerHTML='<div class="spin-sm"></div> Sending…';
-  log('info','Renewal request submitted',{phone,paymentName});
-  try{
-    // FIX 2: include message:'' so the owner message is cleared on submission,
-    // preventing the snapshot from re-triggering the gate via the message check.
-    await db.collection('approvedSchools').doc(_schoolId).update({
-      renewalRequest:{
-        phone,paymentName,
-        submittedAt:firebase.firestore.FieldValue.serverTimestamp(),
-        schoolName:window.schoolSettings?.name||_schoolId
-      },
-      message: ''
-    });
-    db.collection('ownerLog').add({
-      type:'renewal_request',
-      message:'Renewal request from: '+(window.schoolSettings?.name||_schoolId),
-      school:window.schoolSettings?.name||'—',
-      phone,paymentName,color:'amber',
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    }).catch(()=>{});
-    el('povForm').style.display='none';
-    el('povSubmitted').classList.add('show');
-    toast('✅ Approval request sent — waiting for administrator');
-    // Start polling so the overlay disappears the moment admin approves
-    _startRenewalPoll(_schoolId);
-  }catch(e){
-    log('error','Renewal request failed',e.message);
-    toast('Failed: '+e.message,'err');
-    btn.disabled=false;
-    txt.textContent='📤 Send Approval Request';
-  }
-}
+// ── Renewal request removed — school admins now renew via /renew?from=guard ──
 
 // ══ SCHOOL SETUP GATE ══════════════════════════════════════════════
 async function checkSchoolSetup(){

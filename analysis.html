@@ -1631,6 +1631,8 @@ if(localStorage.getItem('cbe_theme')==='dark'){
   document.body.classList.add('dark');
   el('themeBtn').textContent='☀️';
 }
-</script>
+</script>  
+  <!-- After Firebase SDK scripts, before </body> -->
+<script src="subscription-guard.js"></script>
 </body>
 </html>

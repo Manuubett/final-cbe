@@ -183,6 +183,25 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
 .pov-logout-btn{padding:9px 14px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;background:none;border:1.5px solid #e2e8f0;color:#94a3b8;transition:all .14s}
 .pov-logout-btn:hover{border-color:#cbd5e1;color:#64748b}
 
+/* ── Expiry countdown bar (shows inside payment overlay) ── */
+#expiryCountdown{
+  display:none;background:#0f172a;border-top:1px solid rgba(255,255,255,.08);
+  padding:10px 20px;text-align:center;font-size:12px;color:rgba(255,255,255,.6);
+}
+#expiryCountdown.show{display:block}
+#expiryCountdown strong{color:#f59e0b;font-weight:700}
+
+/* ── Live subscription status bar (shows when active, near expiry) ── */
+#subStatusBar{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:#7c2d12;border-top:2px solid #f97316;
+  padding:8px 20px;font-size:12px;color:#fed7aa;font-weight:600;
+  align-items:center;justify-content:space-between;gap:12px;
+}
+#subStatusBar.show{display:flex}
+#subStatusBar .sub-timer{color:#fbbf24;font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800}
+#subStatusBar .sub-renew{padding:4px 14px;background:#f97316;color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:700}
+#subStatusBar .sub-renew:hover{background:#ea580c}
 
 /* ── Renewal detected banner ── */
 #renewalDetectedBanner{
@@ -209,6 +228,12 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
 
 <div id="tc"></div>
 <div id="renewalDetectedBanner">🎉 Renewal detected — restoring access…</div>
+
+<!-- Live subscription warning bar (shown when expiry < 7 days away) -->
+<div id="subStatusBar">
+  <span>⚠️ Your subscription expires in <span class="sub-timer" id="subTimerText">—</span> — renew now to avoid disruption.</span>
+  <a class="sub-renew" href="/renew?from=statusbar">🔄 Renew Now</a>
+</div>
 
 <!-- LOADING -->
 <div id="screenLoad">
@@ -237,6 +262,8 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
           </a>
         </div>
       </div>
+      <!-- Expiry countdown shown inside gate when subscription is expired -->
+      <div id="expiryCountdown"></div>
       <div class="pov-actions" style="padding-top:0">
         <button class="pov-logout-btn" style="width:100%;text-align:center" onclick="doLogout()">← Sign out</button>
       </div>
@@ -318,7 +345,7 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
     <div class="hdr-r">
       <span class="admin-badge">ADMIN</span>
       <span id="adminName" style="font-size:11.5px;color:var(--text2);font-weight:600"></span>
-      <a href="settings.html" class="btn btn-outline btn-sm">⚙️ Settings</a>
+      <a class='btn btn-outline btn-sm' href='/settings'>⚙️ Settings</a>
       <a href="admission" class="btn btn-outline btn-sm">🎓 Admission</a>
       <a href="marksheet" class="btn btn-outline btn-sm">📊 Mark Sheet</a>
       <a href="analysis" class="btn btn-outline btn-sm">📈 Analysis</a>
@@ -485,7 +512,7 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
           </div>
           <div class="mfield">
             <label>Stream <span style="font-size:10px;color:var(--text3);font-weight:400">(optional)</span></label>
-            <select class="minp" id="atStream"><option value="">-- No Stream --</option></select>
+            <select class="minp" id="atStream"><option value="">-- Select Grade --</option></select>
           </div>
         </div>
         <div class="mfield">
@@ -562,7 +589,7 @@ select.minp{cursor:pointer;appearance:none;background-image:url("data:image/svg+
       <div style="background:#fef3c7;border:1px solid #fcd34d;border-left:3px solid #f59e0b;border-radius:var(--r2);padding:10px 14px;margin-bottom:18px;font-size:12px;color:#92400e;line-height:1.6">
         ⚠️ <strong>Setup is required</strong> — you cannot admit students or use the system until your school details are saved.
       </div>
-      <a href="settings.html" class="btn btn-primary" style="width:100%;justify-content:center;height:40px;font-size:13.5px;font-family:'Familjen Grotesk',sans-serif;font-weight:800;border-radius:8px">⚙️ Go to School Settings →</a>
+      <a class='btn btn-primary' href='/settings' style='width:100%;justify-content:center;height:40px;font-size:13.5px;font-family:\'Familjen Grotesk\',sans-serif;font-weight:800;border-radius:8px'>⚙️ Go to School Settings →</a>
       <div style="text-align:center;margin-top:12px">
         <button onclick="doLogout()" style="background:none;border:none;font-size:11.5px;color:var(--text3);cursor:pointer;font-family:inherit">← Sign out and try a different account</button>
       </div>
@@ -603,10 +630,17 @@ window._getLogs=()=>_logs.map(l=>`[${l.ts}] ${l.level.toUpperCase()}: ${l.msg}${
 // ── In-memory state ──
 let _schoolId=null, _schoolName='', _ownerMsgUnsub=null, _sessionId=null;
 let _redirecting=false;
-// Timers for subscription expiry
-let _expiryCheckTimer=null, _expiryPollTimer=null;
-// Track the last known expiry so we can detect a renewal
-let _lastKnownExpiry=null;
+
+// ══════════════════════════════════════════════════════════════════
+// SUBSCRIPTION STATE  — single source of truth
+// ══════════════════════════════════════════════════════════════════
+let _lastKnownExpiry   = null;   // last expiry Date we saw from Firestore
+let _renewalShown      = false;  // guard: don't flash the renewal banner twice
+let _expiryCheckTimer  = null;   // one-shot setTimeout: fires exactly at expiry
+let _expiryPollTimer   = null;   // setInterval: 30-second renewal poll while expired
+let _liveCountdownTimer= null;   // setInterval: ticks the live countdown every second
+// Warning thresholds for the bottom status bar
+const WARN_DAYS = 7;             // show orange bar when ≤ 7 days remain
 
 // ── SCREEN SWITCHER ──
 function show(screen){
@@ -673,7 +707,10 @@ auth.onAuthStateChanged(async u=>{
 // ── LOGOUT ──
 async function doLogout(){
   if(_ownerMsgUnsub){ _ownerMsgUnsub(); _ownerMsgUnsub=null; }
-  _clearExpiryTimers();
+  _clearAllSubTimers();            // FIX 4: was only clearing expiry timers
+  _lastKnownExpiry=null;           // FIX 4: reset so next session starts clean
+  _renewalShown=false;
+  _hideSubStatusBar();
   await _endSession().catch(()=>{});
   _schoolId=null; window._schoolId=null;
   localStorage.removeItem('cbe_user_role');
@@ -684,80 +721,99 @@ async function doLogout(){
   await auth.signOut();
 }
 
-// ══ PAYMENT GATE — FIXED ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+//  PAYMENT GATE  — fully fixed + live countdown
+// ══════════════════════════════════════════════════════════════════
 
 /**
- * FIX 1: Renewal detection runs FIRST, before message/status checks.
- * A valid future expiry always wins — even if owner forgot to clear message.
- * First-load case is handled separately from renewal-detected case.
+ * _listenPayment(schoolId)
+ *
+ * Starts a real-time Firestore listener on approvedSchools/{schoolId}.
+ * Decision order (important — do NOT reorder):
+ *   1. No doc → hide gate
+ *   2. expiry in future AND moved forward → renewal detected
+ *   3. status === 'suspended' → show gate (admin-blocked)
+ *   4. expiry in future (valid sub) → hide gate, schedule expiry timer
+ *   5. expiry in past (expired) → show gate, start renewal poll
+ *   6. No expiry field, message present → show gate, start renewal poll  ← FIX 3
+ *   7. All clear → hide gate
  */
 function _listenPayment(schoolId){
   if(_ownerMsgUnsub){ _ownerMsgUnsub(); _ownerMsgUnsub=null; }
-  _clearExpiryTimers();
+  _clearAllSubTimers();
   log('info','Payment gate listener started',schoolId);
 
-  _ownerMsgUnsub=db.collection('approvedSchools').doc(schoolId)
+  _ownerMsgUnsub = db.collection('approvedSchools').doc(schoolId)
     .onSnapshot(snap=>{
       if(!snap.exists){ _hidePayment(); return; }
-      const d=snap.data();
-      const newExpiry=d.subscriptionExpiry?.toDate?.();
-      const now=new Date();
+      const d   = snap.data();
+      const now = new Date();
+      const newExpiry = d.subscriptionExpiry?.toDate?.() || null;
 
-      // ── Step 1: Renewal detection — check expiry FIRST before anything else ──
-      // This ensures a renewed subscription always wins even if message is still set.
+      // ── Step 1: Renewal detection — expiry check FIRST ──────────────
+      // A valid future expiry that moved forward means admin renewed.
+      // We check this before the suspended/message checks so a renewed
+      // subscription always wins, even if the admin forgot to clear flags.
       if(newExpiry && newExpiry > now){
         if(_lastKnownExpiry && newExpiry > _lastKnownExpiry){
-          // Expiry moved forward → admin approved a renewal
           log('info','Renewal detected via snapshot',newExpiry.toISOString());
-          _lastKnownExpiry=newExpiry;
+          _clearAllSubTimers();
+          _lastKnownExpiry = newExpiry;
           _showRenewalBanner();
-          _clearExpiryTimers();
           _hidePayment();
+          _startLiveCountdown(newExpiry);  // restart live countdown
           return;
         }
-        // First load with a valid future expiry — record it and schedule expiry check
-        if(!_lastKnownExpiry){
-          _lastKnownExpiry=newExpiry;
-        }
+        // First load — record expiry, continue to full evaluation below
+        if(!_lastKnownExpiry) _lastKnownExpiry = newExpiry;
       }
 
-      log('info','Payment gate snapshot',{
-        status:d.status,
-        hasMsg:!!(d.message?.trim()),
-        expiresAt:newExpiry?.toISOString?.()
+      log('info','Payment snapshot evaluated',{
+        status:d.status, hasMsg:!!(d.message?.trim()),
+        expiresAt: newExpiry?.toISOString?.() ?? 'none'
       });
 
-      // ── Step 2: Explicitly suspended by owner ──
-      if(d.status==='suspended'){
+      // ── Step 2: Admin-suspended ──────────────────────────────────────
+      if(d.status === 'suspended'){
+        _stopLiveCountdown();
+        _hideSubStatusBar();
         _showPaymentGate(d,'Your account has been suspended. Please contact the administrator to reactivate.');
         return;
       }
 
-      // ── Step 3: Subscription still valid — skip message check entirely ──
-      // Owner may forget to clear message after renewal; expiry is the source of truth.
+      // ── Step 3: Valid subscription ───────────────────────────────────
+      // expiry is the source of truth — ignore any stale message field.
       if(newExpiry && newExpiry > now){
         _scheduleExpiryCheck(schoolId, newExpiry);
+        _startLiveCountdown(newExpiry);
         _hidePayment();
         return;
       }
 
-      // ── Step 4: Expired — show gate with owner message if available ──
+      // ── Step 4: Expired ──────────────────────────────────────────────
       if(newExpiry && newExpiry <= now){
-        const msg=(d.message&&d.message.trim())
+        const msg = (d.message && d.message.trim())
           ? d.message
           : 'Your subscription has expired. Please renew to continue using the system.';
+        _stopLiveCountdown();
+        _hideSubStatusBar();
         _showPaymentGate(d, msg);
+        _startExpiredCountdown(newExpiry);   // show how long it's been expired
         _startRenewalPoll(schoolId);
         return;
       }
 
-      // ── Step 5: No expiry set at all — fall back to message check ──
+      // ── Step 5: No expiry, message-only gate (legacy / manual block) ─
+      // FIX 3: was missing _startRenewalPoll here, user got permanently stuck.
       if(d.message && d.message.trim()){
+        _stopLiveCountdown();
+        _hideSubStatusBar();
         _showPaymentGate(d, d.message);
+        _startRenewalPoll(schoolId);         // ← FIX 3 added
         return;
       }
 
-      // ── Step 6: All clear ──
+      // ── Step 6: All clear ────────────────────────────────────────────
       _hidePayment();
 
     }, e=>{
@@ -767,93 +823,245 @@ function _listenPayment(schoolId){
     });
 }
 
+// ── Show / hide the gate overlay ────────────────────────────────────────────
 function _showPaymentGate(d, message){
-  const nameEl=el('povSchoolName');
-  if(nameEl) nameEl.textContent=d.schoolName||window.schoolSettings?.name||'—';
-  const msgEl=el('povMsgText');
-  if(msgEl && message) msgEl.textContent=message;
-  const ov=el('paymentOverlay');
-  if(ov&&!ov.classList.contains('show')){
+  const nameEl = el('povSchoolName');
+  if(nameEl) nameEl.textContent = d.schoolName || window.schoolSettings?.name || '—';
+  const msgEl = el('povMsgText');
+  if(msgEl && message) msgEl.textContent = message;
+  const ov = el('paymentOverlay');
+  if(ov && !ov.classList.contains('show')){
     ov.classList.add('show');
-    log('info','Payment gate shown — redirecting to renew page on click');
+    log('info','Payment gate shown');
   }
 }
 
 function _hidePayment(){
-  const ov=el('paymentOverlay');
-  if(ov&&ov.classList.contains('show')){
+  const ov = el('paymentOverlay');
+  if(ov && ov.classList.contains('show')){
     ov.classList.remove('show');
     log('info','Payment gate hidden — access restored');
     toast('✅ Access restored — subscription active');
   }
-  _clearExpiryTimers();
+  // Also clear the expired countdown inside the gate
+  const cd = el('expiryCountdown');
+  if(cd){ cd.classList.remove('show'); cd.textContent=''; }
+  _clearAllSubTimers();
 }
 
-function _clearExpiryTimers(){
+// ── Clear ALL subscription-related timers in one call ───────────────────────
+// FIX 4: doLogout now calls this instead of the old _clearExpiryTimers
+function _clearAllSubTimers(){
   if(_expiryCheckTimer){ clearTimeout(_expiryCheckTimer); _expiryCheckTimer=null; }
   if(_expiryPollTimer){ clearInterval(_expiryPollTimer); _expiryPollTimer=null; }
+  if(_liveCountdownTimer){ clearInterval(_liveCountdownTimer); _liveCountdownTimer=null; }
 }
 
-/**
- * Schedule a one-shot read exactly when the subscription expires.
- * Firestore snapshots don't fire on time passing alone — this bridges the gap.
- */
+// ── Expiry check timer — fires exactly when subscription expires ─────────────
+// Firestore doesn't fire a snapshot just because time passed.
+// This one-shot timer bridges that gap.
 function _scheduleExpiryCheck(schoolId, expiresAt){
-  _clearExpiryTimers();
-  const msUntil=expiresAt-new Date();
-  if(msUntil<=0) return;
-  log('info',`Subscription expires in ${Math.round(msUntil/1000)}s — auto-check scheduled`);
-  _expiryCheckTimer=setTimeout(()=>{
-    log('info','Expiry timer fired — re-evaluating subscription');
+  if(_expiryCheckTimer){ clearTimeout(_expiryCheckTimer); _expiryCheckTimer=null; }
+  const msUntil = expiresAt - new Date();
+  if(msUntil <= 0) return;
+  log('info',`Subscription expires in ${Math.round(msUntil/1000)}s — expiry check scheduled`);
+  _expiryCheckTimer = setTimeout(()=>{
+    log('info','Expiry timer fired — re-reading subscription');
     db.collection('approvedSchools').doc(schoolId).get()
       .then(snap=>{
         if(!snap.exists){ _hidePayment(); return; }
-        const d=snap.data();
-        const exp=d.subscriptionExpiry?.toDate?.();
-        if(!exp||exp<=new Date()){
-          _showPaymentGate(d,'Your subscription has expired. Please renew to continue using the system.');
+        const d   = snap.data();
+        const exp = d.subscriptionExpiry?.toDate?.();
+        if(!exp || exp <= new Date()){
+          const msg = (d.message && d.message.trim())
+            ? d.message
+            : 'Your subscription has expired. Please renew to continue using the system.';
+          _stopLiveCountdown();
+          _hideSubStatusBar();
+          _showPaymentGate(d, msg);
+          if(exp) _startExpiredCountdown(exp);
           _startRenewalPoll(schoolId);
         }
       }).catch(()=>{});
-  }, msUntil+500); // +0.5s buffer
+  }, msUntil + 500); // +0.5s buffer
 }
 
-/**
- * FIX 3: Poll every 30s while expired.
- * Clear timers immediately on detection, then update _lastKnownExpiry
- * before hiding so subsequent snapshots correctly detect the NEXT renewal.
- */
+// ── Renewal poll — reads Firestore every 30s while expired ──────────────────
+// FIX 2: clear timers BEFORE updating _lastKnownExpiry, then hide.
 function _startRenewalPoll(schoolId){
-  if(_expiryPollTimer) return; // already polling
-  log('info','Starting renewal poll (30s interval)');
-  _expiryPollTimer=setInterval(async()=>{
+  if(_expiryPollTimer) return; // already running
+  log('info','Renewal poll started (30s interval)');
+  _expiryPollTimer = setInterval(async ()=>{
     try{
-      const snap=await db.collection('approvedSchools').doc(schoolId).get();
+      const snap = await db.collection('approvedSchools').doc(schoolId).get();
       if(!snap.exists) return;
-      const d=snap.data();
-      const newExpiry=d.subscriptionExpiry?.toDate?.();
-      if(newExpiry&&newExpiry>new Date()&&d.status!=='suspended'){
-        log('info','Renewal detected via poll — hiding gate');
-        // FIX 3: clear timers first, then update state, then hide
-        _clearExpiryTimers();
-        _lastKnownExpiry=newExpiry;
+      const d         = snap.data();
+      const newExpiry = d.subscriptionExpiry?.toDate?.();
+      if(newExpiry && newExpiry > new Date() && d.status !== 'suspended'){
+        log('info','Renewal detected via poll');
+        _clearAllSubTimers();           // FIX 2: clear first
+        _lastKnownExpiry = newExpiry;   // FIX 2: update after clearing
+        _renewalShown    = false;       // allow banner to show
         _showRenewalBanner();
         _hidePayment();
+        _startLiveCountdown(newExpiry);
       }
     }catch(_){}
   }, 30_000);
 }
 
-/** Brief green banner that slides in then fades when renewal is detected */
-function _showRenewalBanner(){
-  const b=el('renewalDetectedBanner');
-  if(!b) return;
-  b.style.display='block';
-  setTimeout(()=>{ b.style.opacity='0'; b.style.transition='opacity .6s'; },3000);
-  setTimeout(()=>{ b.style.display='none'; b.style.opacity=''; b.style.transition=''; },3700);
+// ══════════════════════════════════════════════════════════════════
+//  LIVE COUNTDOWN SYSTEM  (no page refresh needed)
+// ══════════════════════════════════════════════════════════════════
+
+/**
+ * _startLiveCountdown(expiresAt)
+ *
+ * Ticks every second. Three behaviours based on time remaining:
+ *   > 7 days    → nothing visible (status bar hidden)
+ *   1–7 days    → orange warning bar at bottom of screen
+ *   < 24 hours  → red warning bar with hours:minutes:seconds countdown
+ *   Reaches 0   → triggers expiry check immediately (no wait for timer)
+ */
+function _startLiveCountdown(expiresAt){
+  _stopLiveCountdown();
+  log('info','Live countdown started',expiresAt?.toISOString());
+
+  function tick(){
+    const now       = new Date();
+    const msLeft    = expiresAt - now;
+
+    if(msLeft <= 0){
+      // Expired while user was on the page — handle immediately
+      log('info','Live countdown reached zero — triggering expiry');
+      _stopLiveCountdown();
+      _hideSubStatusBar();
+      if(_schoolId){
+        db.collection('approvedSchools').doc(_schoolId).get()
+          .then(snap=>{
+            if(!snap.exists){ return; }
+            const d   = snap.data();
+            const exp = d.subscriptionExpiry?.toDate?.();
+            if(!exp || exp <= new Date()){
+              const msg = (d.message && d.message.trim())
+                ? d.message
+                : 'Your subscription has expired. Please renew to continue using the system.';
+              _showPaymentGate(d, msg);
+              _startExpiredCountdown(exp || expiresAt);
+              _startRenewalPoll(_schoolId);
+            }
+          }).catch(()=>{});
+      }
+      return;
+    }
+
+    const daysLeft    = msLeft / 86400000;
+    const hoursLeft   = msLeft / 3600000;
+    const minutesLeft = msLeft / 60000;
+
+    if(daysLeft > WARN_DAYS){
+      // Plenty of time — hide everything
+      _hideSubStatusBar();
+      return;
+    }
+
+    // Build the timer string
+    let timerStr;
+    if(hoursLeft < 24){
+      // Show HH:MM:SS countdown
+      const h = Math.floor(msLeft/3600000);
+      const m = Math.floor((msLeft%3600000)/60000);
+      const s = Math.floor((msLeft%60000)/1000);
+      timerStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    } else {
+      const d = Math.floor(daysLeft);
+      const h = Math.floor((msLeft % 86400000) / 3600000);
+      timerStr = `${d}d ${h}h`;
+    }
+
+    _showSubStatusBar(timerStr, hoursLeft < 24);
+  }
+
+  tick(); // run immediately so there's no 1-second blank
+  _liveCountdownTimer = setInterval(tick, 1000);
 }
 
-// ── Renewal request removed — school admins now renew via /renew?from=guard ──
+function _stopLiveCountdown(){
+  if(_liveCountdownTimer){ clearInterval(_liveCountdownTimer); _liveCountdownTimer=null; }
+}
+
+function _showSubStatusBar(timerStr, isUrgent){
+  const bar = el('subStatusBar');
+  if(!bar) return;
+  const timerEl = el('subTimerText');
+  if(timerEl) timerEl.textContent = timerStr;
+  if(isUrgent){
+    bar.style.background = '#7f1d1d';
+    bar.style.borderTopColor = '#ef4444';
+    bar.style.color = '#fef2f2';
+    bar.querySelector('.sub-timer').style.color = '#fca5a5';
+  } else {
+    bar.style.background = '#7c2d12';
+    bar.style.borderTopColor = '#f97316';
+    bar.style.color = '#fed7aa';
+    bar.querySelector('.sub-timer').style.color = '#fbbf24';
+  }
+  bar.classList.add('show');
+}
+
+function _hideSubStatusBar(){
+  const bar = el('subStatusBar');
+  if(bar) bar.classList.remove('show');
+}
+
+/**
+ * _startExpiredCountdown(expiredAt)
+ *
+ * Shows a small "expired X ago" ticker inside the payment gate card.
+ * Ticks every minute.
+ */
+function _startExpiredCountdown(expiredAt){
+  const cd = el('expiryCountdown');
+  if(!cd) return;
+
+  function renderExpired(){
+    const msAgo = new Date() - expiredAt;
+    if(msAgo < 0){ cd.classList.remove('show'); return; }
+    const days  = Math.floor(msAgo / 86400000);
+    const hours = Math.floor((msAgo % 86400000) / 3600000);
+    const mins  = Math.floor((msAgo % 3600000) / 60000);
+    let agoStr;
+    if(days > 0)       agoStr = `${days} day${days>1?'s':''} ${hours}h ago`;
+    else if(hours > 0) agoStr = `${hours}h ${mins}m ago`;
+    else               agoStr = `${mins} minute${mins!==1?'s':''} ago`;
+    cd.innerHTML = `Subscription expired <strong>${agoStr}</strong>`;
+    cd.classList.add('show');
+  }
+
+  renderExpired();
+  // Tick every 60s (no need for per-second precision on "X ago")
+  if(_expiryPollTimer) return; // poll already covers re-checks
+  setInterval(renderExpired, 60_000);
+}
+
+// ── Renewal detected banner ──────────────────────────────────────────────────
+// FIX 2: guarded with _renewalShown so it never fires twice in one session
+function _showRenewalBanner(){
+  if(_renewalShown) return;
+  _renewalShown = true;
+  const b = el('renewalDetectedBanner');
+  if(!b) return;
+  b.style.display  = 'block';
+  b.style.opacity  = '1';
+  b.style.transition = '';
+  setTimeout(()=>{ b.style.opacity='0'; b.style.transition='opacity .6s'; },3000);
+  setTimeout(()=>{
+    b.style.display='none';
+    b.style.opacity='';
+    b.style.transition='';
+    _renewalShown=false; // reset so a *subsequent* renewal on same session shows again
+  },3700);
+}
 
 // ══ SCHOOL SETUP GATE ══════════════════════════════════════════════
 async function checkSchoolSetup(){
@@ -1377,5 +1585,6 @@ async function _endSession(){
 </script>
 <script src="school-settings.js"></script>
 <script src="subscription-guard.js"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"9a6fdd38ee454483a9aa3baf59e5691f","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>

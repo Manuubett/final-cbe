@@ -478,20 +478,15 @@ let _paymentUnsub       = null;
 const WARN_DAYS = 7;
 
 // ── Auth ready promise ──
+// ALWAYS reads the user profile from Firestore — no sessionStorage shortcut.
+// This guarantees the correct schoolId for both admins and teachers on every
+// page load, so _listenPayment() always targets the right approvedSchools doc.
 const _authReady = new Promise(resolve=>{
   const unsub = firebase.auth().onAuthStateChanged(async u=>{
     unsub();
     if(!u){
       window.location.href = 'login';
       resolve(null);
-      return;
-    }
-
-    const stored = sessionStorage.getItem('cbe_school_id');
-    if(stored){
-      _analysisSchoolId = stored;
-      window._schoolId = stored;
-      resolve(stored);
       return;
     }
 
@@ -502,8 +497,10 @@ const _authReady = new Promise(resolve=>{
         _analysisRole = profile.role;
 
         if(profile.role === 'admin'){
+          // Admin: their own uid IS the schoolId
           _analysisSchoolId = u.uid;
         } else if(profile.role === 'teacher' && profile.schoolId){
+          // Teacher: schoolId is stored in their profile
           _analysisSchoolId = profile.schoolId;
         } else {
           console.warn('[Analysis] Cannot resolve schoolId from profile');
@@ -513,6 +510,7 @@ const _authReady = new Promise(resolve=>{
         }
 
         window._schoolId = _analysisSchoolId;
+        // Keep sessionStorage in sync for other pages that need it
         sessionStorage.setItem('cbe_school_id', _analysisSchoolId);
         resolve(_analysisSchoolId);
       } else {
@@ -543,56 +541,37 @@ function _listenPayment(schoolId){
 
   _paymentUnsub = db.collection('approvedSchools').doc(schoolId)
     .onSnapshot(snap=>{
-      if(!snap.exists){ _hidePayment(); return; }
-      const d   = snap.data();
-      const now = new Date();
-      const newExpiry = d.subscriptionExpiry?.toDate?.() || null;
 
-      // Renewal detection — expiry moved forward
-      if(newExpiry && newExpiry > now){
-        if(_lastKnownExpiry && newExpiry > _lastKnownExpiry){
-          console.log('[Analysis] Renewal detected via snapshot');
-          _clearAllSubTimers();
-          _lastKnownExpiry = newExpiry;
-          _showRenewalBanner();
-          _hidePayment();
-          _startLiveCountdown(newExpiry);
-          return;
-        }
-        if(!_lastKnownExpiry) _lastKnownExpiry = newExpiry;
-      }
-
-      // Admin-suspended
-      if(d.status === 'suspended'){
+      // No doc = no subscription record = block immediately
+      if(!snap.exists){
+        _clearAllSubTimers();
         _stopLiveCountdown();
         _hideSubStatusBar();
-        _showPaymentGate(d,'Your account has been suspended. Please contact the administrator to reactivate.');
-        return;
-      }
-
-      // Valid subscription
-      if(newExpiry && newExpiry > now){
-        _scheduleExpiryCheck(schoolId, newExpiry);
-        _startLiveCountdown(newExpiry);
-        _hidePayment();
-        return;
-      }
-
-      // Expired
-      if(newExpiry && newExpiry <= now){
-        const msg = (d.message && d.message.trim())
-          ? d.message
-          : 'Your subscription has expired. Please renew to continue using the system.';
-        _stopLiveCountdown();
-        _hideSubStatusBar();
-        _showPaymentGate(d, msg);
-        _startExpiredCountdown(newExpiry);
+        _showPaymentGate(
+          {schoolName: schoolSettings.name},
+          'Access not configured for this school. Please contact the administrator.'
+        );
         _startRenewalPoll(schoolId);
         return;
       }
 
-      // No expiry but message-only gate (legacy / manual block)
-      if(d.message && d.message.trim()){
+      const d   = snap.data();
+      const now = new Date();
+      const newExpiry = d.subscriptionExpiry?.toDate?.() || null;
+
+      // Step 1: Suspended — always wins
+      if(d.status === 'suspended'){
+        _clearAllSubTimers();
+        _stopLiveCountdown();
+        _hideSubStatusBar();
+        _showPaymentGate(d, 'Your account has been suspended. Please contact the administrator to reactivate.');
+        _startRenewalPoll(schoolId);
+        return;
+      }
+
+      // Step 2: No expiry + message = legacy manual block
+      if(!newExpiry && d.message && d.message.trim()){
+        _clearAllSubTimers();
         _stopLiveCountdown();
         _hideSubStatusBar();
         _showPaymentGate(d, d.message);
@@ -600,13 +579,57 @@ function _listenPayment(schoolId){
         return;
       }
 
-      // All clear
+      // Step 3: No expiry, no message, not suspended = allow
+      if(!newExpiry){
+        _hidePayment();
+        return;
+      }
+
+      // Step 4: Expired — show gate immediately on page load, no refresh needed
+      if(newExpiry <= now){
+        _clearAllSubTimers();
+        _stopLiveCountdown();
+        _hideSubStatusBar();
+        const msg = (d.message && d.message.trim())
+          ? d.message
+          : 'Your subscription has expired. Please renew to continue using the system.';
+        _showPaymentGate(d, msg);
+        _startExpiredCountdown(newExpiry);
+        _startRenewalPoll(schoolId);
+        return;
+      }
+
+      // Step 5: Valid — expiry is in the future
+      // Renewal: expiry moved forward from what we last saw
+      if(_lastKnownExpiry && newExpiry > _lastKnownExpiry){
+        console.log('[Analysis] Renewal detected via snapshot');
+        _clearAllSubTimers();
+        _lastKnownExpiry = newExpiry;
+        _showRenewalBanner();
+        _hidePayment();
+        _startLiveCountdown(newExpiry);
+        _scheduleExpiryCheck(schoolId, newExpiry);
+        return;
+      }
+
+      // First valid load
+      _lastKnownExpiry = newExpiry;
       _hidePayment();
+      _startLiveCountdown(newExpiry);
+      _scheduleExpiryCheck(schoolId, newExpiry);
 
     }, e=>{
+      // On error: show gate — never silently allow free access on failure
       console.warn('[Analysis] Payment gate listener error', e.message);
-      _hidePayment();
+      _clearAllSubTimers();
+      _stopLiveCountdown();
+      _hideSubStatusBar();
+      _showPaymentGate(
+        {schoolName: schoolSettings.name},
+        'Unable to verify subscription. Please check your connection and refresh.'
+      );
     });
+}
 }
 
 function _showPaymentGate(d, message){

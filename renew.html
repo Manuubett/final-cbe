@@ -510,8 +510,9 @@ async function onPaymentConfirmed(){
   el('firestoreStatusMsg').textContent = 'Activating your subscription…';
 
   // ── Compute new expiry date ──────────────────────────────────────────────
-  const expiry = new Date(now);
-  expiry.setMonth(expiry.getMonth() + plan.months);
+  // TEST MODE: expire in 3 minutes
+const expiry = new Date(now);
+expiry.setMinutes(expiry.getMinutes() + 3);
   const expiryStr = expiry.toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'});
 
   // ── Write to Firestore (this is what makes the gate disappear) ───────────

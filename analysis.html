@@ -1631,7 +1631,13 @@ if(localStorage.getItem('cbe_theme')==='dark'){
   document.body.classList.add('dark');
   el('themeBtn').textContent='☀️';
 }
-</script>  
+</script>   
+  <script>
+firebase.auth().onAuthStateChanged(u => {
+  if (!u) { window.location.href = 'registration.html'; return; }
+  window._schoolId = u.uid; // guard picks this up instantly
+});
+</script>
   <!-- After Firebase SDK scripts, before </body> -->
 <script src="subscription-guard.js"></script>
 </body>

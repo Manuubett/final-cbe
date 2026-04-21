@@ -193,20 +193,17 @@ body.dark .level-row .bar-wrap{background:#1a2030}
 .close-btn:hover{background:var(--bg);color:var(--text)}
 
 /* ── PRINT STYLES ── */
-/* Print is handled via a new window — no @media print needed on main page */
 @media print{
-  /* Fallback: hide UI chrome if somehow printing main page */
   header,.toolbar,#tc{display:none!important}
 }
 
-/* Page break between reports in bulk print */
 .print-page-break{
   page-break-after:always;
   break-after:page;
 }
 
 /* ── PRINT REPORT LAYOUT ── */
-#printArea{display:none} /* content now opens in new window */
+#printArea{display:none}
 .print-page{
   font-family:'Plus Jakarta Sans',sans-serif;
   background:#fff;color:#000;
@@ -311,7 +308,6 @@ body.dark .level-row .bar-wrap{background:#1a2030}
 
 <!-- CONTENT -->
 <div class="outer" style="padding-bottom:0;padding-top:14px;padding-left:20px;padding-right:20px">
-  <!-- School branding strip — populated by applySchoolSettings, persists across analysis loads -->
   <div id="schoolBrandingStrip" style="display:none;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:14px;box-shadow:var(--sh)"></div>
 </div>
 <div class="outer" id="mainContent" style="padding-top:0">
@@ -394,10 +390,11 @@ const _authReady = new Promise(resolve=>{
       return;
     }
 
-    // Check sessionStorage first (fastest — set by admin.html)
+    // ── Fast path: sessionStorage already has schoolId (set by admin.html) ──
     const stored = sessionStorage.getItem('cbe_school_id');
     if(stored){
       _analysisSchoolId = stored;
+      window._schoolId = stored;   // ← TELL subscription-guard.js who we are
       resolve(stored);
       return;
     }
@@ -422,6 +419,8 @@ const _authReady = new Promise(resolve=>{
           resolve(null);
           return;
         }
+
+        window._schoolId = _analysisSchoolId;   // ← TELL subscription-guard.js who we are
         sessionStorage.setItem('cbe_school_id', _analysisSchoolId);
         resolve(_analysisSchoolId);
       } else {
@@ -506,25 +505,20 @@ function applySchoolSettings(s){
   }
 }
 
-// Load settings immediately
-// Wait for auth before initialising — prevents permission errors
+// Load settings — wait for auth before initialising (prevents permission errors)
 _authReady.then(sid=>{
   if(!sid) return; // redirected to login
   loadSchoolSettings();
 });
 
 // ── Grade-based subject config ──
-// Each grade group has its own subject list matching the CBC curriculum
-
 const SUBS_BY_GROUP = {
-  // Grade 1–3: Lower Primary  — IDs must match marksheet exactly
   '1-3': [
     {id:'math', label:'Mathematical Activities',  icon:'🔢'},
     {id:'eng',  label:'English',                  icon:'📖'},
     {id:'kis',  label:'Kiswahili',                icon:'🗣️'},
     {id:'int',  label:'Integrated Activities',    icon:'🌈'},
   ],
-  // Grade 4–6: Upper Primary  — IDs must match marksheet exactly
   '4-6': [
     {id:'math', label:'Mathematics',              icon:'🔢'},
     {id:'eng',  label:'English',                  icon:'📖', parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
@@ -535,7 +529,6 @@ const SUBS_BY_GROUP = {
     {id:'arts', label:'Creative Art and Sport',   icon:'🎨'},
     {id:'agri', label:'Agriculture and Nutrition',icon:'🌱'},
   ],
-  // Grade 7–9: Junior Secondary  — IDs must match marksheet exactly
   '7-9': [
     {id:'eng',  label:'English',                  icon:'📖', parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
     {id:'kis',  label:'Kiswahili/KSL',            icon:'🗣️', parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
@@ -549,15 +542,13 @@ const SUBS_BY_GROUP = {
   ],
 };
 
-// Returns the correct subject list for a given grade string (e.g. "Grade 4")
 function getSubsForGrade(grade){
   const num = parseInt((grade||'').replace(/\D/g,''),10);
   if(num >= 1 && num <= 3)  return SUBS_BY_GROUP['1-3'];
   if(num >= 4 && num <= 6)  return SUBS_BY_GROUP['4-6'];
-  return SUBS_BY_GROUP['7-9']; // default to 7-9
+  return SUBS_BY_GROUP['7-9'];
 }
 
-// Active SUBS — updated whenever grade changes; used throughout rendering
 let SUBS = SUBS_BY_GROUP['7-9'];
 
 const DEFAULT_OOF = 100;
@@ -590,7 +581,6 @@ let allResults = [], allStudents = [];
 let currentStudent = null;
 
 // ── Read URL params from admin quick-launch ──
-// Wait for auth before auto-loading so schoolId is ready
 _authReady.then(()=>{
   const p = new URLSearchParams(window.location.search);
   const grade  = p.get('grade');
@@ -601,7 +591,7 @@ _authReady.then(()=>{
   if(term)   el('selTerm').value  = term;
   if(year)   el('selYear').value  = year;
   if(grade){
-    SUBS = getSubsForGrade(grade); // set correct subjects before any render
+    SUBS = getSubsForGrade(grade);
   }
   if(grade && stream){
     const ss = el('selStream');
@@ -612,7 +602,6 @@ _authReady.then(()=>{
     ss.value     = stream;
     loadAnalysis();
   } else if(grade){
-    // Grade only — trigger stream detection (will auto-load if no streams)
     onGradeChange();
   }
 });
@@ -622,7 +611,6 @@ window.onGradeChange = async function(){
   const grade=el('selGrade').value, ss=el('selStream');
   const streamWrap=el('streamWrap');
 
-  // Update active subjects for this grade immediately
   SUBS = getSubsForGrade(grade);
 
   ss.disabled=true; ss.innerHTML='<option value="">Loading…</option>';
@@ -635,7 +623,6 @@ window.onGradeChange = async function(){
   try{
     const schoolId = await _getSchoolId();
 
-    // ── 1. Try streams cache (shared with marksheet page) ──
     let arr = [];
     try{
       const raw = localStorage.getItem('cbe_streams');
@@ -646,7 +633,6 @@ window.onGradeChange = async function(){
       }
     }catch(_){}
 
-    // ── 2. Fetch from Firestore to catch new/removed streams ──
     const snap = await db.collection('students')
       .where('grade','==',grade)
       .where('schoolId','==',schoolId)
@@ -655,7 +641,6 @@ window.onGradeChange = async function(){
     snap.forEach(d=>{const s=d.data();if(s.stream?.trim())set.add(s.stream.trim());});
     arr=[...set].sort();
 
-    // Update cache
     try{
       const raw = localStorage.getItem('cbe_streams');
       const map = raw ? JSON.parse(raw) : {};
@@ -667,7 +652,6 @@ window.onGradeChange = async function(){
     console.log('[Analysis] Loading streams for grade', grade, '| schoolId', schoolId);
 
     if(!arr.length){
-      // ── No streams: hide stream selector and load all students directly ──
       if(streamWrap) streamWrap.style.display='none';
       ss.innerHTML='<option value="">__none__</option>';
       ss.value='';
@@ -677,7 +661,6 @@ window.onGradeChange = async function(){
       return;
     }
 
-    // ── Streams exist: show selector ──
     if(streamWrap) streamWrap.style.display='';
     ss.innerHTML='<option value="">-- Stream --</option>'+arr.map(s=>`<option>${s}</option>`).join('');
     ss.disabled=false;
@@ -697,10 +680,8 @@ window.loadAnalysis = async function(){
 
   if(!grade) return;
 
-  // Update active subjects whenever analysis loads
   SUBS = getSubsForGrade(grade);
 
-  // If stream dropdown is visible (has real options) and nothing chosen yet, wait
   const streamWrap=el('streamWrap');
   const streamVisible = streamWrap && streamWrap.style.display !== 'none';
   if(streamVisible && !stream) return;
@@ -711,11 +692,9 @@ window.loadAnalysis = async function(){
     const hasStream = Boolean(stream);
     console.log('[Analysis] Loading analysis | grade', grade, hasStream ? stream : '(no stream)', '| school', schoolId);
 
-    // Students: always filter by grade + school
     let stuQuery = db.collection('students')
       .where('grade','==',grade).where('schoolId','==',schoolId);
 
-    // Results: filter by stream only when a stream is selected
     let resQuery = db.collection('results')
       .where('grade','==',grade)
       .where('term','==',term)
@@ -730,13 +709,9 @@ window.loadAnalysis = async function(){
     allStudents=[];
     stuSnap.forEach(d=>allStudents.push({id:d.id,...d.data()}));
 
-    // Stream filtering:
-    // - If stream selected → show only that stream's students
-    // - If no stream (school has no streams) → show ALL students in grade
     if(hasStream){
       allStudents = allStudents.filter(s=>(s.stream||'').trim()===stream);
     }
-    // else: no stream filter — include all students in the grade
 
     allStudents.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
 
@@ -752,11 +727,8 @@ window.loadAnalysis = async function(){
 function getSubjectScore(rec, sub){
   if(!rec) return null;
   if(sub.parts){
-    // For compound subjects, sum part scores (marksheet stores each part individually)
-    // Also accept the pre-computed _tot field as a fast path
     const tot = rec[`${sub.id}_tot`];
     if(tot !== undefined && tot !== null && tot > 0) return tot;
-    // Fallback: sum parts manually from stored individual scores
     const partSum = sub.parts.reduce((a,p)=>{
       const v = rec[`${sub.id}_${p.id}`];
       return a + (v !== undefined && v !== null ? Number(v) : 0);
@@ -787,21 +759,17 @@ function renderAnalysis(grade,stream,term,year){
     return;
   }
 
-  // Stats
   const avgs = scored.map(s=>resMap[s.id].overallAvg);
   const classAvg = (avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(1);
   const highest = Math.max(...avgs).toFixed(1);
   const lowest  = Math.min(...avgs).toFixed(1);
 
-  // Level distribution
   const levelCounts = {};
   LEVELS.forEach(l=>levelCounts[l.l]=0);
   scored.forEach(s=>{const lv=getLevel(resMap[s.id].overallAvg);levelCounts[lv.l]++;});
 
-  // Rank
   const ranked = [...scored].sort((a,b)=>resMap[b.id].overallAvg-resMap[a.id].overallAvg);
 
-  // Subject averages
   const subjectStats = SUBS.map(sub=>{
     const vals = scored
       .map(s=>{
@@ -940,7 +908,6 @@ function renderAnalysis(grade,stream,term,year){
     const rec=resMap[s.id];
     const avg=Number(rec.overallAvg).toFixed(1);
     const lv=getLevel(Number(avg));
-    // subject bars
     const bars = SUBS.map(sub=>{
       const sc=getSubjectScore(rec,sub);
       const oof=getSubjectOof(rec,sub);
@@ -1059,10 +1026,8 @@ function renderAnalysis(grade,stream,term,year){
   html+=`</div><!-- /tab-subjects -->`;
   el('mainContent').innerHTML=html;
 
-  // Store for print
   window._printData = {grade,stream,classLabel,term,year,ranked,resMap,scored,classAvg,levelCounts,subjectStats};
 
-  // Show Print All button only when there are results
   const btn = el('printAllBtn');
   if(btn) btn.style.display = scored.length ? 'inline-flex' : 'none';
 }
@@ -1088,8 +1053,8 @@ window.openStudent = function(sid){
   allResults.forEach(r=>resMap[r.studentId]=r);
   const ranked=[...allStudents.filter(st=>resMap[st.id]?.overallAvg>0)].sort((a,b)=>resMap[b.id].overallAvg-resMap[a.id].overallAvg);
   const rank=ranked.findIndex(x=>x.id===sid)+1;
-  const totalEnrolled = allStudents.length;  // total students in class (incl. those without results)
-  const totalScored   = ranked.length;       // students with actual results
+  const totalEnrolled = allStudents.length;
+  const totalScored   = ranked.length;
   const pd=window._printData;
 
   let body=`
@@ -1164,7 +1129,6 @@ window.openStudent = function(sid){
 
   body+=`</tbody></table></div>`;
 
-  // Class comparison
   if(pd){
     body+=`<div class="print-class-compare">
       <div class="print-compare-box"><div class="print-compare-lbl">Class Average</div><div class="print-compare-val">${pd.classAvg}%</div></div>
@@ -1172,7 +1136,6 @@ window.openStudent = function(sid){
     </div>`;
   }
 
-  // Remarks
   body+=`<div class="print-remarks" style="margin-top:10px">
     <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#9aaabb;margin-bottom:6px">Class Teacher's Remarks</div>
     <div style="border-bottom:1px dashed #dce1ec;height:24px;margin-bottom:6px"></div>
@@ -1245,7 +1208,7 @@ async function printAllReports(){
   closePrintAllModal();
 
   const {ranked, resMap, classAvg} = pd;
-  const total = pd.scored.length > 0 ? allStudents.length : ranked.length; // total enrolled
+  const total = pd.scored.length > 0 ? allStudents.length : ranked.length;
 
   let allHtml = '';
   ranked.forEach((s, i) => {
@@ -1257,7 +1220,6 @@ async function printAllReports(){
 
     allHtml += buildStudentPrintHtml(s, rec, avg, lv, rank, total, pd);
 
-    // Page break between reports (not after last)
     if(i < ranked.length - 1){
       allHtml += '<div style="page-break-after:always;break-after:page"></div>';
     }
@@ -1267,9 +1229,8 @@ async function printAllReports(){
   toast(`Opening ${total} reports for print…`, 'info');
 }
 
-// ── Print helper — opens a clean new window for reliable preview ──
+// ── Print helper — opens a clean new window ──
 function triggerPrint(html){
-  // Collect all <style> and <link rel=stylesheet> from current page
   const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
     .map(node => node.outerHTML).join('\n');
 
@@ -1281,7 +1242,6 @@ function triggerPrint(html){
 <title>Print Report</title>
 ${styles}
 <style>
-  /* Print window overrides */
   body{
     background:#fff!important;
     color:#000!important;
@@ -1293,7 +1253,6 @@ ${styles}
     .print-page{padding:20px 24px}
     *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
-  /* Hide the print/close bar when printing */
   @media print{#_printBar{display:none!important}}
   #_printBar{
     position:sticky;top:0;z-index:999;
@@ -1330,8 +1289,6 @@ ${html}
   w.document.open();
   w.document.write(fullHtml);
   w.document.close();
-
-  // Wait for fonts/images then focus (user clicks Print button inside new window)
   w.onload = function(){ w.focus(); };
 }
 
@@ -1352,9 +1309,6 @@ window.printStudentReport = async function(){
 };
 
 function buildStudentPrintHtml(s,rec,avg,lv,rank,total,pd){
-  const logoHtml = schoolSettings.logoUrl
-    ? `<img src="${schoolSettings.logoUrl}" style="width:52px;height:52px;object-fit:contain;border-radius:6px;margin-right:12px;vertical-align:middle" onerror="this.style.display='none'">`
-    : '📊 ';
   let h=`<div class="print-page">
     <div class="print-school-header">
       <div style="display:flex;align-items:center">
@@ -1631,15 +1585,14 @@ if(localStorage.getItem('cbe_theme')==='dark'){
   document.body.classList.add('dark');
   el('themeBtn').textContent='☀️';
 }
-</script>   
-  <script>
+</script>
+<script>
 firebase.auth().onAuthStateChanged(u => {
   if (!u) { window.location.href = 'registration.html'; return; }
-  window._schoolId = u.uid; // guard picks this up instantly
+  window._schoolId = u.uid; // subscription-guard.js picks this up instantly
 });
 </script>
-  <!-- After Firebase SDK scripts, before </body> -->
+<!-- Subscription guard — must come after Firebase SDK -->
 <script src="subscription-guard.js"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9efd593fdd9fb970',t:'MTc3Njc4NDU3Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"9a6fdd38ee454483a9aa3baf59e5691f","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>

@@ -259,10 +259,100 @@ body.dark .level-row .bar-wrap{background:#1a2030}
 .print-dist-box{border:1px solid #dce1ec;border-radius:5px;padding:6px 8px;text-align:center}
 .print-dist-count{font-family:'Familjen Grotesk',sans-serif;font-size:20px;font-weight:800}
 .print-dist-lbl{font-size:9px;color:#4f6080;font-weight:700;text-transform:uppercase;margin-top:1px}
+
+/* ══ PAYMENT GATE OVERLAY ══ */
+#paymentOverlay{
+  display:none;position:fixed;inset:0;z-index:800;
+  background:rgba(6,12,28,.78);
+  backdrop-filter:blur(20px) saturate(.35);
+  -webkit-backdrop-filter:blur(20px) saturate(.35);
+  align-items:center;justify-content:center;padding:20px;
+}
+#paymentOverlay.show{display:flex}
+.pov-card{background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.5);width:100%;max-width:400px;overflow:hidden;animation:povIn .35s cubic-bezier(.22,1,.36,1) both}
+@keyframes povIn{from{opacity:0;transform:scale(.94) translateY(20px)}to{opacity:1;transform:none}}
+.pov-top{background:linear-gradient(135deg,#0f172a,#1e3a8a 70%,#1a56db);padding:20px 22px 16px;text-align:center;color:#fff;position:relative;overflow:hidden}
+.pov-top::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 75% 10%,rgba(99,179,237,.15) 0%,transparent 60%)}
+.pov-lock-ring{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 10px;box-shadow:0 0 0 6px rgba(255,255,255,.05);position:relative;z-index:1}
+.pov-title{font-family:'Familjen Grotesk',sans-serif;font-size:17px;font-weight:800;margin-bottom:4px;position:relative;z-index:1;letter-spacing:-.2px}
+.pov-school-tag{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);padding:2px 12px;border-radius:20px;font-size:11px;color:rgba(255,255,255,.8);position:relative;z-index:1;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pov-body{padding:16px 20px 0}
+.pov-exp-msg{font-size:13px;color:#4a5578;line-height:1.75;margin-bottom:18px;text-align:center}
+.pov-renew-btn{width:100%;height:44px;background:linear-gradient(135deg,#1a56db,#1447c0);color:#fff;border:none;border-radius:8px;font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;box-shadow:0 4px 14px rgba(26,86,219,.35);text-decoration:none;margin-bottom:10px}
+.pov-renew-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(26,86,219,.45)}
+.pov-actions{padding:0 20px 18px;display:flex;gap:8px}
+.pov-wa-btn{flex:1;padding:9px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;border:none;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;transition:all .14s}
+.pov-wa-btn:hover{background:#15803d}
+.pov-logout-btn{padding:9px 14px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;background:none;border:1.5px solid #e2e8f0;color:#94a3b8;transition:all .14s}
+.pov-logout-btn:hover{border-color:#cbd5e1;color:#64748b}
+
+/* Expiry countdown inside gate */
+#expiryCountdown{
+  display:none;background:#0f172a;border-top:1px solid rgba(255,255,255,.08);
+  padding:10px 20px;text-align:center;font-size:12px;color:rgba(255,255,255,.6);
+}
+#expiryCountdown.show{display:block}
+#expiryCountdown strong{color:#f59e0b;font-weight:700}
+
+/* Live subscription status bar */
+#subStatusBar{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:#7c2d12;border-top:2px solid #f97316;
+  padding:8px 20px;font-size:12px;color:#fed7aa;font-weight:600;
+  align-items:center;justify-content:space-between;gap:12px;
+}
+#subStatusBar.show{display:flex}
+#subStatusBar .sub-timer{color:#fbbf24;font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800}
+#subStatusBar .sub-renew{padding:4px 14px;background:#f97316;color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:700}
+#subStatusBar .sub-renew:hover{background:#ea580c}
+
+/* Renewal detected banner */
+#renewalDetectedBanner{
+  display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);
+  background:#064e3b;color:#ecfdf5;border:1.5px solid #10b981;
+  border-radius:10px;padding:12px 24px;font-size:13px;font-weight:700;
+  z-index:900;box-shadow:0 8px 24px rgba(0,0,0,.3);
+  animation:slideDown .3s ease;
+}
+@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 </style>
 </head>
 <body>
 <div id="tc"></div>
+
+<!-- ══ PAYMENT GATE OVERLAY ══ -->
+<div id="paymentOverlay">
+  <div class="pov-card">
+    <div class="pov-top">
+      <div class="pov-lock-ring">🔒</div>
+      <div class="pov-title">Subscription Required</div>
+      <div class="pov-school-tag" id="povSchoolName">Your School</div>
+    </div>
+    <div class="pov-body" style="padding:20px 20px 4px">
+      <p class="pov-exp-msg" id="povMsgText">Your subscription has expired. Renew now to continue using the system — your data is safe.</p>
+      <a class="pov-renew-btn" id="povRenewBtn" href="/renew?from=analysis">🔄 Renew Subscription Now →</a>
+      <div style="text-align:center;margin-bottom:16px">
+        <a href="https://wa.me/254704518130?text=Hello%2C%20I%20need%20help%20renewing%20my%20CBE%20Mark%20Sheet%20subscription."
+           target="_blank" class="pov-wa-btn" style="display:inline-flex;width:auto;padding:8px 20px;font-size:12px">
+          💬 Need help? WhatsApp us
+        </a>
+      </div>
+    </div>
+    <div id="expiryCountdown"></div>
+    <div class="pov-actions" style="padding-top:0">
+      <button class="pov-logout-btn" style="width:100%;text-align:center" onclick="doAnalysisLogout()">← Sign out</button>
+    </div>
+  </div>
+</div>
+
+<!-- Renewal detected banner -->
+<div id="renewalDetectedBanner">🎉 Renewal detected — restoring access…</div>
+
+<!-- Live subscription warning bar -->
+<div id="subStatusBar">
+  <span>⚠️ Your subscription expires in <span class="sub-timer" id="subTimerText">—</span> — renew now to avoid disruption.</span>
+  <a class="sub-renew" href="/renew?from=statusbar">🔄 Renew Now</a>
+</div>
 
 <!-- PRINT AREA (hidden until print) -->
 <div id="printArea"></div>
@@ -360,7 +450,7 @@ firebase.initializeApp({
 const db = firebase.firestore();
 const el = id => document.getElementById(id);
 
-// ── School settings (loaded once on startup) ──
+// ── School settings ──
 let schoolSettings = {
   name: 'Junior School',
   motto: '',
@@ -369,37 +459,42 @@ let schoolSettings = {
   principal: ''
 };
 
-// Promise that resolves once school settings are loaded — print functions await this
 let _schoolSettingsReady = false;
 let _schoolSettingsResolve = null;
 const _schoolSettingsPromise = new Promise(res => { _schoolSettingsResolve = res; });
 
-// ── School settings — wait for auth then load ──
 let _analysisSchoolId = null;
 let _analysisRole     = null;
 
-// ── Single auth promise — resolves once Firebase Auth is ready ──
-// All Firestore calls must wait for this before executing
+// ══════════════════════════════════════════════════════════════════
+// SUBSCRIPTION STATE
+// ══════════════════════════════════════════════════════════════════
+let _lastKnownExpiry    = null;
+let _renewalShown       = false;
+let _expiryCheckTimer   = null;
+let _expiryPollTimer    = null;
+let _liveCountdownTimer = null;
+let _paymentUnsub       = null;
+const WARN_DAYS = 7;
+
+// ── Auth ready promise ──
 const _authReady = new Promise(resolve=>{
   const unsub = firebase.auth().onAuthStateChanged(async u=>{
     unsub();
     if(!u){
-      // Not signed in — go to login
       window.location.href = 'login';
       resolve(null);
       return;
     }
 
-    // ── Fast path: sessionStorage already has schoolId (set by admin.html) ──
     const stored = sessionStorage.getItem('cbe_school_id');
     if(stored){
       _analysisSchoolId = stored;
-      window._schoolId = stored;   // ← TELL subscription-guard.js who we are
+      window._schoolId = stored;
       resolve(stored);
       return;
     }
 
-    // Read user profile to get schoolId (handles both admin and teacher)
     try{
       const snap = await db.collection('users').doc(u.uid).get();
       if(snap.exists){
@@ -407,20 +502,17 @@ const _authReady = new Promise(resolve=>{
         _analysisRole = profile.role;
 
         if(profile.role === 'admin'){
-          // Admin: their uid IS the schoolId
           _analysisSchoolId = u.uid;
         } else if(profile.role === 'teacher' && profile.schoolId){
-          // Teacher: schoolId stored in their profile
           _analysisSchoolId = profile.schoolId;
         } else {
-          // No valid schoolId found
           console.warn('[Analysis] Cannot resolve schoolId from profile');
           window.location.href = 'login';
           resolve(null);
           return;
         }
 
-        window._schoolId = _analysisSchoolId;   // ← TELL subscription-guard.js who we are
+        window._schoolId = _analysisSchoolId;
         sessionStorage.setItem('cbe_school_id', _analysisSchoolId);
         resolve(_analysisSchoolId);
       } else {
@@ -435,12 +527,286 @@ const _authReady = new Promise(resolve=>{
   });
 });
 
-// All code that needs schoolId waits for _authReady
 function _getSchoolId(){
   if(_analysisSchoolId) return Promise.resolve(_analysisSchoolId);
   return _authReady;
 }
 
+// ══════════════════════════════════════════════════════════════════
+// PAYMENT GATE — mirrors admin.html logic exactly
+// ══════════════════════════════════════════════════════════════════
+
+function _listenPayment(schoolId){
+  if(_paymentUnsub){ _paymentUnsub(); _paymentUnsub=null; }
+  _clearAllSubTimers();
+  console.log('[Analysis] Payment gate listener started', schoolId);
+
+  _paymentUnsub = db.collection('approvedSchools').doc(schoolId)
+    .onSnapshot(snap=>{
+      if(!snap.exists){ _hidePayment(); return; }
+      const d   = snap.data();
+      const now = new Date();
+      const newExpiry = d.subscriptionExpiry?.toDate?.() || null;
+
+      // Renewal detection — expiry moved forward
+      if(newExpiry && newExpiry > now){
+        if(_lastKnownExpiry && newExpiry > _lastKnownExpiry){
+          console.log('[Analysis] Renewal detected via snapshot');
+          _clearAllSubTimers();
+          _lastKnownExpiry = newExpiry;
+          _showRenewalBanner();
+          _hidePayment();
+          _startLiveCountdown(newExpiry);
+          return;
+        }
+        if(!_lastKnownExpiry) _lastKnownExpiry = newExpiry;
+      }
+
+      // Admin-suspended
+      if(d.status === 'suspended'){
+        _stopLiveCountdown();
+        _hideSubStatusBar();
+        _showPaymentGate(d,'Your account has been suspended. Please contact the administrator to reactivate.');
+        return;
+      }
+
+      // Valid subscription
+      if(newExpiry && newExpiry > now){
+        _scheduleExpiryCheck(schoolId, newExpiry);
+        _startLiveCountdown(newExpiry);
+        _hidePayment();
+        return;
+      }
+
+      // Expired
+      if(newExpiry && newExpiry <= now){
+        const msg = (d.message && d.message.trim())
+          ? d.message
+          : 'Your subscription has expired. Please renew to continue using the system.';
+        _stopLiveCountdown();
+        _hideSubStatusBar();
+        _showPaymentGate(d, msg);
+        _startExpiredCountdown(newExpiry);
+        _startRenewalPoll(schoolId);
+        return;
+      }
+
+      // No expiry but message-only gate (legacy / manual block)
+      if(d.message && d.message.trim()){
+        _stopLiveCountdown();
+        _hideSubStatusBar();
+        _showPaymentGate(d, d.message);
+        _startRenewalPoll(schoolId);
+        return;
+      }
+
+      // All clear
+      _hidePayment();
+
+    }, e=>{
+      console.warn('[Analysis] Payment gate listener error', e.message);
+      _hidePayment();
+    });
+}
+
+function _showPaymentGate(d, message){
+  const nameEl = el('povSchoolName');
+  if(nameEl) nameEl.textContent = d.schoolName || schoolSettings.name || '—';
+  const msgEl = el('povMsgText');
+  if(msgEl && message) msgEl.textContent = message;
+  const ov = el('paymentOverlay');
+  if(ov && !ov.classList.contains('show')){
+    ov.classList.add('show');
+    console.log('[Analysis] Payment gate shown');
+  }
+}
+
+function _hidePayment(){
+  const ov = el('paymentOverlay');
+  if(ov && ov.classList.contains('show')){
+    ov.classList.remove('show');
+    console.log('[Analysis] Payment gate hidden — access restored');
+    toast('✅ Access restored — subscription active');
+  }
+  const cd = el('expiryCountdown');
+  if(cd){ cd.classList.remove('show'); cd.textContent=''; }
+  _clearAllSubTimers();
+}
+
+function _clearAllSubTimers(){
+  if(_expiryCheckTimer){ clearTimeout(_expiryCheckTimer); _expiryCheckTimer=null; }
+  if(_expiryPollTimer){ clearInterval(_expiryPollTimer); _expiryPollTimer=null; }
+  if(_liveCountdownTimer){ clearInterval(_liveCountdownTimer); _liveCountdownTimer=null; }
+}
+
+function _scheduleExpiryCheck(schoolId, expiresAt){
+  if(_expiryCheckTimer){ clearTimeout(_expiryCheckTimer); _expiryCheckTimer=null; }
+  const msUntil = expiresAt - new Date();
+  if(msUntil <= 0) return;
+  _expiryCheckTimer = setTimeout(()=>{
+    db.collection('approvedSchools').doc(schoolId).get()
+      .then(snap=>{
+        if(!snap.exists){ _hidePayment(); return; }
+        const d   = snap.data();
+        const exp = d.subscriptionExpiry?.toDate?.();
+        if(!exp || exp <= new Date()){
+          const msg = (d.message && d.message.trim())
+            ? d.message
+            : 'Your subscription has expired. Please renew to continue using the system.';
+          _stopLiveCountdown();
+          _hideSubStatusBar();
+          _showPaymentGate(d, msg);
+          if(exp) _startExpiredCountdown(exp);
+          _startRenewalPoll(schoolId);
+        }
+      }).catch(()=>{});
+  }, msUntil + 500);
+}
+
+function _startRenewalPoll(schoolId){
+  if(_expiryPollTimer) return;
+  _expiryPollTimer = setInterval(async ()=>{
+    try{
+      const snap = await db.collection('approvedSchools').doc(schoolId).get();
+      if(!snap.exists) return;
+      const d         = snap.data();
+      const newExpiry = d.subscriptionExpiry?.toDate?.();
+      if(newExpiry && newExpiry > new Date() && d.status !== 'suspended'){
+        _clearAllSubTimers();
+        _lastKnownExpiry = newExpiry;
+        _renewalShown    = false;
+        _showRenewalBanner();
+        _hidePayment();
+        _startLiveCountdown(newExpiry);
+      }
+    }catch(_){}
+  }, 30_000);
+}
+
+function _startLiveCountdown(expiresAt){
+  _stopLiveCountdown();
+
+  function tick(){
+    const now    = new Date();
+    const msLeft = expiresAt - now;
+
+    if(msLeft <= 0){
+      _stopLiveCountdown();
+      _hideSubStatusBar();
+      if(_analysisSchoolId){
+        db.collection('approvedSchools').doc(_analysisSchoolId).get()
+          .then(snap=>{
+            if(!snap.exists) return;
+            const d   = snap.data();
+            const exp = d.subscriptionExpiry?.toDate?.();
+            if(!exp || exp <= new Date()){
+              const msg = (d.message && d.message.trim())
+                ? d.message
+                : 'Your subscription has expired. Please renew to continue using the system.';
+              _showPaymentGate(d, msg);
+              _startExpiredCountdown(exp || expiresAt);
+              _startRenewalPoll(_analysisSchoolId);
+            }
+          }).catch(()=>{});
+      }
+      return;
+    }
+
+    const daysLeft  = msLeft / 86400000;
+    const hoursLeft = msLeft / 3600000;
+
+    if(daysLeft > WARN_DAYS){ _hideSubStatusBar(); return; }
+
+    let timerStr;
+    if(hoursLeft < 24){
+      const h = Math.floor(msLeft/3600000);
+      const m = Math.floor((msLeft%3600000)/60000);
+      const s = Math.floor((msLeft%60000)/1000);
+      timerStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    } else {
+      const d = Math.floor(daysLeft);
+      const h = Math.floor((msLeft % 86400000) / 3600000);
+      timerStr = `${d}d ${h}h`;
+    }
+    _showSubStatusBar(timerStr, hoursLeft < 24);
+  }
+
+  tick();
+  _liveCountdownTimer = setInterval(tick, 1000);
+}
+
+function _stopLiveCountdown(){
+  if(_liveCountdownTimer){ clearInterval(_liveCountdownTimer); _liveCountdownTimer=null; }
+}
+
+function _showSubStatusBar(timerStr, isUrgent){
+  const bar = el('subStatusBar');
+  if(!bar) return;
+  const timerEl = el('subTimerText');
+  if(timerEl) timerEl.textContent = timerStr;
+  if(isUrgent){
+    bar.style.background='#7f1d1d'; bar.style.borderTopColor='#ef4444';
+    bar.style.color='#fef2f2';
+    bar.querySelector('.sub-timer').style.color='#fca5a5';
+  } else {
+    bar.style.background='#7c2d12'; bar.style.borderTopColor='#f97316';
+    bar.style.color='#fed7aa';
+    bar.querySelector('.sub-timer').style.color='#fbbf24';
+  }
+  bar.classList.add('show');
+}
+
+function _hideSubStatusBar(){
+  const bar = el('subStatusBar');
+  if(bar) bar.classList.remove('show');
+}
+
+function _startExpiredCountdown(expiredAt){
+  const cd = el('expiryCountdown');
+  if(!cd) return;
+  function renderExpired(){
+    const msAgo = new Date() - expiredAt;
+    if(msAgo < 0){ cd.classList.remove('show'); return; }
+    const days  = Math.floor(msAgo / 86400000);
+    const hours = Math.floor((msAgo % 86400000) / 3600000);
+    const mins  = Math.floor((msAgo % 3600000) / 60000);
+    let agoStr;
+    if(days > 0)       agoStr = `${days} day${days>1?'s':''} ${hours}h ago`;
+    else if(hours > 0) agoStr = `${hours}h ${mins}m ago`;
+    else               agoStr = `${mins} minute${mins!==1?'s':''} ago`;
+    cd.innerHTML = `Subscription expired <strong>${agoStr}</strong>`;
+    cd.classList.add('show');
+  }
+  renderExpired();
+  setInterval(renderExpired, 60_000);
+}
+
+function _showRenewalBanner(){
+  if(_renewalShown) return;
+  _renewalShown = true;
+  const b = el('renewalDetectedBanner');
+  if(!b) return;
+  b.style.display='block'; b.style.opacity='1'; b.style.transition='';
+  setTimeout(()=>{ b.style.opacity='0'; b.style.transition='opacity .6s'; },3000);
+  setTimeout(()=>{
+    b.style.display='none'; b.style.opacity=''; b.style.transition='';
+    _renewalShown=false;
+  },3700);
+}
+
+// Logout from payment gate
+window.doAnalysisLogout = async function(){
+  if(_paymentUnsub){ _paymentUnsub(); _paymentUnsub=null; }
+  _clearAllSubTimers();
+  _lastKnownExpiry=null; _renewalShown=false;
+  _hideSubStatusBar();
+  _analysisSchoolId=null; window._schoolId=null;
+  sessionStorage.removeItem('cbe_school_id');
+  await firebase.auth().signOut();
+  window.location.href='login';
+};
+
+// ── School settings ──
 async function loadSchoolSettings(){
   try{
     const sid = await _getSchoolId();
@@ -448,7 +814,6 @@ async function loadSchoolSettings(){
     const snap = await db.collection('settings').doc(sid).get();
     if(snap.exists){
       applySchoolSettings(snap.data());
-      console.log('[Analysis] Settings loaded:', snap.data().name);
     }
   }catch(e){
     console.warn('[Analysis] Settings load failed:', e.message);
@@ -461,33 +826,27 @@ function applySchoolSettings(s){
   if(!s) return;
   schoolSettings = {...schoolSettings, ...s};
 
-  // Header name
   const nameEl = el('hdrSchoolName');
   if(nameEl && s.name) nameEl.textContent = s.name + ' · Analysis';
 
-  // Header subtitle — include motto if present
   const subEl = el('hdrSchoolSub');
   if(subEl){
     const parts = [s.motto, s.county, 'Kenya CBC'].filter(Boolean);
     subEl.textContent = parts.join(' · ');
   }
 
-  // Header logo
   if(s.logoUrl){
     const lm = el('hdrLogo');
     if(lm) lm.innerHTML = `<img src="${s.logoUrl}" style="width:100%;height:100%;object-fit:contain;border-radius:inherit" onerror="this.parentElement.innerHTML='📈'">`;
   }
 
-  // Brand colour
   if(s.primaryColor){
     document.documentElement.style.setProperty('--accent', s.primaryColor);
     document.documentElement.style.setProperty('--ah', s.primaryColor);
   }
 
-  // Page title
   if(s.name) document.title = s.name + ' | CBC Analysis';
 
-  // School branding strip (shown above analysis content)
   const strip = el('schoolBrandingStrip');
   if(strip){
     const logoHtml = s.logoUrl
@@ -505,10 +864,11 @@ function applySchoolSettings(s){
   }
 }
 
-// Load settings — wait for auth before initialising (prevents permission errors)
+// ── Bootstrap: wait for auth, then load settings AND start payment gate ──
 _authReady.then(sid=>{
-  if(!sid) return; // redirected to login
+  if(!sid) return;
   loadSchoolSettings();
+  _listenPayment(sid);   // ← starts the gate immediately after auth
 });
 
 // ── Grade-based subject config ──
@@ -580,7 +940,7 @@ function toast(msg,type='ok'){
 let allResults = [], allStudents = [];
 let currentStudent = null;
 
-// ── Read URL params from admin quick-launch ──
+// ── Read URL params ──
 _authReady.then(()=>{
   const p = new URLSearchParams(window.location.search);
   const grade  = p.get('grade');
@@ -649,14 +1009,11 @@ window.onGradeChange = async function(){
       localStorage.setItem('cbe_streams_ts', Date.now().toString());
     }catch(_){}
 
-    console.log('[Analysis] Loading streams for grade', grade, '| schoolId', schoolId);
-
     if(!arr.length){
       if(streamWrap) streamWrap.style.display='none';
       ss.innerHTML='<option value="">__none__</option>';
       ss.value='';
       ss.disabled=true;
-      console.log('[Analysis] No streams detected — loading without stream filter');
       loadAnalysis();
       return;
     }
@@ -669,7 +1026,6 @@ window.onGradeChange = async function(){
     ss.innerHTML='<option value="">-- Stream --</option>';
     ss.disabled=false;
     if(streamWrap) streamWrap.style.display='';
-    console.error('[Analysis] Failed to load streams:', e.message);
     toast('Failed to load streams: '+e.message,'err');
   }
 };
@@ -690,7 +1046,6 @@ window.loadAnalysis = async function(){
   try{
     const schoolId = await _getSchoolId();
     const hasStream = Boolean(stream);
-    console.log('[Analysis] Loading analysis | grade', grade, hasStream ? stream : '(no stream)', '| school', schoolId);
 
     let stuQuery = db.collection('students')
       .where('grade','==',grade).where('schoolId','==',schoolId);
@@ -1054,7 +1409,6 @@ window.openStudent = function(sid){
   const ranked=[...allStudents.filter(st=>resMap[st.id]?.overallAvg>0)].sort((a,b)=>resMap[b.id].overallAvg-resMap[a.id].overallAvg);
   const rank=ranked.findIndex(x=>x.id===sid)+1;
   const totalEnrolled = allStudents.length;
-  const totalScored   = ranked.length;
   const pd=window._printData;
 
   let body=`
@@ -1207,8 +1561,8 @@ async function printAllReports(){
   if(!_schoolSettingsReady) await _schoolSettingsPromise;
   closePrintAllModal();
 
-  const {ranked, resMap, classAvg} = pd;
-  const total = pd.scored.length > 0 ? allStudents.length : ranked.length;
+  const {ranked, resMap} = pd;
+  const total = ranked.length;
 
   let allHtml = '';
   ranked.forEach((s, i) => {
@@ -1229,7 +1583,6 @@ async function printAllReports(){
   toast(`Opening ${total} reports for print…`, 'info');
 }
 
-// ── Print helper — opens a clean new window ──
 function triggerPrint(html){
   const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
     .map(node => node.outerHTML).join('\n');
@@ -1242,34 +1595,13 @@ function triggerPrint(html){
 <title>Print Report</title>
 ${styles}
 <style>
-  body{
-    background:#fff!important;
-    color:#000!important;
-    font-family:'Plus Jakarta Sans',sans-serif;
-    margin:0;padding:0;
-  }
-  @media print{
-    body{margin:0;padding:0}
-    .print-page{padding:20px 24px}
-    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  }
+  body{background:#fff!important;color:#000!important;font-family:'Plus Jakarta Sans',sans-serif;margin:0;padding:0;}
+  @media print{body{margin:0;padding:0}.print-page{padding:20px 24px}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
   @media print{#_printBar{display:none!important}}
-  #_printBar{
-    position:sticky;top:0;z-index:999;
-    background:#1e2d4d;color:#c8d8f8;
-    padding:10px 20px;
-    display:flex;align-items:center;justify-content:space-between;
-    font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;
-    gap:10px;
-  }
-  #_printBar button{
-    padding:6px 16px;border-radius:5px;border:none;cursor:pointer;
-    font-family:inherit;font-size:12.5px;font-weight:700;
-  }
-  .pb-print{background:#059669;color:#fff}
-  .pb-print:hover{background:#047857}
-  .pb-close{background:rgba(255,255,255,.15);color:#c8d8f8}
-  .pb-close:hover{background:rgba(255,255,255,.25)}
+  #_printBar{position:sticky;top:0;z-index:999;background:#1e2d4d;color:#c8d8f8;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;gap:10px;}
+  #_printBar button{padding:6px 16px;border-radius:5px;border:none;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:700;}
+  .pb-print{background:#059669;color:#fff}.pb-print:hover{background:#047857}
+  .pb-close{background:rgba(255,255,255,.15);color:#c8d8f8}.pb-close:hover{background:rgba(255,255,255,.25)}
 </style>
 </head>
 <body>
@@ -1292,7 +1624,6 @@ ${html}
   w.onload = function(){ w.focus(); };
 }
 
-// ── Print Student Report ──
 window.printStudentReport = async function(){
   if(!currentStudent) return;
   if(!_schoolSettingsReady) await _schoolSettingsPromise;
@@ -1300,7 +1631,6 @@ window.printStudentReport = async function(){
   const avg=Number(rec.overallAvg).toFixed(1);
   const lv=getLevel(Number(avg));
   const pd=window._printData;
-  const resMap=pd?pd.resMap:{};
   const ranked=pd?pd.ranked:[];
   const rank=ranked.findIndex(x=>x.id===s.id)+1;
 
@@ -1589,7 +1919,7 @@ if(localStorage.getItem('cbe_theme')==='dark'){
 <script>
 firebase.auth().onAuthStateChanged(u => {
   if (!u) { window.location.href = 'registration.html'; return; }
-  window._schoolId = u.uid; // subscription-guard.js picks this up instantly
+  window._schoolId = u.uid;
 });
 </script>
 <!-- Subscription guard — must come after Firebase SDK -->

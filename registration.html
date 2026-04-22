@@ -125,10 +125,6 @@ select.inp{cursor:pointer;padding-left:12px}
 .footer{text-align:center;font-size:12px;color:var(--text3);margin-top:18px;line-height:1.8}
 .footer a{color:var(--accent);text-decoration:none;font-weight:600}
 
-.get-started-card{background:linear-gradient(135deg,#eff4ff,#e0e7ff);border:2px solid var(--accent);border-radius:var(--r2);padding:20px;text-align:center;margin-bottom:20px}
-.gs-title{font-size:16px;font-weight:800;color:var(--accent);margin-bottom:8px}
-.gs-desc{font-size:13px;color:var(--text2);margin-bottom:16px}
-
 #tc{position:fixed;top:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
 .t{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:var(--r2);font-size:12.5px;font-weight:500;box-shadow:var(--sh2);animation:tin .25s ease;min-width:210px}
 .t.ok{background:#064e3b;color:#ecfdf5;border-left:3px solid #10b981}
@@ -161,11 +157,11 @@ select.inp{cursor:pointer;padding-left:12px}
   </div>
 
   <div class="steps" id="stepsBar" style="display:none">
-    <div class="stp active" id="stp1"><div class="stp-num">1</div><div class="stp-lbl">Payment</div></div>
+    <div class="stp active" id="stp1"><div class="stp-num">1</div><div class="stp-lbl">Account</div></div>
     <div class="stp-line" id="line1"></div>
-    <div class="stp wait" id="stp2"><div class="stp-num">2</div><div class="stp-lbl">Account</div></div>
-    <div class="stp-line" id="line2"></div>
-    <div class="stp wait" id="stp3"><div class="stp-num">3</div><div class="stp-lbl">School Details</div></div>
+    <div class="stp wait" id="stp2"><div class="stp-num">2</div><div class="stp-lbl">School Details</div></div>
+    <div class="stp-line" id="line2" style="display:none"></div>
+    <div class="stp wait" id="stp3" style="display:none"><div class="stp-num">3</div><div class="stp-lbl">Done</div></div>
   </div>
 
   <div class="owner-banner" id="ownerBanner">
@@ -212,40 +208,7 @@ select.inp{cursor:pointer;padding-left:12px}
     </div>
   </div>
 
-  <!-- ══ SCREEN 1: WAITING FOR PAYMENT ══ -->
-  <div class="screen" id="screen1">
-    <div class="card">
-      <div class="card-head">
-        <div class="card-head-title">💳 Complete Payment First</div>
-        <div class="card-head-sub">You need to make a payment before creating your account</div>
-      </div>
-      <div class="card-body">
-        <div class="get-started-card">
-          <div class="gs-title">🏫 New School Registration</div>
-          <div class="gs-desc">Choose your subscription plan and complete M-Pesa payment</div>
-          <button class="btn-primary" onclick="goToRenewalPage()">
-            Choose Plan &amp; Pay →
-          </button>
-        </div>
-
-        <div style="margin-top:10px">
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2)"><span style="color:var(--green);font-size:14px">✅</span>Full system setup for your school</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2)"><span style="color:var(--green);font-size:14px">✅</span>CBC Mark Sheet — Grades 1 to 9</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2)"><span style="color:var(--green);font-size:14px">✅</span>Unlimited teachers &amp; streams</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2)"><span style="color:var(--green);font-size:14px">✅</span>Print-ready branded report cards</div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2)"><span style="color:var(--green);font-size:14px">✅</span>Real-time cloud sync across all devices</div>
-          </div>
-        </div>
-
-        <div style="margin-top:16px;background:var(--alight);border:1px solid #c7d9ff;border-radius:var(--r2);padding:10px 14px;font-size:12px;color:var(--accent);font-weight:600">
-          💡 After successful payment, you'll be redirected back here to create your account.
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ SCREEN 2: CREATE ACCOUNT (after payment confirmed) ══ -->
+  <!-- ══ SCREEN 2: CREATE ACCOUNT ══ -->
   <div class="screen" id="screen2">
     <div class="card">
       <div class="card-head">
@@ -253,7 +216,7 @@ select.inp{cursor:pointer;padding-left:12px}
         <div class="card-head-sub">These credentials will be used to log in to the system</div>
       </div>
       <div class="card-body">
-        <div class="pay-confirmed-banner" id="payConfirmedBanner">
+        <div class="pay-confirmed-banner" id="payConfirmedBanner" style="display:none">
           <div class="pcb-icon">✅</div>
           <div class="pcb-body">
             <div class="pcb-title">Payment Confirmed!</div>
@@ -290,6 +253,7 @@ select.inp{cursor:pointer;padding-left:12px}
         <button class="btn-primary" id="acctBtn" onclick="createAccount()">
           <span id="acctBtnTxt">Create Account →</span>
         </button>
+        <button class="btn-outline" onclick="goToStep(0)">Already registered? Sign in →</button>
       </div>
     </div>
   </div>
@@ -439,13 +403,17 @@ const PAY_PHONE     = 'cbe_pay_phone';
 const PAY_DATE      = 'cbe_pay_date';
 const PAY_PLAN      = 'cbe_pay_plan';
 
-let currentStep = 1, _createdUid = null, _regUnsub = null;
+// ── visited flag: set on first visit, persists forever ──
+const VISITED_KEY = 'cbe_visited';
+
+let currentStep = 2, _createdUid = null, _regUnsub = null;
 
 function startNewRegistration(){
   clearPaymentSession();
   localStorage.removeItem('cbe_reg_uid');
   localStorage.removeItem('cbe_reg_email');
-  goToStep(1);
+  // Keep cbe_visited so they see login next time they load the page fresh
+  goToStep(2);
 }
 
 function clearPaymentSession(){
@@ -475,24 +443,27 @@ function goToStep(n){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   el('screen'+n).classList.add('active');
   currentStep = n;
+
+  // Steps bar only shows on account (2) and school details (3)
   const stepsBar = el('stepsBar');
-  stepsBar.style.display = (n>=1 && n<=3) ? 'flex' : 'none';
+  stepsBar.style.display = (n === 2 || n === 3) ? 'flex' : 'none';
   updateStepBar(n);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function updateStepBar(n){
-  const order = [1, 2, 3];
-  const pos = order.indexOf(n);
-  order.forEach((step, i)=>{
-    const stp = el('stp'+step);
-    if(!stp) return;
-    stp.className = 'stp ' + (i < pos ? 'done' : i === pos ? 'active' : 'wait');
-  });
-  ['line1','line2'].forEach((lineId, i)=>{
-    const line = el(lineId);
-    if(line) line.className = 'stp-line' + (i < pos ? ' done-line' : '');
-  });
+  // stp1 = Account (screen 2), stp2 = School Details (screen 3)
+  const stp1 = el('stp1'), stp2 = el('stp2');
+  if(!stp1 || !stp2) return;
+  if(n === 2){
+    stp1.className = 'stp active';
+    stp2.className = 'stp wait';
+    const l1 = el('line1'); if(l1) l1.className = 'stp-line';
+  } else if(n === 3){
+    stp1.className = 'stp done';
+    stp2.className = 'stp active';
+    const l1 = el('line1'); if(l1) l1.className = 'stp-line done-line';
+  }
 }
 
 function toggleEye(id, btn){
@@ -524,6 +495,8 @@ async function doLogin(){
     await auth.setPersistence(persistence);
     await auth.signInWithEmailAndPassword(email, pass);
     localStorage.setItem('cbe_reg_email', email);
+    // Ensure visited flag is set
+    localStorage.setItem(VISITED_KEY, 'true');
   }catch(e){
     btn.disabled=false; txt.textContent='Sign In →';
     const msg = e.code==='auth/user-not-found'||e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'
@@ -566,6 +539,8 @@ async function createAccount(){
 
     localStorage.setItem('cbe_reg_uid',   cred.user.uid);
     localStorage.setItem('cbe_reg_email', email);
+    // Mark as visited so future fresh page loads show login
+    localStorage.setItem(VISITED_KEY, 'true');
 
     await db.collection('users').doc(_createdUid).set({
       fullName:  name,
@@ -669,8 +644,6 @@ async function submitDetails(){
 
   const paidAt = payDate ? new Date(payDate) : new Date();
   const expiry = new Date(paidAt);
-
-  // ══ PRODUCTION: subscription expires after real calendar months ══
   expiry.setMonth(expiry.getMonth() + planCfg.months);
 
   sendTelegramAlert(
@@ -800,36 +773,39 @@ async function checkPaymentAndRoute(){
   const payOk      = localStorage.getItem(PAY_CONFIRMED) === 'true';
   const savedEmail = localStorage.getItem('cbe_reg_email');
   const savedUid   = localStorage.getItem('cbe_reg_uid');
+  const hasVisited = localStorage.getItem(VISITED_KEY) === 'true';
 
-  // Payment confirmation ALWAYS wins — route to account creation first
+  // 1. Payment coming back from renew page — always go to account creation
   if(payOk){
-    log('info','✅ Payment confirmed — routing to account creation (step 2)');
+    log('info','Payment confirmed — routing to account creation');
     showPayConfirmedBanner();
     goToStep(2);
     return;
   }
 
-  // Returning user — show login
-  if(savedEmail || savedUid){
-    log('info','Returning user detected — showing login screen');
+  // 2. Returning user (has been here before, has a saved session, or email) — show login
+  if(hasVisited || savedEmail || savedUid){
+    log('info','Returning user — showing login');
     goToStep(0);
     const emailEl = el('liEmail');
     if(emailEl && savedEmail) emailEl.value = savedEmail;
     return;
   }
 
-  // Brand-new visitor — show payment instructions
-  log('info','New visitor — showing payment instruction screen');
-  goToStep(1);
+  // 3. Absolute first visit — show registration and mark as visited
+  log('info','First-time visitor — showing registration');
+  localStorage.setItem(VISITED_KEY, 'true');
+  goToStep(2);
 }
 
 function showPayConfirmedBanner(){
+  const banner = el('payConfirmedBanner');
+  if(banner) banner.style.display = 'flex';
   const plan    = localStorage.getItem(PAY_PLAN) || 'monthly';
   const planCfg = PLANS[plan] || PLANS.monthly;
   const payDate = localStorage.getItem(PAY_DATE);
   const paidAt  = payDate ? new Date(payDate) : new Date();
   const expiry  = new Date(paidAt);
-  // ── PRODUCTION: calculate real expiry for the banner display ──
   expiry.setMonth(expiry.getMonth() + planCfg.months);
   el('payConfirmedDetail').textContent =
     `${planCfg.label} plan paid — expires ${expiry.toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'})}. Now create your account.`;
@@ -854,7 +830,6 @@ function checkUrlForPayment(){
 }
 
 // ─── AUTH STATE ──────────────────────────────────────────────────────────────
-// Run URL check immediately — before Firebase auth fires
 checkUrlForPayment();
 
 let _authSettled = false;
@@ -869,7 +844,7 @@ auth.onAuthStateChanged(async u=>{
   clearTimeout(initTimeout);
   clearTimeout(_routeTimer);
 
-  // If a payment session is active, NEVER let auth override it
+  // Payment session active — never let auth override it
   const payOk = localStorage.getItem(PAY_CONFIRMED) === 'true';
   if(payOk){
     if(!_authSettled){
@@ -893,6 +868,8 @@ auth.onAuthStateChanged(async u=>{
 
   log('info','User authenticated',u.email);
   _createdUid = u.uid;
+  // Ensure visited flag is set whenever there is a live session
+  localStorage.setItem(VISITED_KEY, 'true');
 
   try{
     const userSnap = await db.collection('users').doc(u.uid).get();

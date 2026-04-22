@@ -110,8 +110,10 @@ select.inp{cursor:pointer;padding-left:12px}
 .btn-primary{width:100%;height:44px;background:linear-gradient(135deg,var(--accent),#2563eb);color:#fff;border:none;border-radius:var(--r2);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s;box-shadow:0 4px 14px rgba(26,86,219,.3);margin-top:6px}
 .btn-primary:hover:not(:disabled){transform:translateY(-1px)}
 .btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
-.btn-outline{width:100%;height:40px;background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:var(--r2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .14s;margin-top:8px}
+.btn-outline{width:100%;height:40px;background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:var(--r2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .14s;margin-top:8px;display:flex;align-items:center;justify-content:center}
 .btn-outline:hover{background:var(--bg)}
+.btn-danger-sm{background:none;border:1.5px solid rgba(220,38,38,.35);color:var(--red-tx);border-radius:var(--r2);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:5px 12px;transition:all .14s}
+.btn-danger-sm:hover{background:var(--red-bg);border-color:var(--red)}
 .spin-sm{width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 
@@ -125,28 +127,52 @@ select.inp{cursor:pointer;padding-left:12px}
 .footer{text-align:center;font-size:12px;color:var(--text3);margin-top:18px;line-height:1.8}
 .footer a{color:var(--accent);text-decoration:none;font-weight:600}
 
-#screen0 .btn-outline{display:flex;align-items:center;justify-content:height:40px;width:100%;background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:var(--r2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .14s}
-#screen0 .btn-outline:hover{background:var(--bg)}
+/* ── LocalStorage Inspector Panel ── */
+#lsPanel{
+  display:none;background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--r);box-shadow:var(--sh2);padding:16px;margin-top:14px;
+  animation:fadeUp .2s ease;
+}
+#lsPanel.show{display:block}
+#lsPanel .ls-title{font-family:'Familjen Grotesk',sans-serif;font-size:13px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+#lsPanel .ls-item{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:11.5px}
+#lsPanel .ls-item:last-child{border-bottom:none}
+#lsPanel .ls-key{font-family:monospace;font-weight:700;color:var(--accent);flex-shrink:0;max-width:160px;word-break:break-all}
+#lsPanel .ls-val{color:var(--text2);flex:1;word-break:break-all;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help}
+#lsPanel .ls-del{background:none;border:none;cursor:pointer;font-size:13px;color:var(--text3);padding:0 4px;flex-shrink:0;line-height:1}
+#lsPanel .ls-del:hover{color:var(--red)}
+#lsPanel .ls-empty{text-align:center;padding:20px;color:var(--text3);font-size:12px}
+.ls-badge{display:inline-block;padding:1px 7px;border-radius:20px;font-size:10px;font-weight:800;margin-left:6px}
+.ls-badge.cbe{background:var(--alight);color:var(--accent)}
+.ls-badge.other{background:var(--surf2);color:var(--text3)}
+
+/* ── Debug log panel ── */
+#debugPanel{position:fixed;bottom:0;left:0;right:0;max-height:220px;overflow-y:auto;background:rgba(10,14,26,.93);color:#a3e635;font-family:monospace;font-size:11px;padding:8px 12px;z-index:9999;border-top:1.5px solid #1e3a1e;display:none}
+#debugPanel.show{display:block}
+#debugPanel .dl{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+#debugPanel .dl.warn{color:#fbbf24}
+#debugPanel .dl.error{color:#f87171}
+#debugPanel .dl.info{color:#86efac}
+#debugToggle{position:fixed;bottom:8px;right:10px;z-index:10000;background:#1e293b;color:#64748b;border:1px solid #334155;border-radius:5px;padding:4px 9px;font-size:10px;font-family:monospace;cursor:pointer;opacity:.6}
+#debugToggle:hover{opacity:1}
+
+.get-started-card{background:linear-gradient(135deg,#eff4ff,#e0e7ff);border:2px solid var(--accent);border-radius:var(--r2);padding:20px;text-align:center;margin-bottom:20px}
+.gs-title{font-size:16px;font-weight:800;color:var(--accent);margin-bottom:8px}
+.gs-desc{font-size:13px;color:var(--text2);margin-bottom:16px}
 
 #tc{position:fixed;top:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
 .t{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:var(--r2);font-size:12.5px;font-weight:500;box-shadow:var(--sh2);animation:tin .25s ease;min-width:210px}
 .t.ok{background:#064e3b;color:#ecfdf5;border-left:3px solid #10b981}
 .t.err{background:#7f1d1d;color:#fef2f2;border-left:3px solid #ef4444}
+.t.info{background:#1e3a5f;color:#e0f2fe;border-left:3px solid #38bdf8}
 @keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes tout{to{transform:translateX(110%);opacity:0}}
-
-.payment-pending-card{background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #f59e0b;border-radius:var(--r2);padding:20px;text-align:center;margin-bottom:20px}
-.pp-title{font-size:16px;font-weight:800;color:#92400e;margin-bottom:8px}
-.pp-desc{font-size:13px;color:#b45309;margin-bottom:12px}
-.pp-wait{display:inline-block;width:20px;height:20px;border:2px solid #f59e0b;border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite;margin-right:8px;vertical-align:middle}
-
-.get-started-card{background:linear-gradient(135deg,#eff4ff,#e0e7ff);border:2px solid var(--accent);border-radius:var(--r2);padding:20px;text-align:center;margin-bottom:20px}
-.gs-title{font-size:16px;font-weight:800;color:var(--accent);margin-bottom:8px}
-.gs-desc{font-size:13px;color:var(--text2);margin-bottom:16px}
 </style>
 </head>
 <body>
 <div id="tc"></div>
+<button id="debugToggle" onclick="toggleDebug()">🪲 logs</button>
+<div id="debugPanel"></div>
 
 <div class="page">
 
@@ -185,7 +211,7 @@ select.inp{cursor:pointer;padding-left:12px}
     </div>
   </div>
 
-  <!-- ══ SCREEN 0: RETURNING USER LOGIN ══ -->
+  <!-- ══ SCREEN 0: LOGIN ══ -->
   <div class="screen" id="screen0">
     <div class="card">
       <div class="card-head">
@@ -193,6 +219,9 @@ select.inp{cursor:pointer;padding-left:12px}
         <div class="card-head-sub">Sign in to your existing school account</div>
       </div>
       <div class="card-body">
+        <!-- Login timing info bar -->
+        <div id="loginStatusBar" style="display:none;font-size:11.5px;color:var(--text3);background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);padding:7px 12px;margin-bottom:12px;font-family:monospace"></div>
+
         <div class="alert err" id="loginErr"><span>⚠️</span><span id="loginErrMsg"></span></div>
         <div class="field">
           <label>Email Address</label>
@@ -216,6 +245,25 @@ select.inp{cursor:pointer;padding-left:12px}
         <button class="btn-outline" onclick="startNewRegistration()">
           New school? Register here →
         </button>
+
+        <!-- ── LocalStorage Inspector ── -->
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+            <div style="font-size:11px;color:var(--text3);font-weight:600">Trouble signing in?</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn-danger-sm" onclick="toggleLsPanel()">🗂️ View Saved Data</button>
+              <button class="btn-danger-sm" onclick="clearAllCbeStorage()" style="border-color:rgba(220,38,38,.6)">🗑️ Clear &amp; Retry</button>
+            </div>
+          </div>
+          <div id="lsPanel">
+            <div class="ls-title">
+              <span>💾 Browser Storage <span id="lsBadgeCount" class="ls-badge cbe">0 CBE keys</span></span>
+              <button onclick="renderLsPanel()" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text3)">🔄 Refresh</button>
+            </div>
+            <div id="lsItems"></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -232,21 +280,27 @@ select.inp{cursor:pointer;padding-left:12px}
           <div class="gs-title">🏫 New School Registration</div>
           <div class="gs-desc">Choose your subscription plan and complete M-Pesa payment</div>
           <button class="btn-primary" onclick="goToRenewalPage()">
-            Choose Plan & Pay →
+            Choose Plan &amp; Pay →
           </button>
         </div>
 
-        <div class="features" style="margin-top:10px">
-          <div class="feat"><div class="feat-icon">✅</div>Full system setup for your school</div>
-          <div class="feat"><div class="feat-icon">✅</div>CBC Mark Sheet — Grades 1 to 9</div>
-          <div class="feat"><div class="feat-icon">✅</div>Unlimited teachers &amp; streams</div>
-          <div class="feat"><div class="feat-icon">✅</div>Print-ready branded report cards</div>
-          <div class="feat"><div class="feat-icon">✅</div>Real-time cloud sync across all devices</div>
+        <div style="margin-top:10px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2)"><span style="color:var(--green);font-size:14px">✅</span>Full system setup for your school</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2)"><span style="color:var(--green);font-size:14px">✅</span>CBC Mark Sheet — Grades 1 to 9</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2)"><span style="color:var(--green);font-size:14px">✅</span>Unlimited teachers &amp; streams</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2)"><span style="color:var(--green);font-size:14px">✅</span>Print-ready branded report cards</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2)"><span style="color:var(--green);font-size:14px">✅</span>Real-time cloud sync across all devices</div>
+          </div>
         </div>
 
-        <div class="notice" style="margin-top:16px">
+        <div style="margin-top:16px;background:var(--alight);border:1px solid #c7d9ff;border-radius:var(--r2);padding:10px 14px;font-size:12px;color:var(--accent);font-weight:600">
           💡 After successful payment, you'll be redirected back here to create your account.
         </div>
+
+        <button class="btn-outline" style="margin-top:16px" onclick="goToStep(0)">
+          Already have an account? Sign in →
+        </button>
       </div>
     </div>
   </div>
@@ -355,7 +409,7 @@ select.inp{cursor:pointer;padding-left:12px}
     </div>
   </div>
 
-  <!-- ══ SUBMITTED / ACTIVATING ══ -->
+  <!-- ══ SCREEN 4: SUBMITTED / DONE ══ -->
   <div class="screen" id="screen4">
     <div class="card">
       <div class="card-body">
@@ -415,9 +469,145 @@ firebase.initializeApp({
 const db = firebase.firestore(), auth = firebase.auth();
 const el = id => document.getElementById(id);
 
+// ══ DEBUG LOGGER ══════════════════════════════════════════════════════════════
+const _debugLogs = [];
+function log(level, msg, data){
+  const ts = new Date().toLocaleTimeString('en-KE',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const dataStr = data ? (typeof data === 'object' ? JSON.stringify(data) : String(data)) : '';
+  const line = `[${ts}] [${level.toUpperCase()}] ${msg}${dataStr?' — '+dataStr:''}`;
+  _debugLogs.push({level, line});
+  const fn = level==='error'?console.error:level==='warn'?console.warn:console.log;
+  fn('[CBE Register]', msg, data||'');
+  const panel = el('debugPanel');
+  if(panel){
+    const d = document.createElement('div');
+    d.className = `dl ${level}`;
+    d.textContent = line;
+    panel.appendChild(d);
+    panel.scrollTop = panel.scrollHeight;
+  }
+}
+function toggleDebug(){
+  el('debugPanel').classList.toggle('show');
+}
+window._cbeLog = ()=> _debugLogs.forEach(l=>console.log(l.line));
+
+// ══ LOCALSTORAGE INSPECTOR + CLEANER ══════════════════════════════════════════
+// All CBE keys that might block login or cause stale session issues
+const CBE_LS_KEYS = [
+  'cbe_reg_uid','cbe_reg_email','cbe_pay_confirmed','cbe_pay_txRef',
+  'cbe_pay_phone','cbe_pay_date','cbe_pay_plan','cbe_reg_details',
+  'cbe_school_id','cbe_user_role','cbe_streams','cbe_streams_ts',
+  'cbe_theme','cbe_school_setup_done','cbe_pending_uid','cbe_pending_email'
+];
+
+function getAllLsEntries(){
+  const cbe = [], other = [];
+  for(let i = 0; i < localStorage.length; i++){
+    const k = localStorage.key(i);
+    const v = localStorage.getItem(k);
+    if(CBE_LS_KEYS.includes(k) || k.startsWith('cbe_')){
+      cbe.push({k, v});
+    } else {
+      other.push({k, v});
+    }
+  }
+  return {cbe, other};
+}
+
+function toggleLsPanel(){
+  const panel = el('lsPanel');
+  panel.classList.toggle('show');
+  if(panel.classList.contains('show')) renderLsPanel();
+}
+
+function renderLsPanel(){
+  const {cbe, other} = getAllLsEntries();
+  const badge = el('lsBadgeCount');
+  if(badge) badge.textContent = cbe.length + ' CBE ' + (cbe.length === 1 ? 'key' : 'keys');
+
+  const container = el('lsItems');
+  if(!container) return;
+
+  if(!cbe.length && !other.length){
+    container.innerHTML = '<div class="ls-empty">✅ No stored data found — storage is clean</div>';
+    return;
+  }
+
+  let html = '';
+
+  if(cbe.length){
+    html += `<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);padding:4px 0 6px;margin-bottom:2px">CBE System Keys</div>`;
+    cbe.forEach(({k, v}) => {
+      const display = v && v.length > 60 ? v.slice(0,60) + '…' : (v || '(empty)');
+      const isSensitive = k.includes('uid') || k.includes('email') || k.includes('confirmed') || k.includes('school_id');
+      html += `<div class="ls-item">
+        <span class="ls-key">${k}</span>
+        <span class="ls-val ${isSensitive ? 'style="color:var(--amber-tx)"' : ''}" title="${v || ''}">${display}</span>
+        <button class="ls-del" onclick="deleteLsKey('${k}')" title="Delete this key">🗑️</button>
+      </div>`;
+    });
+  }
+
+  if(other.length){
+    html += `<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);padding:8px 0 6px;margin-top:4px">Other Browser Data</div>`;
+    other.forEach(({k, v}) => {
+      const display = v && v.length > 50 ? v.slice(0,50) + '…' : (v || '(empty)');
+      html += `<div class="ls-item">
+        <span class="ls-key" style="color:var(--text3)">${k}</span>
+        <span class="ls-val" title="${v || ''}">${display}</span>
+        <button class="ls-del" onclick="deleteLsKey('${k}')" title="Delete this key">🗑️</button>
+      </div>`;
+    });
+  }
+
+  container.innerHTML = html;
+}
+
+function deleteLsKey(key){
+  localStorage.removeItem(key);
+  log('info', 'Manually deleted localStorage key', key);
+  toast(`Cleared: ${key}`, 'info');
+  renderLsPanel();
+}
+
+/**
+ * clearAllCbeStorage()
+ * Clears ONLY the CBE session/auth keys that are known to block login.
+ * Preserves unrelated browser data. Signs out Firebase auth too.
+ * Shows a toast and reloads after 1.5s.
+ */
+async function clearAllCbeStorage(){
+  const authKeys = [
+    'cbe_reg_uid','cbe_reg_email','cbe_pay_confirmed','cbe_pay_txRef',
+    'cbe_pay_phone','cbe_pay_date','cbe_pay_plan',
+    'cbe_school_id','cbe_user_role','cbe_pending_uid','cbe_pending_email',
+    'cbe_school_setup_done'
+  ];
+  // Also clear sessionStorage equivalents
+  authKeys.forEach(k => {
+    localStorage.removeItem(k);
+    try { sessionStorage.removeItem(k); } catch(_){}
+  });
+
+  log('info', 'All CBE auth keys cleared from localStorage + sessionStorage');
+
+  try {
+    await auth.signOut();
+    log('info', 'Firebase auth signed out');
+  } catch(e) {
+    log('warn', 'signOut error (may already be signed out)', e.message);
+  }
+
+  toast('✅ Storage cleared — reloading…', 'ok');
+  setTimeout(() => location.reload(), 1500);
+}
+
+// ══ INIT TIMEOUT ══════════════════════════════════════════════════════════════
 const initTimeout = setTimeout(()=>{
   const loader = el('pageInitLoader');
   if(loader && loader.style.display !== 'none'){
+    log('error','Init timeout — Firebase did not respond in 8s');
     loader.style.display = 'none';
     el('initError').classList.add('show');
   }
@@ -430,8 +620,9 @@ function sendTelegramAlert(text){
     body:JSON.stringify({text,apiKey:NOTIFY_KEY})}).catch(()=>{});
 }
 
+// ══ PLANS ════════════════════════════════════════════════════════════════════
 const PLANS = {
-  monthly:  { label:'Monthly',  duration:'1 Month',   months:1,  amount:1499,  display:'Ksh 1,499' },
+  monthly:  { label:'Monthly',  duration:'1 Month',   months:1,  amount:1,     display:'Ksh 1,499' },
   termly:   { label:'Termly',   duration:'3 Months',  months:3,  amount:3999,  display:'Ksh 3,999' },
   annual:   { label:'Annual',   duration:'12 Months', months:12, amount:14388, display:'Ksh 14,388' },
 };
@@ -445,7 +636,15 @@ const PAY_PLAN      = 'cbe_pay_plan';
 
 let currentStep = 1, _createdUid = null, _regUnsub = null;
 
+// ── Reset login button helper — called on ANY auth resolution ──
+function _resetLoginBtn(){
+  const btn = el('loginBtn'), txt = el('loginBtnTxt');
+  if(btn) btn.disabled = false;
+  if(txt) txt.textContent = 'Sign In →';
+}
+
 function startNewRegistration(){
+  log('info','User clicked "New school — register"');
   clearPaymentSession();
   localStorage.removeItem('cbe_reg_uid');
   localStorage.removeItem('cbe_reg_email');
@@ -457,21 +656,15 @@ function clearPaymentSession(){
 }
 
 function goToRenewalPage(){
+  log('info','Redirecting to /renew?from=register');
   window.location.href = '/renew?from=register';
 }
 
-
-
 function toast(msg, type='ok'){
   const t = document.createElement('div'); t.className = `t ${type}`;
-  t.innerHTML = `<span>${type==='ok'?'✅':'❌'}</span>${msg}`;
+  t.innerHTML = `<span>${type==='ok'?'✅':type==='info'?'ℹ️':'❌'}</span>${msg}`;
   el('tc').appendChild(t);
   setTimeout(()=>{ t.style.animation='tout .25s ease forwards'; setTimeout(()=>t.remove(),280); }, 3200);
-}
-
-function log(level, msg, data){
-  const fn = level==='error'?console.error:level==='warn'?console.warn:console.log;
-  fn('[CBE Register]', msg, data||'');
 }
 
 function goToStep(n){
@@ -485,6 +678,9 @@ function goToStep(n){
   stepsBar.style.display = (n>=1 && n<=3) ? 'flex' : 'none';
   updateStepBar(n);
   window.scrollTo({top:0,behavior:'smooth'});
+  log('info',`Navigated to screen ${n}`);
+  // Always reset login button when navigating away from auth flow
+  _resetLoginBtn();
 }
 
 function updateStepBar(n){
@@ -517,28 +713,79 @@ function checkPwStrength(val){
   else{bar.className='pw-strength weak';hint.textContent='Weak — add numbers and symbols';}
 }
 
+// ══ LOGIN — with timing logs + 15s timeout ════════════════════════════════════
 async function doLogin(){
   el('loginErr').classList.remove('show');
+  el('loginStatusBar').style.display = 'none';
+
   const email = el('liEmail').value.trim();
   const pass  = el('liPass').value;
   const remember = el('rememberMe').checked;
-  if(!email||!pass){ el('loginErrMsg').textContent='Email and password are required.'; el('loginErr').classList.add('show'); return; }
+
+  if(!email||!pass){
+    el('loginErrMsg').textContent='Email and password are required.';
+    el('loginErr').classList.add('show');
+    return;
+  }
+
   const btn=el('loginBtn'), txt=el('loginBtnTxt');
-  btn.disabled=true; txt.innerHTML='<div class="spin-sm"></div> Signing in…';
+  btn.disabled=true;
+  txt.innerHTML='<div class="spin-sm"></div> Signing in…';
+
+  const loginStart = Date.now();
+  log('info','Login started',{email, remember});
+  showLoginStatus('⏳ Connecting to Firebase…');
+
+  // ── Safety timeout: if Firebase hangs for 15s, unblock the button ──
+  const loginTimeout = setTimeout(()=>{
+    log('error','Login timed out after 15s — Firebase may be unreachable');
+    _resetLoginBtn();
+    el('loginErrMsg').textContent='Sign-in timed out. Check your internet connection and try again.';
+    el('loginErr').classList.add('show');
+    showLoginStatus('❌ Timed out after 15s');
+  }, 15000);
+
   try{
-    const persistence = remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
+    const t0 = Date.now();
+    showLoginStatus('⏳ Setting auth persistence…');
+    const persistence = remember
+      ? firebase.auth.Auth.Persistence.LOCAL
+      : firebase.auth.Auth.Persistence.SESSION;
     await auth.setPersistence(persistence);
+    log('info','setPersistence done',{ms: Date.now()-t0, type: remember?'LOCAL':'SESSION'});
+
+    showLoginStatus('⏳ Authenticating with Firebase…');
+    const t1 = Date.now();
     await auth.signInWithEmailAndPassword(email, pass);
+    const loginMs = Date.now() - loginStart;
+    log('info','signInWithEmailAndPassword succeeded',{totalMs: loginMs});
+    showLoginStatus(`✅ Authenticated in ${loginMs}ms — loading profile…`);
+
+    clearTimeout(loginTimeout);
     localStorage.setItem('cbe_reg_email', email);
+    // onAuthStateChanged will handle redirect — button stays disabled until redirect
+
   }catch(e){
-    btn.disabled=false; txt.textContent='Sign In →';
+    clearTimeout(loginTimeout);
+    const loginMs = Date.now() - loginStart;
+    log('warn','Login failed',{code: e.code, ms: loginMs});
+    showLoginStatus(`❌ Failed after ${loginMs}ms — ${e.code}`);
+    _resetLoginBtn();
     const msg = e.code==='auth/user-not-found'||e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'
       ? 'Incorrect email or password.'
-      : e.code==='auth/too-many-requests' ? 'Too many attempts. Try again later.' : e.message;
+      : e.code==='auth/too-many-requests' ? 'Too many attempts. Try again later.'
+      : e.code==='auth/network-request-failed' ? 'Network error — check your connection.'
+      : e.message;
     el('loginErrMsg').textContent=msg;
     el('loginErr').classList.add('show');
-    log('warn','Login failed',e.code);
   }
+}
+
+function showLoginStatus(msg){
+  const bar = el('loginStatusBar');
+  if(!bar) return;
+  bar.style.display = 'block';
+  bar.textContent = msg;
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
@@ -546,6 +793,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(lp) lp.addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
 });
 
+// ══ CREATE ACCOUNT ════════════════════════════════════════════════════════════
 async function createAccount(){
   el('acctErr').classList.remove('show');
   const name  = el('aName').value.trim();
@@ -594,7 +842,7 @@ async function createAccount(){
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     }).catch(()=>{});
 
-    log('info','Account created',_createdUid);
+    log('info','Account created successfully',_createdUid);
     toast('Account created! Now fill in your school details.');
     goToStep(3);
     restoreSchoolDetails();
@@ -610,6 +858,7 @@ async function createAccount(){
   }
 }
 
+// ══ AUTO-SAVE ═════════════════════════════════════════════════════════════════
 function autoSave(){
   try{
     localStorage.setItem(SAVE_KEY, JSON.stringify(readDetails()));
@@ -653,6 +902,7 @@ function restoreSchoolDetails(){
   }catch(_){}
 }
 
+// ══ SUBMIT DETAILS ════════════════════════════════════════════════════════════
 async function submitDetails(){
   const d = readDetails();
   if(!d.name){ toast('School name is required','err'); el('sName').focus(); return; }
@@ -666,6 +916,7 @@ async function submitDetails(){
 
   const btn=el('submitBtn'), txt=el('submitTxt');
   btn.disabled=true; txt.innerHTML='<div class="spin-sm"></div> Submitting…';
+  log('info','Submitting school details',d.name);
 
   const txRef    = localStorage.getItem(PAY_TXREF)  || null;
   const payPhone = localStorage.getItem(PAY_PHONE)  || null;
@@ -675,12 +926,7 @@ async function submitDetails(){
 
   const paidAt = payDate ? new Date(payDate) : new Date();
   const expiry = new Date(paidAt);
-
-  // ── TEST MODE ── Monthly=2min, Termly=4min, Annual=6min
-  // TO RESTORE PRODUCTION replace the two lines below with:
-  //   expiry.setMonth(expiry.getMonth() + planCfg.months);
-  const TEST_DURATIONS = { monthly:2, termly:4, annual:6 };
-  expiry.setMinutes(expiry.getMinutes() + (TEST_DURATIONS[plan] ?? 4));
+  expiry.setMonth(expiry.getMonth() + planCfg.months);
 
   sendTelegramAlert(
     `🖱️ <b>ACTIVATE BUTTON CLICKED</b>\n\n` +
@@ -765,23 +1011,25 @@ async function submitDetails(){
 
     clearPaymentSession();
     localStorage.removeItem(SAVE_KEY);
-    log('info','Registration complete — auto-approved, redirecting to dashboard');
+    log('info','Registration complete — redirecting to /admin');
     toast('🎉 Your school is now active! Redirecting…');
     setTimeout(()=>{ window.location.href = '/admin'; }, 1500);
 
   }catch(e){
-    log('error','Submit failed',e.message);
+    log('error','submitDetails failed',e.message);
     toast('Submit failed: '+e.message,'err');
     btn.disabled=false; txt.textContent='✅ Activate My Account →';
   }
 }
 
+// ══ APPROVAL LISTENER ════════════════════════════════════════════════════════
 function listenForOwnerResponse(uid){
   if(_regUnsub) _regUnsub();
   _regUnsub = db.collection('approvedSchools').doc(uid).onSnapshot(snap=>{
     if(!snap.exists) return;
     const d = snap.data();
     if(d.status==='approved'){
+      log('info','Owner approved — redirecting to /admin');
       setTimeout(()=>{ window.location.href = '/admin'; }, 1500);
       return;
     }
@@ -804,45 +1052,40 @@ function showOwnerBanner(type, title, msg, contact){
   if(contact){ const wa=banner.querySelector('.ob-wa'); if(wa) wa.href=contact; }
 }
 
-// ─── ROUTING LOGIC ──────────────────────────────────────────────────────────
+// ══ ROUTING ═══════════════════════════════════════════════════════════════════
 async function checkPaymentAndRoute(){
   const payOk      = localStorage.getItem(PAY_CONFIRMED) === 'true';
   const savedEmail = localStorage.getItem('cbe_reg_email');
   const savedUid   = localStorage.getItem('cbe_reg_uid');
 
-  // ── FIX: Payment confirmation ALWAYS wins — check it first, unconditionally ──
-  // Even if savedEmail/savedUid exist from a prior visit, a fresh payment
-  // must route to account creation (screen 2), not the login screen.
+  log('info','checkPaymentAndRoute', {payOk, hasSavedEmail:!!savedEmail, hasSavedUid:!!savedUid});
+
   if(payOk){
-    log('info','✅ Payment confirmed — routing to account creation (step 2)');
+    log('info','→ Payment confirmed — showing account creation (step 2)');
     showPayConfirmedBanner();
     goToStep(2);
     return;
   }
 
-  // Only fall back to returning-user login when there is NO active payment session
   if(savedEmail || savedUid){
-    log('info','Returning user detected — showing login screen');
+    log('info','→ Returning user detected — showing login (step 0)');
     goToStep(0);
     const emailEl = el('liEmail');
     if(emailEl && savedEmail) emailEl.value = savedEmail;
     return;
   }
 
-  // Brand-new visitor — show payment instructions
-  log('info','New visitor — showing payment instruction screen');
+  log('info','→ New visitor — showing payment screen (step 1)');
   goToStep(1);
 }
 
 function showPayConfirmedBanner(){
-  const plan     = localStorage.getItem(PAY_PLAN) || 'monthly';
-  const planCfg  = PLANS[plan] || PLANS.monthly;
-  const payDate  = localStorage.getItem(PAY_DATE);
-  const paidAt   = payDate ? new Date(payDate) : new Date();
-  const expiry   = new Date(paidAt);
-  // ── TEST MODE ── match per-plan test durations
-  const TEST_DUR = { monthly:2, termly:4, annual:6 };
-  expiry.setMinutes(expiry.getMinutes() + (TEST_DUR[plan] ?? 4));
+  const plan    = localStorage.getItem(PAY_PLAN) || 'monthly';
+  const planCfg = PLANS[plan] || PLANS.monthly;
+  const payDate = localStorage.getItem(PAY_DATE);
+  const paidAt  = payDate ? new Date(payDate) : new Date();
+  const expiry  = new Date(paidAt);
+  expiry.setMonth(expiry.getMonth() + planCfg.months);
   el('payConfirmedDetail').textContent =
     `${planCfg.label} plan paid — expires ${expiry.toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'})}. Now create your account.`;
 }
@@ -853,7 +1096,7 @@ function checkUrlForPayment(){
   const txRef = urlParams.get('txRef');
 
   if(paymentSuccess && txRef && !localStorage.getItem(PAY_CONFIRMED)){
-    log('info','Payment success detected from URL params');
+    log('info','Payment success params detected in URL',{txRef});
     localStorage.setItem(PAY_CONFIRMED, 'true');
     if(txRef) localStorage.setItem(PAY_TXREF, txRef);
     const plan = urlParams.get('plan');
@@ -865,13 +1108,14 @@ function checkUrlForPayment(){
   }
 }
 
-// ─── AUTH STATE ──────────────────────────────────────────────────────────────
-// Run URL check immediately — before Firebase auth fires
+// ══ AUTH STATE ════════════════════════════════════════════════════════════════
 checkUrlForPayment();
 
 let _authSettled = false;
+
 const _routeTimer = setTimeout(()=>{
   if(!_authSettled){
+    log('warn','Firebase auth took >3s — routing without auth result');
     _authSettled = true;
     checkPaymentAndRoute();
   }
@@ -881,17 +1125,16 @@ auth.onAuthStateChanged(async u=>{
   clearTimeout(initTimeout);
   clearTimeout(_routeTimer);
 
-  // ── FIX: If a payment session is active, NEVER let auth override it ──
-  // This was the root cause: auth fired after routing to screen2 and
-  // redirected the user back to the login screen (screen0).
+  log('info','onAuthStateChanged fired', u ? {uid:u.uid, email:u.email} : 'no user');
+
   const payOk = localStorage.getItem(PAY_CONFIRMED) === 'true';
   if(payOk){
     if(!_authSettled){
       _authSettled = true;
+      log('info','Payment session active — routing to step 2 regardless of auth');
       showPayConfirmedBanner();
       goToStep(2);
     }
-    // No further auth processing — payment session takes full control
     return;
   }
 
@@ -900,34 +1143,57 @@ auth.onAuthStateChanged(async u=>{
     checkPaymentAndRoute();
   }
 
+  // ── No signed-in user ──
   if(!u){
+    log('info','No authenticated user');
+    // IMPORTANT: always reset login button if no user is found
+    _resetLoginBtn();
     if(currentStep===0) return;
-    if(currentStep>=2 && currentStep<=4){ log('warn','User logged out during registration'); goToStep(0); }
+    if(currentStep>=2 && currentStep<=4){
+      log('warn','User logged out during registration flow — returning to login');
+      goToStep(0);
+    }
     return;
   }
 
-  log('info','User authenticated',u.email);
+  // ── Signed-in user — check their profile ──
+  log('info','Authenticated user found — checking Firestore profile', u.uid);
   _createdUid = u.uid;
 
+  const t0 = Date.now();
   try{
     const userSnap = await db.collection('users').doc(u.uid).get();
+    log('info','users doc fetched',{ms:Date.now()-t0, exists:userSnap.exists});
+
     if(userSnap.exists){
       const userProfile = userSnap.data();
+      log('info','User profile',{role:userProfile.role, status:userProfile.status, approved:userProfile.approved});
 
       if(userProfile.role==='admin' && userProfile.status==='active' && userProfile.approved){
-        log('info','Active approved admin — redirecting to dashboard');
+        log('info','Active admin → redirecting to /admin');
         window.location.href = '/admin'; return;
       }
 
       if(userProfile.role==='teacher'){
         if(userProfile.status==='active'){ window.location.href='/marksheet'; return; }
-        toast(userProfile.status==='pending' ? '⏳ Your teacher account is pending approval.' : '🚫 Your account has been suspended.','err');
-        await auth.signOut(); goToStep(0); return;
+        const msg = userProfile.status==='pending'
+          ? '⏳ Your teacher account is pending approval.'
+          : '🚫 Your account has been suspended.';
+        log('warn','Teacher account not active',userProfile.status);
+        toast(msg,'err');
+        await auth.signOut();
+        _resetLoginBtn();
+        goToStep(0);
+        return;
       }
 
+      const t1 = Date.now();
       const snap = await db.collection('approvedSchools').doc(u.uid).get();
+      log('info','approvedSchools doc fetched',{ms:Date.now()-t1, exists:snap.exists});
+
       if(snap.exists){
         const d = snap.data();
+        log('info','approvedSchools status',d.status);
         if(d.status==='approved'){ window.location.href='/admin'; return; }
         if(d.status==='suspended'){
           el('subRef').textContent = u.uid.slice(0,16).toUpperCase();
@@ -943,8 +1209,12 @@ auth.onAuthStateChanged(async u=>{
         return;
       }
 
+      const t2 = Date.now();
       const settSnap = await db.collection('settings').doc(u.uid).get();
+      log('info','settings doc fetched',{ms:Date.now()-t2, exists:settSnap.exists, hasName:!!settSnap.data()?.name});
+
       if(!settSnap.exists || !settSnap.data().name){
+        log('info','No school details yet — prompting user to complete setup');
         el('subRef').textContent = u.uid.slice(0,16).toUpperCase();
         el('screen4Title').textContent = 'Account Ready!';
         el('screen4Msg').innerHTML = 'Your account is active. Complete your school details to finish setup.';
@@ -954,18 +1224,31 @@ auth.onAuthStateChanged(async u=>{
         el('stepsBar').style.display = 'none';
         restoreSchoolDetails();
       } else {
+        log('info','Settings exist — redirecting to /admin');
         window.location.href='/admin';
       }
     } else {
-      log('warn','User authenticated but no profile found',u.uid);
-      await auth.signOut(); goToStep(0);
+      // Authenticated but no Firestore profile — orphaned account
+      log('warn','Authenticated but no Firestore profile — signing out and clearing stale storage',u.uid);
+      await auth.signOut();
+      // Clear ALL stale CBE keys so user doesn't get stuck
+      ['cbe_reg_uid','cbe_reg_email','cbe_school_id','cbe_user_role',
+       'cbe_pending_uid','cbe_pending_email','cbe_school_setup_done'].forEach(k=>{
+        localStorage.removeItem(k);
+        try { sessionStorage.removeItem(k); } catch(_){}
+      });
+      _resetLoginBtn();
+      goToStep(0);
     }
   }catch(e){
-    log('error','Auth state check failed',e.message);
+    log('error','Auth state profile check failed',e.message);
+    // On any Firestore error, unblock the login button so user can retry
+    _resetLoginBtn();
     goToStep(0);
   }
 });
 
+// ══ COUNTIES ═════════════════════════════════════════════════════════════════
 const COUNTIES={
   "Baringo":["Baringo Central","Baringo North","Baringo South","Eldama Ravine","Mogotio","Tiaty"],
   "Bomet":["Bomet Central","Bomet East","Chepalungu","Konoin","Sotik"],

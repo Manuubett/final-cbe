@@ -241,7 +241,7 @@ body.dark .level-row .bar-wrap{background:#1a2030}
   </div>
   <div class="hdr-r">
     <button class="btn btn-outline btn-sm" id="themeBtn">🌙</button>
-    <a href="/" class="btn btn-outline btn-sm">📋 Mark Sheet</a>
+    <a href="/" class="btn btn-outline btn-sm">📋 Dashboard/a>
   </div>
 </header>
 
@@ -364,7 +364,7 @@ let _analysisRole     = null;
 const _authReady = new Promise(resolve => {
   const unsub = firebase.auth().onAuthStateChanged(async u => {
     unsub();
-    if (!u) { window.location.href = 'login'; resolve(null); return; }
+    if (!u) { window.location.href = 'admin'; resolve(null); return; }
 
     // Fast path: sessionStorage already has schoolId
     const stored = sessionStorage.getItem('cbe_school_id');
@@ -387,7 +387,7 @@ const _authReady = new Promise(resolve => {
           _analysisSchoolId = profile.schoolId;
         } else {
           console.warn('[Analysis] Cannot resolve schoolId from profile');
-          window.location.href = 'login';
+          window.location.href = 'admin';
           resolve(null);
           return;
         }
@@ -395,12 +395,12 @@ const _authReady = new Promise(resolve => {
         sessionStorage.setItem('cbe_school_id', _analysisSchoolId);
         resolve(_analysisSchoolId);
       } else {
-        window.location.href = 'login';
+        window.location.href = 'admin';
         resolve(null);
       }
     } catch(e) {
       console.warn('[Analysis] Auth profile read failed:', e.message);
-      window.location.href = 'login';
+      window.location.href = 'admin';
       resolve(null);
     }
   });
@@ -421,7 +421,7 @@ window.doAnalysisLogout = async function() {
   window._schoolId  = null;
   sessionStorage.removeItem('cbe_school_id');
   await firebase.auth().signOut();
-  window.location.href = 'login';
+  window.location.href = 'admin';
 };
 
 // ── School settings ──

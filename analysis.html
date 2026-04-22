@@ -479,76 +479,67 @@ const WARN_DAYS = 7;
 
 // ── Auth ready promise ──
 // ALWAYS reads the user profile from Firestore — no sessionStorage shortcut.
-// This guarantees the correct schoolId for both admins and teachers on every
-// page load, so _listenPayment() always targets the right approvedSchools doc.
-const _authReady = new Promise(resolve=>{
-  const unsub = firebase.auth().onAuthStateChanged(async u=>{
+const _authReady = new Promise(resolve => {
+  const unsub = firebase.auth().onAuthStateChanged(async u => {
     unsub();
-    if(!u){
-      window.location.href = 'login';
+    if (!u) {
+      window.location.href = 'admin';
       resolve(null);
       return;
     }
-
-    try{
+    try {
       const snap = await db.collection('users').doc(u.uid).get();
-      if(snap.exists){
+      if (snap.exists) {
         const profile = snap.data();
         _analysisRole = profile.role;
-
-        if(profile.role === 'admin'){
-          // Admin: their own uid IS the schoolId
+        if (profile.role === 'admin') {
           _analysisSchoolId = u.uid;
-        } else if(profile.role === 'teacher' && profile.schoolId){
-          // Teacher: schoolId is stored in their profile
+        } else if (profile.role === 'teacher' && profile.schoolId) {
           _analysisSchoolId = profile.schoolId;
         } else {
           console.warn('[Analysis] Cannot resolve schoolId from profile');
-          window.location.href = 'login';
+          window.location.href = 'admin';
           resolve(null);
           return;
         }
-
         window._schoolId = _analysisSchoolId;
-        // Keep sessionStorage in sync for other pages that need it
         sessionStorage.setItem('cbe_school_id', _analysisSchoolId);
         resolve(_analysisSchoolId);
       } else {
-        window.location.href = 'login';
+        window.location.href = 'admin';
         resolve(null);
       }
-    }catch(e){
+    } catch (e) {
       console.warn('[Analysis] Auth profile read failed:', e.message);
-      window.location.href = 'login';
+      window.location.href = 'admin';
       resolve(null);
     }
   });
 });
 
-function _getSchoolId(){
-  if(_analysisSchoolId) return Promise.resolve(_analysisSchoolId);
+function _getSchoolId() {
+  if (_analysisSchoolId) return Promise.resolve(_analysisSchoolId);
   return _authReady;
 }
 
 // ══════════════════════════════════════════════════════════════════
-// PAYMENT GATE — mirrors admin.html logic exactly
+// PAYMENT GATE
 // ══════════════════════════════════════════════════════════════════
 
-function _listenPayment(schoolId){
-  if(_paymentUnsub){ _paymentUnsub(); _paymentUnsub=null; }
+function _listenPayment(schoolId) {
+  if (_paymentUnsub) { _paymentUnsub(); _paymentUnsub = null; }
   _clearAllSubTimers();
   console.log('[Analysis] Payment gate listener started', schoolId);
 
   _paymentUnsub = db.collection('approvedSchools').doc(schoolId)
-    .onSnapshot(snap=>{
+    .onSnapshot(snap => {
 
-      // No doc = no subscription record = block immediately
-      if(!snap.exists){
+      if (!snap.exists) {
         _clearAllSubTimers();
         _stopLiveCountdown();
         _hideSubStatusBar();
         _showPaymentGate(
-          {schoolName: schoolSettings.name},
+          { schoolName: schoolSettings.name },
           'Access not configured for this school. Please contact the administrator.'
         );
         _startRenewalPoll(schoolId);
@@ -560,7 +551,7 @@ function _listenPayment(schoolId){
       const newExpiry = d.subscriptionExpiry?.toDate?.() || null;
 
       // Step 1: Suspended — always wins
-      if(d.status === 'suspended'){
+      if (d.status === 'suspended') {
         _clearAllSubTimers();
         _stopLiveCountdown();
         _hideSubStatusBar();
@@ -570,7 +561,7 @@ function _listenPayment(schoolId){
       }
 
       // Step 2: No expiry + message = legacy manual block
-      if(!newExpiry && d.message && d.message.trim()){
+      if (!newExpiry && d.message && d.message.trim()) {
         _clearAllSubTimers();
         _stopLiveCountdown();
         _hideSubStatusBar();
@@ -580,13 +571,13 @@ function _listenPayment(schoolId){
       }
 
       // Step 3: No expiry, no message, not suspended = allow
-      if(!newExpiry){
+      if (!newExpiry) {
         _hidePayment();
         return;
       }
 
-      // Step 4: Expired — show gate immediately on page load, no refresh needed
-      if(newExpiry <= now){
+      // Step 4: Expired
+      if (newExpiry <= now) {
         _clearAllSubTimers();
         _stopLiveCountdown();
         _hideSubStatusBar();
@@ -599,9 +590,8 @@ function _listenPayment(schoolId){
         return;
       }
 
-      // Step 5: Valid — expiry is in the future
-      // Renewal: expiry moved forward from what we last saw
-      if(_lastKnownExpiry && newExpiry > _lastKnownExpiry){
+      // Step 5: Valid — renewal detected (expiry moved forward)
+      if (_lastKnownExpiry && newExpiry > _lastKnownExpiry) {
         console.log('[Analysis] Renewal detected via snapshot');
         _clearAllSubTimers();
         _lastKnownExpiry = newExpiry;
@@ -612,89 +602,87 @@ function _listenPayment(schoolId){
         return;
       }
 
-      // First valid load
+      // Step 6: First valid load
       _lastKnownExpiry = newExpiry;
       _hidePayment();
       _startLiveCountdown(newExpiry);
       _scheduleExpiryCheck(schoolId, newExpiry);
 
-    }, e=>{
-      // On error: show gate — never silently allow free access on failure
+    }, e => {
       console.warn('[Analysis] Payment gate listener error', e.message);
       _clearAllSubTimers();
       _stopLiveCountdown();
       _hideSubStatusBar();
       _showPaymentGate(
-        {schoolName: schoolSettings.name},
+        { schoolName: schoolSettings.name },
         'Unable to verify subscription. Please check your connection and refresh.'
       );
     });
 }
-}
 
-function _showPaymentGate(d, message){
+function _showPaymentGate(d, message) {
   const nameEl = el('povSchoolName');
-  if(nameEl) nameEl.textContent = d.schoolName || schoolSettings.name || '—';
+  if (nameEl) nameEl.textContent = d.schoolName || schoolSettings.name || '—';
   const msgEl = el('povMsgText');
-  if(msgEl && message) msgEl.textContent = message;
+  if (msgEl && message) msgEl.textContent = message;
   const ov = el('paymentOverlay');
-  if(ov && !ov.classList.contains('show')){
+  if (ov && !ov.classList.contains('show')) {
     ov.classList.add('show');
     console.log('[Analysis] Payment gate shown');
   }
 }
 
-function _hidePayment(){
+function _hidePayment() {
   const ov = el('paymentOverlay');
-  if(ov && ov.classList.contains('show')){
+  if (ov && ov.classList.contains('show')) {
     ov.classList.remove('show');
     console.log('[Analysis] Payment gate hidden — access restored');
     toast('✅ Access restored — subscription active');
   }
   const cd = el('expiryCountdown');
-  if(cd){ cd.classList.remove('show'); cd.textContent=''; }
+  if (cd) { cd.classList.remove('show'); cd.textContent = ''; }
   _clearAllSubTimers();
 }
 
-function _clearAllSubTimers(){
-  if(_expiryCheckTimer){ clearTimeout(_expiryCheckTimer); _expiryCheckTimer=null; }
-  if(_expiryPollTimer){ clearInterval(_expiryPollTimer); _expiryPollTimer=null; }
-  if(_liveCountdownTimer){ clearInterval(_liveCountdownTimer); _liveCountdownTimer=null; }
+function _clearAllSubTimers() {
+  if (_expiryCheckTimer) { clearTimeout(_expiryCheckTimer); _expiryCheckTimer = null; }
+  if (_expiryPollTimer)  { clearInterval(_expiryPollTimer);  _expiryPollTimer  = null; }
+  if (_liveCountdownTimer) { clearInterval(_liveCountdownTimer); _liveCountdownTimer = null; }
 }
 
-function _scheduleExpiryCheck(schoolId, expiresAt){
-  if(_expiryCheckTimer){ clearTimeout(_expiryCheckTimer); _expiryCheckTimer=null; }
+function _scheduleExpiryCheck(schoolId, expiresAt) {
+  if (_expiryCheckTimer) { clearTimeout(_expiryCheckTimer); _expiryCheckTimer = null; }
   const msUntil = expiresAt - new Date();
-  if(msUntil <= 0) return;
-  _expiryCheckTimer = setTimeout(()=>{
+  if (msUntil <= 0) return;
+  _expiryCheckTimer = setTimeout(() => {
     db.collection('approvedSchools').doc(schoolId).get()
-      .then(snap=>{
-        if(!snap.exists){ _hidePayment(); return; }
+      .then(snap => {
+        if (!snap.exists) { _hidePayment(); return; }
         const d   = snap.data();
         const exp = d.subscriptionExpiry?.toDate?.();
-        if(!exp || exp <= new Date()){
+        if (!exp || exp <= new Date()) {
           const msg = (d.message && d.message.trim())
             ? d.message
             : 'Your subscription has expired. Please renew to continue using the system.';
           _stopLiveCountdown();
           _hideSubStatusBar();
           _showPaymentGate(d, msg);
-          if(exp) _startExpiredCountdown(exp);
+          if (exp) _startExpiredCountdown(exp);
           _startRenewalPoll(schoolId);
         }
-      }).catch(()=>{});
+      }).catch(() => {});
   }, msUntil + 500);
 }
 
-function _startRenewalPoll(schoolId){
-  if(_expiryPollTimer) return;
-  _expiryPollTimer = setInterval(async ()=>{
-    try{
+function _startRenewalPoll(schoolId) {
+  if (_expiryPollTimer) return;
+  _expiryPollTimer = setInterval(async () => {
+    try {
       const snap = await db.collection('approvedSchools').doc(schoolId).get();
-      if(!snap.exists) return;
+      if (!snap.exists) return;
       const d         = snap.data();
       const newExpiry = d.subscriptionExpiry?.toDate?.();
-      if(newExpiry && newExpiry > new Date() && d.status !== 'suspended'){
+      if (newExpiry && newExpiry > new Date() && d.status !== 'suspended') {
         _clearAllSubTimers();
         _lastKnownExpiry = newExpiry;
         _renewalShown    = false;
@@ -702,27 +690,27 @@ function _startRenewalPoll(schoolId){
         _hidePayment();
         _startLiveCountdown(newExpiry);
       }
-    }catch(_){}
+    } catch (_) {}
   }, 30_000);
 }
 
-function _startLiveCountdown(expiresAt){
+function _startLiveCountdown(expiresAt) {
   _stopLiveCountdown();
 
-  function tick(){
+  function tick() {
     const now    = new Date();
     const msLeft = expiresAt - now;
 
-    if(msLeft <= 0){
+    if (msLeft <= 0) {
       _stopLiveCountdown();
       _hideSubStatusBar();
-      if(_analysisSchoolId){
+      if (_analysisSchoolId) {
         db.collection('approvedSchools').doc(_analysisSchoolId).get()
-          .then(snap=>{
-            if(!snap.exists) return;
+          .then(snap => {
+            if (!snap.exists) return;
             const d   = snap.data();
             const exp = d.subscriptionExpiry?.toDate?.();
-            if(!exp || exp <= new Date()){
+            if (!exp || exp <= new Date()) {
               const msg = (d.message && d.message.trim())
                 ? d.message
                 : 'Your subscription has expired. Please renew to continue using the system.';
@@ -730,7 +718,7 @@ function _startLiveCountdown(expiresAt){
               _startExpiredCountdown(exp || expiresAt);
               _startRenewalPoll(_analysisSchoolId);
             }
-          }).catch(()=>{});
+          }).catch(() => {});
       }
       return;
     }
@@ -738,13 +726,13 @@ function _startLiveCountdown(expiresAt){
     const daysLeft  = msLeft / 86400000;
     const hoursLeft = msLeft / 3600000;
 
-    if(daysLeft > WARN_DAYS){ _hideSubStatusBar(); return; }
+    if (daysLeft > WARN_DAYS) { _hideSubStatusBar(); return; }
 
     let timerStr;
-    if(hoursLeft < 24){
-      const h = Math.floor(msLeft/3600000);
-      const m = Math.floor((msLeft%3600000)/60000);
-      const s = Math.floor((msLeft%60000)/1000);
+    if (hoursLeft < 24) {
+      const h = Math.floor(msLeft / 3600000);
+      const m = Math.floor((msLeft % 3600000) / 60000);
+      const s = Math.floor((msLeft % 60000) / 1000);
       timerStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     } else {
       const d = Math.floor(daysLeft);
@@ -758,45 +746,45 @@ function _startLiveCountdown(expiresAt){
   _liveCountdownTimer = setInterval(tick, 1000);
 }
 
-function _stopLiveCountdown(){
-  if(_liveCountdownTimer){ clearInterval(_liveCountdownTimer); _liveCountdownTimer=null; }
+function _stopLiveCountdown() {
+  if (_liveCountdownTimer) { clearInterval(_liveCountdownTimer); _liveCountdownTimer = null; }
 }
 
-function _showSubStatusBar(timerStr, isUrgent){
+function _showSubStatusBar(timerStr, isUrgent) {
   const bar = el('subStatusBar');
-  if(!bar) return;
+  if (!bar) return;
   const timerEl = el('subTimerText');
-  if(timerEl) timerEl.textContent = timerStr;
-  if(isUrgent){
-    bar.style.background='#7f1d1d'; bar.style.borderTopColor='#ef4444';
-    bar.style.color='#fef2f2';
-    bar.querySelector('.sub-timer').style.color='#fca5a5';
+  if (timerEl) timerEl.textContent = timerStr;
+  if (isUrgent) {
+    bar.style.background = '#7f1d1d'; bar.style.borderTopColor = '#ef4444';
+    bar.style.color = '#fef2f2';
+    bar.querySelector('.sub-timer').style.color = '#fca5a5';
   } else {
-    bar.style.background='#7c2d12'; bar.style.borderTopColor='#f97316';
-    bar.style.color='#fed7aa';
-    bar.querySelector('.sub-timer').style.color='#fbbf24';
+    bar.style.background = '#7c2d12'; bar.style.borderTopColor = '#f97316';
+    bar.style.color = '#fed7aa';
+    bar.querySelector('.sub-timer').style.color = '#fbbf24';
   }
   bar.classList.add('show');
 }
 
-function _hideSubStatusBar(){
+function _hideSubStatusBar() {
   const bar = el('subStatusBar');
-  if(bar) bar.classList.remove('show');
+  if (bar) bar.classList.remove('show');
 }
 
-function _startExpiredCountdown(expiredAt){
+function _startExpiredCountdown(expiredAt) {
   const cd = el('expiryCountdown');
-  if(!cd) return;
-  function renderExpired(){
+  if (!cd) return;
+  function renderExpired() {
     const msAgo = new Date() - expiredAt;
-    if(msAgo < 0){ cd.classList.remove('show'); return; }
+    if (msAgo < 0) { cd.classList.remove('show'); return; }
     const days  = Math.floor(msAgo / 86400000);
     const hours = Math.floor((msAgo % 86400000) / 3600000);
     const mins  = Math.floor((msAgo % 3600000) / 60000);
     let agoStr;
-    if(days > 0)       agoStr = `${days} day${days>1?'s':''} ${hours}h ago`;
-    else if(hours > 0) agoStr = `${hours}h ${mins}m ago`;
-    else               agoStr = `${mins} minute${mins!==1?'s':''} ago`;
+    if (days > 0)       agoStr = `${days} day${days > 1 ? 's' : ''} ${hours}h ago`;
+    else if (hours > 0) agoStr = `${hours}h ${mins}m ago`;
+    else                agoStr = `${mins} minute${mins !== 1 ? 's' : ''} ago`;
     cd.innerHTML = `Subscription expired <strong>${agoStr}</strong>`;
     cd.classList.add('show');
   }
@@ -804,74 +792,81 @@ function _startExpiredCountdown(expiredAt){
   setInterval(renderExpired, 60_000);
 }
 
-function _showRenewalBanner(){
-  if(_renewalShown) return;
+function _showRenewalBanner() {
+  if (_renewalShown) return;
   _renewalShown = true;
   const b = el('renewalDetectedBanner');
-  if(!b) return;
-  b.style.display='block'; b.style.opacity='1'; b.style.transition='';
-  setTimeout(()=>{ b.style.opacity='0'; b.style.transition='opacity .6s'; },3000);
-  setTimeout(()=>{
-    b.style.display='none'; b.style.opacity=''; b.style.transition='';
-    _renewalShown=false;
-  },3700);
+  if (!b) return;
+  b.style.display = 'block'; b.style.opacity = '1'; b.style.transition = '';
+  setTimeout(() => { b.style.opacity = '0'; b.style.transition = 'opacity .6s'; }, 3000);
+  setTimeout(() => {
+    b.style.display = 'none'; b.style.opacity = ''; b.style.transition = '';
+    _renewalShown = false;
+  }, 3700);
 }
 
 // Logout from payment gate
-window.doAnalysisLogout = async function(){
-  if(_paymentUnsub){ _paymentUnsub(); _paymentUnsub=null; }
+window.doAnalysisLogout = async function() {
+  if (_paymentUnsub) { _paymentUnsub(); _paymentUnsub = null; }
   _clearAllSubTimers();
-  _lastKnownExpiry=null; _renewalShown=false;
+  _lastKnownExpiry = null; _renewalShown = false;
   _hideSubStatusBar();
-  _analysisSchoolId=null; window._schoolId=null;
+  _analysisSchoolId = null; window._schoolId = null;
   sessionStorage.removeItem('cbe_school_id');
   await firebase.auth().signOut();
-  window.location.href='login';
+  window.location.href = 'admin';
 };
 
+// ── Bootstrap: wait for auth, then load settings AND start payment gate ──
+_authReady.then(sid => {
+  if (!sid) return;
+  loadSchoolSettings();
+  _listenPayment(sid);
+});
+
 // ── School settings ──
-async function loadSchoolSettings(){
-  try{
+async function loadSchoolSettings() {
+  try {
     const sid = await _getSchoolId();
-    if(!sid){ console.warn('[Analysis] No schoolId — settings not loaded'); return; }
+    if (!sid) { console.warn('[Analysis] No schoolId — settings not loaded'); return; }
     const snap = await db.collection('settings').doc(sid).get();
-    if(snap.exists){
+    if (snap.exists) {
       applySchoolSettings(snap.data());
     }
-  }catch(e){
+  } catch (e) {
     console.warn('[Analysis] Settings load failed:', e.message);
   } finally {
-    if(!_schoolSettingsReady){ _schoolSettingsReady=true; _schoolSettingsResolve(); }
+    if (!_schoolSettingsReady) { _schoolSettingsReady = true; _schoolSettingsResolve(); }
   }
 }
 
-function applySchoolSettings(s){
-  if(!s) return;
-  schoolSettings = {...schoolSettings, ...s};
+function applySchoolSettings(s) {
+  if (!s) return;
+  schoolSettings = { ...schoolSettings, ...s };
 
   const nameEl = el('hdrSchoolName');
-  if(nameEl && s.name) nameEl.textContent = s.name + ' · Analysis';
+  if (nameEl && s.name) nameEl.textContent = s.name + ' · Analysis';
 
   const subEl = el('hdrSchoolSub');
-  if(subEl){
+  if (subEl) {
     const parts = [s.motto, s.county, 'Kenya CBC'].filter(Boolean);
     subEl.textContent = parts.join(' · ');
   }
 
-  if(s.logoUrl){
+  if (s.logoUrl) {
     const lm = el('hdrLogo');
-    if(lm) lm.innerHTML = `<img src="${s.logoUrl}" style="width:100%;height:100%;object-fit:contain;border-radius:inherit" onerror="this.parentElement.innerHTML='📈'">`;
+    if (lm) lm.innerHTML = `<img src="${s.logoUrl}" style="width:100%;height:100%;object-fit:contain;border-radius:inherit" onerror="this.parentElement.innerHTML='📈'">`;
   }
 
-  if(s.primaryColor){
+  if (s.primaryColor) {
     document.documentElement.style.setProperty('--accent', s.primaryColor);
     document.documentElement.style.setProperty('--ah', s.primaryColor);
   }
 
-  if(s.name) document.title = s.name + ' | CBC Analysis';
+  if (s.name) document.title = s.name + ' | CBC Analysis';
 
   const strip = el('schoolBrandingStrip');
-  if(strip){
+  if (strip) {
     const logoHtml = s.logoUrl
       ? `<img src="${s.logoUrl}" style="width:44px;height:44px;object-fit:contain;border-radius:6px;flex-shrink:0" onerror="this.style.display='none'">`
       : `<div style="width:44px;height:44px;background:var(--accent);border-radius:8px;display:grid;place-items:center;color:#fff;font-size:20px;flex-shrink:0">📈</div>`;
@@ -886,13 +881,6 @@ function applySchoolSettings(s){
     strip.style.display = 'flex';
   }
 }
-
-// ── Bootstrap: wait for auth, then load settings AND start payment gate ──
-_authReady.then(sid=>{
-  if(!sid) return;
-  loadSchoolSettings();
-  _listenPayment(sid);   // ← starts the gate immediately after auth
-});
 
 // ── Grade-based subject config ──
 const SUBS_BY_GROUP = {
@@ -925,10 +913,10 @@ const SUBS_BY_GROUP = {
   ],
 };
 
-function getSubsForGrade(grade){
-  const num = parseInt((grade||'').replace(/\D/g,''),10);
-  if(num >= 1 && num <= 3)  return SUBS_BY_GROUP['1-3'];
-  if(num >= 4 && num <= 6)  return SUBS_BY_GROUP['4-6'];
+function getSubsForGrade(grade) {
+  const num = parseInt((grade || '').replace(/\D/g, ''), 10);
+  if (num >= 1 && num <= 3) return SUBS_BY_GROUP['1-3'];
+  if (num >= 4 && num <= 6) return SUBS_BY_GROUP['4-6'];
   return SUBS_BY_GROUP['7-9'];
 }
 
@@ -947,167 +935,167 @@ const LEVELS = [
   {l:'BE2',p:1,c:'be2',min:0},
 ];
 
-function getLevel(pct){
-  for(const lv of LEVELS) if(pct>=lv.min) return lv;
+function getLevel(pct) {
+  for (const lv of LEVELS) if (pct >= lv.min) return lv;
   return LEVELS[7];
 }
 
-function toast(msg,type='ok'){
-  const t=document.createElement('div');
-  t.className=`t ${type}`;
-  t.innerHTML=`<span>${type==='ok'?'✅':type==='err'?'❌':'ℹ️'}</span>${msg}`;
+function toast(msg, type = 'ok') {
+  const t = document.createElement('div');
+  t.className = `t ${type}`;
+  t.innerHTML = `<span>${type==='ok'?'✅':type==='err'?'❌':'ℹ️'}</span>${msg}`;
   el('tc').appendChild(t);
-  setTimeout(()=>{t.style.animation='tout .25s ease forwards';setTimeout(()=>t.remove(),280);},2600);
+  setTimeout(() => { t.style.animation = 'tout .25s ease forwards'; setTimeout(() => t.remove(), 280); }, 2600);
 }
 
 let allResults = [], allStudents = [];
 let currentStudent = null;
 
 // ── Read URL params ──
-_authReady.then(()=>{
+_authReady.then(() => {
   const p = new URLSearchParams(window.location.search);
   const grade  = p.get('grade');
   const stream = p.get('stream');
   const term   = p.get('term');
   const year   = p.get('year');
-  if(grade)  el('selGrade').value = grade;
-  if(term)   el('selTerm').value  = term;
-  if(year)   el('selYear').value  = year;
-  if(grade){
+  if (grade)  el('selGrade').value = grade;
+  if (term)   el('selTerm').value  = term;
+  if (year)   el('selYear').value  = year;
+  if (grade) {
     SUBS = getSubsForGrade(grade);
   }
-  if(grade && stream){
+  if (grade && stream) {
     const ss = el('selStream');
     const sw = el('streamWrap');
     ss.innerHTML = `<option value="${stream}">${stream}</option>`;
     ss.disabled  = false;
-    if(sw) sw.style.display='';
+    if (sw) sw.style.display = '';
     ss.value     = stream;
     loadAnalysis();
-  } else if(grade){
+  } else if (grade) {
     onGradeChange();
   }
 });
 
 // ── Grade → streams ──
-window.onGradeChange = async function(){
-  const grade=el('selGrade').value, ss=el('selStream');
-  const streamWrap=el('streamWrap');
+window.onGradeChange = async function() {
+  const grade = el('selGrade').value, ss = el('selStream');
+  const streamWrap = el('streamWrap');
 
   SUBS = getSubsForGrade(grade);
 
-  ss.disabled=true; ss.innerHTML='<option value="">Loading…</option>';
-  if(!grade){
-    ss.innerHTML='<option value="">-- Stream --</option>';
-    ss.disabled=false;
-    if(streamWrap) streamWrap.style.display='';
+  ss.disabled = true; ss.innerHTML = '<option value="">Loading…</option>';
+  if (!grade) {
+    ss.innerHTML = '<option value="">-- Stream --</option>';
+    ss.disabled = false;
+    if (streamWrap) streamWrap.style.display = '';
     return;
   }
-  try{
+  try {
     const schoolId = await _getSchoolId();
 
     let arr = [];
-    try{
+    try {
       const raw = localStorage.getItem('cbe_streams');
       const ts  = localStorage.getItem('cbe_streams_ts');
-      if(raw && ts && (Date.now()-parseInt(ts)) < 24*60*60*1000){
+      if (raw && ts && (Date.now() - parseInt(ts)) < 24 * 60 * 60 * 1000) {
         const map = JSON.parse(raw);
-        if(map[grade] && map[grade].length) arr = map[grade];
+        if (map[grade] && map[grade].length) arr = map[grade];
       }
-    }catch(_){}
+    } catch (_) {}
 
     const snap = await db.collection('students')
-      .where('grade','==',grade)
-      .where('schoolId','==',schoolId)
+      .where('grade', '==', grade)
+      .where('schoolId', '==', schoolId)
       .get();
-    const set=new Set(arr);
-    snap.forEach(d=>{const s=d.data();if(s.stream?.trim())set.add(s.stream.trim());});
-    arr=[...set].sort();
+    const set = new Set(arr);
+    snap.forEach(d => { const s = d.data(); if (s.stream?.trim()) set.add(s.stream.trim()); });
+    arr = [...set].sort();
 
-    try{
+    try {
       const raw = localStorage.getItem('cbe_streams');
       const map = raw ? JSON.parse(raw) : {};
       map[grade] = arr;
       localStorage.setItem('cbe_streams', JSON.stringify(map));
       localStorage.setItem('cbe_streams_ts', Date.now().toString());
-    }catch(_){}
+    } catch (_) {}
 
-    if(!arr.length){
-      if(streamWrap) streamWrap.style.display='none';
-      ss.innerHTML='<option value="">__none__</option>';
-      ss.value='';
-      ss.disabled=true;
+    if (!arr.length) {
+      if (streamWrap) streamWrap.style.display = 'none';
+      ss.innerHTML = '<option value="">__none__</option>';
+      ss.value = '';
+      ss.disabled = true;
       loadAnalysis();
       return;
     }
 
-    if(streamWrap) streamWrap.style.display='';
-    ss.innerHTML='<option value="">-- Stream --</option>'+arr.map(s=>`<option>${s}</option>`).join('');
-    ss.disabled=false;
-    if(arr.length===1){ss.value=arr[0];loadAnalysis();}
-  }catch(e){
-    ss.innerHTML='<option value="">-- Stream --</option>';
-    ss.disabled=false;
-    if(streamWrap) streamWrap.style.display='';
-    toast('Failed to load streams: '+e.message,'err');
+    if (streamWrap) streamWrap.style.display = '';
+    ss.innerHTML = '<option value="">-- Stream --</option>' + arr.map(s => `<option>${s}</option>`).join('');
+    ss.disabled = false;
+    if (arr.length === 1) { ss.value = arr[0]; loadAnalysis(); }
+  } catch (e) {
+    ss.innerHTML = '<option value="">-- Stream --</option>';
+    ss.disabled = false;
+    if (streamWrap) streamWrap.style.display = '';
+    toast('Failed to load streams: ' + e.message, 'err');
   }
 };
 
-window.loadAnalysis = async function(){
-  const grade=el('selGrade').value, stream=el('selStream').value,
-        term=el('selTerm').value,   year=el('selYear').value;
+window.loadAnalysis = async function() {
+  const grade  = el('selGrade').value, stream = el('selStream').value,
+        term   = el('selTerm').value,  year   = el('selYear').value;
 
-  if(!grade) return;
+  if (!grade) return;
 
   SUBS = getSubsForGrade(grade);
 
-  const streamWrap=el('streamWrap');
+  const streamWrap = el('streamWrap');
   const streamVisible = streamWrap && streamWrap.style.display !== 'none';
-  if(streamVisible && !stream) return;
+  if (streamVisible && !stream) return;
 
-  el('mainContent').innerHTML=`<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading analysis…</div></div>`;
-  try{
+  el('mainContent').innerHTML = `<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading analysis…</div></div>`;
+  try {
     const schoolId = await _getSchoolId();
     const hasStream = Boolean(stream);
 
     let stuQuery = db.collection('students')
-      .where('grade','==',grade).where('schoolId','==',schoolId);
+      .where('grade', '==', grade).where('schoolId', '==', schoolId);
 
     let resQuery = db.collection('results')
-      .where('grade','==',grade)
-      .where('term','==',term)
-      .where('year','==',year)
-      .where('schoolId','==',schoolId);
-    if(hasStream){
-      resQuery = resQuery.where('stream','==',stream);
+      .where('grade', '==', grade)
+      .where('term', '==', term)
+      .where('year', '==', year)
+      .where('schoolId', '==', schoolId);
+    if (hasStream) {
+      resQuery = resQuery.where('stream', '==', stream);
     }
 
     const [stuSnap, resSnap] = await Promise.all([stuQuery.get(), resQuery.get()]);
 
-    allStudents=[];
-    stuSnap.forEach(d=>allStudents.push({id:d.id,...d.data()}));
+    allStudents = [];
+    stuSnap.forEach(d => allStudents.push({id: d.id, ...d.data()}));
 
-    if(hasStream){
-      allStudents = allStudents.filter(s=>(s.stream||'').trim()===stream);
+    if (hasStream) {
+      allStudents = allStudents.filter(s => (s.stream || '').trim() === stream);
     }
 
-    allStudents.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    allStudents.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
-    allResults=[];
-    resSnap.forEach(d=>allResults.push({id:d.id,...d.data()}));
+    allResults = [];
+    resSnap.forEach(d => allResults.push({id: d.id, ...d.data()}));
 
     renderAnalysis(grade, hasStream ? stream : '', term, year);
-  }catch(e){
-    el('mainContent').innerHTML=`<div class="empty-msg"><div class="ei">❌</div><p>${e.message}</p></div>`;
+  } catch (e) {
+    el('mainContent').innerHTML = `<div class="empty-msg"><div class="ei">❌</div><p>${e.message}</p></div>`;
   }
 };
 
-function getSubjectScore(rec, sub){
-  if(!rec) return null;
-  if(sub.parts){
+function getSubjectScore(rec, sub) {
+  if (!rec) return null;
+  if (sub.parts) {
     const tot = rec[`${sub.id}_tot`];
-    if(tot !== undefined && tot !== null && tot > 0) return tot;
-    const partSum = sub.parts.reduce((a,p)=>{
+    if (tot !== undefined && tot !== null && tot > 0) return tot;
+    const partSum = sub.parts.reduce((a, p) => {
       const v = rec[`${sub.id}_${p.id}`];
       return a + (v !== undefined && v !== null ? Number(v) : 0);
     }, 0);
@@ -1117,52 +1105,52 @@ function getSubjectScore(rec, sub){
     return (sc !== undefined && sc !== null && sc > 0) ? sc : null;
   }
 }
-function getSubjectOof(rec, sub){
-  if(!rec) return DEFAULT_OOF;
-  if(sub.parts){
-    return sub.parts.reduce((a,p)=>a+(rec[`oof_${sub.id}_${p.id}`]||DEFAULT_OOF),0);
+function getSubjectOof(rec, sub) {
+  if (!rec) return DEFAULT_OOF;
+  if (sub.parts) {
+    return sub.parts.reduce((a, p) => a + (rec[`oof_${sub.id}_${p.id}`] || DEFAULT_OOF), 0);
   } else {
-    return rec[`oof_${sub.id}`]||DEFAULT_OOF;
+    return rec[`oof_${sub.id}`] || DEFAULT_OOF;
   }
 }
 
-function renderAnalysis(grade,stream,term,year){
+function renderAnalysis(grade, stream, term, year) {
   const resMap = {};
-  allResults.forEach(r=>resMap[r.studentId]=r);
-  const scored = allStudents.filter(s=>resMap[s.id]?.overallAvg>0);
+  allResults.forEach(r => resMap[r.studentId] = r);
+  const scored = allStudents.filter(s => resMap[s.id]?.overallAvg > 0);
   const classLabel = stream ? `${grade} ${stream}` : grade;
 
-  if(!scored.length){
-    el('mainContent').innerHTML=`<div class="empty-msg"><div class="ei">📭</div><p>No results saved yet for <strong>${classLabel} – ${term} ${year}</strong></p></div>`;
+  if (!scored.length) {
+    el('mainContent').innerHTML = `<div class="empty-msg"><div class="ei">📭</div><p>No results saved yet for <strong>${classLabel} – ${term} ${year}</strong></p></div>`;
     return;
   }
 
-  const avgs = scored.map(s=>resMap[s.id].overallAvg);
-  const classAvg = (avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(1);
+  const avgs = scored.map(s => resMap[s.id].overallAvg);
+  const classAvg = (avgs.reduce((a, b) => a + b, 0) / avgs.length).toFixed(1);
   const highest = Math.max(...avgs).toFixed(1);
   const lowest  = Math.min(...avgs).toFixed(1);
 
   const levelCounts = {};
-  LEVELS.forEach(l=>levelCounts[l.l]=0);
-  scored.forEach(s=>{const lv=getLevel(resMap[s.id].overallAvg);levelCounts[lv.l]++;});
+  LEVELS.forEach(l => levelCounts[l.l] = 0);
+  scored.forEach(s => { const lv = getLevel(resMap[s.id].overallAvg); levelCounts[lv.l]++; });
 
-  const ranked = [...scored].sort((a,b)=>resMap[b.id].overallAvg-resMap[a.id].overallAvg);
+  const ranked = [...scored].sort((a, b) => resMap[b.id].overallAvg - resMap[a.id].overallAvg);
 
-  const subjectStats = SUBS.map(sub=>{
+  const subjectStats = SUBS.map(sub => {
     const vals = scored
-      .map(s=>{
-        const rec=resMap[s.id];
-        const sc=getSubjectScore(rec,sub);
-        if(sc===null) return null;
-        const oof=getSubjectOof(rec,sub);
-        return (sc/oof)*100;
+      .map(s => {
+        const rec = resMap[s.id];
+        const sc  = getSubjectScore(rec, sub);
+        if (sc === null) return null;
+        const oof = getSubjectOof(rec, sub);
+        return (sc / oof) * 100;
       })
-      .filter(v=>v!==null);
-    const avg = vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):null;
-    return {sub, avg, count:vals.length};
+      .filter(v => v !== null);
+    const avg = vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) : null;
+    return {sub, avg, count: vals.length};
   });
 
-  let html=`
+  let html = `
   <div class="info-strip">
     <div class="sheet-title">${classLabel} — ${term} ${year} Analysis</div>
     <div class="pills">
@@ -1189,12 +1177,12 @@ function renderAnalysis(grade,stream,term,year){
       <div class="stat-card">
         <div class="stat-label">Highest Score</div>
         <div class="stat-val" style="color:#059669">${highest}%</div>
-        <div class="stat-sub">${ranked[0]?.name||'—'}</div>
+        <div class="stat-sub">${ranked[0]?.name || '—'}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Lowest Score</div>
         <div class="stat-val" style="color:#dc2626">${lowest}%</div>
-        <div class="stat-sub">${ranked[ranked.length-1]?.name||'—'}</div>
+        <div class="stat-sub">${ranked[ranked.length - 1]?.name || '—'}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Total Students</div>
@@ -1203,47 +1191,46 @@ function renderAnalysis(grade,stream,term,year){
       </div>
       <div class="stat-card">
         <div class="stat-label">Exceeding (EE)</div>
-        <div class="stat-val" style="color:#166534">${levelCounts['EE1']+levelCounts['EE2']}</div>
-        <div class="stat-sub">${(((levelCounts['EE1']+levelCounts['EE2'])/scored.length)*100).toFixed(0)}% of class</div>
+        <div class="stat-val" style="color:#166534">${levelCounts['EE1'] + levelCounts['EE2']}</div>
+        <div class="stat-sub">${(((levelCounts['EE1'] + levelCounts['EE2']) / scored.length) * 100).toFixed(0)}% of class</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Meeting (ME)</div>
-        <div class="stat-val" style="color:#854d0e">${levelCounts['ME1']+levelCounts['ME2']}</div>
-        <div class="stat-sub">${(((levelCounts['ME1']+levelCounts['ME2'])/scored.length)*100).toFixed(0)}% of class</div>
+        <div class="stat-val" style="color:#854d0e">${levelCounts['ME1'] + levelCounts['ME2']}</div>
+        <div class="stat-sub">${(((levelCounts['ME1'] + levelCounts['ME2']) / scored.length) * 100).toFixed(0)}% of class</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Approaching (AE)</div>
-        <div class="stat-val" style="color:#9a3412">${levelCounts['AE1']+levelCounts['AE2']}</div>
-        <div class="stat-sub">${(((levelCounts['AE1']+levelCounts['AE2'])/scored.length)*100).toFixed(0)}% of class</div>
+        <div class="stat-val" style="color:#9a3412">${levelCounts['AE1'] + levelCounts['AE2']}</div>
+        <div class="stat-sub">${(((levelCounts['AE1'] + levelCounts['AE2']) / scored.length) * 100).toFixed(0)}% of class</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Below (BE)</div>
-        <div class="stat-val" style="color:#991b1b">${levelCounts['BE1']+levelCounts['BE2']}</div>
-        <div class="stat-sub">${(((levelCounts['BE1']+levelCounts['BE2'])/scored.length)*100).toFixed(0)}% of class</div>
+        <div class="stat-val" style="color:#991b1b">${levelCounts['BE1'] + levelCounts['BE2']}</div>
+        <div class="stat-sub">${(((levelCounts['BE1'] + levelCounts['BE2']) / scored.length) * 100).toFixed(0)}% of class</div>
       </div>
     </div>
 
     <div class="level-dist analysis-card" style="padding:16px">
       <div class="section-title">CBC Performance Level Distribution</div>
-      <div class="level-bars">
-  `;
+      <div class="level-bars">`;
 
-  LEVELS.forEach(lv=>{
-    const cnt = levelCounts[lv.l]||0;
-    const pct = scored.length ? (cnt/scored.length)*100 : 0;
-    html+=`
+  LEVELS.forEach(lv => {
+    const cnt = levelCounts[lv.l] || 0;
+    const pct = scored.length ? (cnt / scored.length) * 100 : 0;
+    html += `
       <div class="level-row">
         <div class="lbl"><span class="lbadge ${lv.c}">${lv.l}</span></div>
         <div class="bar-wrap">
           <div class="bar ${lv.c}" style="width:${pct}%">
-            ${pct>8?`<span class="bar-txt">${pct.toFixed(0)}%</span>`:''}
+            ${pct > 8 ? `<span class="bar-txt">${pct.toFixed(0)}%</span>` : ''}
           </div>
         </div>
         <div class="cnt">${cnt} <span style="font-size:9.5px;color:var(--text3)">/${scored.length}</span></div>
       </div>`;
   });
 
-  html+=`</div></div>
+  html += `</div></div>
 
     <div class="analysis-card">
       <div style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Subject Performance Overview</div>
@@ -1257,13 +1244,13 @@ function renderAnalysis(grade,stream,term,year){
         </tr></thead>
         <tbody>`;
 
-  subjectStats.forEach(({sub,avg,count})=>{
-    if(avg===null){
-      html+=`<tr><td>${sub.icon} ${sub.label}</td><td colspan="4" style="color:var(--text3);font-size:11px;text-align:center">No data</td></tr>`;
+  subjectStats.forEach(({sub, avg, count}) => {
+    if (avg === null) {
+      html += `<tr><td>${sub.icon} ${sub.label}</td><td colspan="4" style="color:var(--text3);font-size:11px;text-align:center">No data</td></tr>`;
       return;
     }
-    const lv=getLevel(Number(avg));
-    html+=`<tr>
+    const lv = getLevel(Number(avg));
+    html += `<tr>
       <td style="font-weight:600">${sub.icon} ${sub.label}</td>
       <td style="text-align:center;font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;color:var(--accent)">${avg}%</td>
       <td style="text-align:center"><span class="lbadge ${lv.c}">${lv.l}</span></td>
@@ -1275,31 +1262,31 @@ function renderAnalysis(grade,stream,term,year){
       </td>
     </tr>`;
   });
-  html+=`</tbody></table></div>
+  html += `</tbody></table></div>
   </div><!-- /tab-overview -->
 
   <!-- STUDENTS TAB -->
   <div id="tab-students" class="tab-content" style="display:none">
     <div class="student-grid">`;
 
-  ranked.forEach((s,i)=>{
-    const rec=resMap[s.id];
-    const avg=Number(rec.overallAvg).toFixed(1);
-    const lv=getLevel(Number(avg));
-    const bars = SUBS.map(sub=>{
-      const sc=getSubjectScore(rec,sub);
-      const oof=getSubjectOof(rec,sub);
-      if(sc===null) return `<div class="stu-bar" style="background:var(--border)"></div>`;
-      const pct=(sc/oof)*100;
-      const slv=getLevel(pct);
+  ranked.forEach((s, i) => {
+    const rec = resMap[s.id];
+    const avg = Number(rec.overallAvg).toFixed(1);
+    const lv  = getLevel(Number(avg));
+    const bars = SUBS.map(sub => {
+      const sc  = getSubjectScore(rec, sub);
+      const oof = getSubjectOof(rec, sub);
+      if (sc === null) return `<div class="stu-bar" style="background:var(--border)"></div>`;
+      const pct  = (sc / oof) * 100;
+      const slv  = getLevel(pct);
       return `<div class="stu-bar ${slv.c}" title="${sub.label}: ${pct.toFixed(0)}%"></div>`;
     }).join('');
 
-    html+=`<div class="stu-card" onclick="openStudent('${s.id}')">
+    html += `<div class="stu-card" onclick="openStudent('${s.id}')">
       <div class="stu-top">
         <div>
           <div class="stu-name">${s.name}</div>
-          <div class="stu-adm">${s.admissionNumber||'—'} · Rank #${i+1}</div>
+          <div class="stu-adm">${s.admissionNumber || '—'} · Rank #${i + 1}</div>
         </div>
         <div style="text-align:right">
           <div class="stu-avg">${avg}%</div>
@@ -1310,7 +1297,7 @@ function renderAnalysis(grade,stream,term,year){
     </div>`;
   });
 
-  html+=`</div></div><!-- /tab-students -->
+  html += `</div></div><!-- /tab-students -->
 
   <!-- RANKING TAB -->
   <div id="tab-ranking" class="tab-content" style="display:none">
@@ -1328,15 +1315,15 @@ function renderAnalysis(grade,stream,term,year){
       </tr></thead>
       <tbody>`;
 
-  ranked.forEach((s,i)=>{
-    const rec=resMap[s.id];
-    const avg=Number(rec.overallAvg).toFixed(1);
-    const lv=getLevel(Number(avg));
-    const rankClass = i===0?'gold':i===1?'silver':i===2?'bronze':'';
-    html+=`<tr>
-      <td><div class="rank-no ${rankClass}">${i+1}</div></td>
+  ranked.forEach((s, i) => {
+    const rec = resMap[s.id];
+    const avg = Number(rec.overallAvg).toFixed(1);
+    const lv  = getLevel(Number(avg));
+    const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    html += `<tr>
+      <td><div class="rank-no ${rankClass}">${i + 1}</div></td>
       <td style="font-weight:600">${s.name}</td>
-      <td style="text-align:center;font-size:10.5px;color:var(--text2)">${s.admissionNumber||'—'}</td>
+      <td style="text-align:center;font-size:10.5px;color:var(--text2)">${s.admissionNumber || '—'}</td>
       <td style="text-align:center;font-family:'Familjen Grotesk',sans-serif;font-size:16px;font-weight:800;color:var(--accent)">${avg}%</td>
       <td style="text-align:center"><span class="lbadge ${lv.c}">${lv.l}</span></td>
       <td style="text-align:center;font-weight:800">${lv.p}</td>
@@ -1344,27 +1331,27 @@ function renderAnalysis(grade,stream,term,year){
     </tr>`;
   });
 
-  html+=`</tbody></table></div></div><!-- /tab-ranking -->
+  html += `</tbody></table></div></div><!-- /tab-ranking -->
 
   <!-- SUBJECTS TAB -->
   <div id="tab-subjects" class="tab-content" style="display:none">`;
 
-  SUBS.forEach(sub=>{
-    const subVals = scored.map(s=>{
-      const rec=resMap[s.id];
-      const sc=getSubjectScore(rec,sub);
-      if(sc===null) return null;
-      const oof=getSubjectOof(rec,sub);
-      return {name:s.name,sc,oof,pct:(sc/oof)*100,rec,sid:s.id};
-    }).filter(v=>v!==null);
+  SUBS.forEach(sub => {
+    const subVals = scored.map(s => {
+      const rec = resMap[s.id];
+      const sc  = getSubjectScore(rec, sub);
+      if (sc === null) return null;
+      const oof = getSubjectOof(rec, sub);
+      return {name: s.name, sc, oof, pct: (sc / oof) * 100, rec, sid: s.id};
+    }).filter(v => v !== null);
 
-    if(!subVals.length) return;
+    if (!subVals.length) return;
 
-    subVals.sort((a,b)=>b.pct-a.pct);
-    const subAvg=(subVals.reduce((a,b)=>a+b.pct,0)/subVals.length).toFixed(1);
-    const subLv=getLevel(Number(subAvg));
+    subVals.sort((a, b) => b.pct - a.pct);
+    const subAvg = (subVals.reduce((a, b) => a + b.pct, 0) / subVals.length).toFixed(1);
+    const subLv  = getLevel(Number(subAvg));
 
-    html+=`<div class="analysis-card" style="margin-bottom:12px">
+    html += `<div class="analysis-card" style="margin-bottom:12px">
       <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
         <div style="font-weight:700;font-size:13px">${sub.icon} ${sub.label}</div>
         <div style="display:flex;gap:8px;align-items:center">
@@ -1383,10 +1370,10 @@ function renderAnalysis(grade,stream,term,year){
         </tr></thead>
         <tbody>`;
 
-    subVals.forEach((v,i)=>{
-      const lv=getLevel(v.pct);
-      html+=`<tr>
-        <td style="text-align:center;font-size:10.5px;color:var(--text3);font-weight:700">${i+1}</td>
+    subVals.forEach((v, i) => {
+      const lv = getLevel(v.pct);
+      html += `<tr>
+        <td style="text-align:center;font-size:10.5px;color:var(--text3);font-weight:700">${i + 1}</td>
         <td style="font-weight:600">${v.name}</td>
         <td style="text-align:center">${v.sc}/${v.oof}</td>
         <td style="text-align:center;font-weight:700;color:var(--accent)">${v.pct.toFixed(1)}%</td>
@@ -1398,43 +1385,43 @@ function renderAnalysis(grade,stream,term,year){
         </td>
       </tr>`;
     });
-    html+=`</tbody></table></div>`;
+    html += `</tbody></table></div>`;
   });
 
-  html+=`</div><!-- /tab-subjects -->`;
-  el('mainContent').innerHTML=html;
+  html += `</div><!-- /tab-subjects -->`;
+  el('mainContent').innerHTML = html;
 
-  window._printData = {grade,stream,classLabel,term,year,ranked,resMap,scored,classAvg,levelCounts,subjectStats};
+  window._printData = {grade, stream, classLabel, term, year, ranked, resMap, scored, classAvg, levelCounts, subjectStats};
 
   const btn = el('printAllBtn');
-  if(btn) btn.style.display = scored.length ? 'inline-flex' : 'none';
+  if (btn) btn.style.display = scored.length ? 'inline-flex' : 'none';
 }
 
 // ── Tab switching ──
-window.showTab = function(name, btn){
-  document.querySelectorAll('.tab-content').forEach(el=>el.style.display='none');
-  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
-  el('tab-'+name).style.display='';
+window.showTab = function(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  el('tab-' + name).style.display = '';
   btn.classList.add('active');
 };
 
 // ── Student Modal ──
-window.openStudent = function(sid){
-  const s = allStudents.find(x=>x.id===sid);
-  const rec = allResults.find(r=>r.studentId===sid);
-  if(!s||!rec) return;
-  currentStudent = {s,rec};
+window.openStudent = function(sid) {
+  const s   = allStudents.find(x => x.id === sid);
+  const rec = allResults.find(r => r.studentId === sid);
+  if (!s || !rec) return;
+  currentStudent = {s, rec};
 
-  const avg=Number(rec.overallAvg).toFixed(1);
-  const lv=getLevel(Number(avg));
-  const resMap={};
-  allResults.forEach(r=>resMap[r.studentId]=r);
-  const ranked=[...allStudents.filter(st=>resMap[st.id]?.overallAvg>0)].sort((a,b)=>resMap[b.id].overallAvg-resMap[a.id].overallAvg);
-  const rank=ranked.findIndex(x=>x.id===sid)+1;
+  const avg = Number(rec.overallAvg).toFixed(1);
+  const lv  = getLevel(Number(avg));
+  const resMap = {};
+  allResults.forEach(r => resMap[r.studentId] = r);
+  const ranked = [...allStudents.filter(st => resMap[st.id]?.overallAvg > 0)].sort((a, b) => resMap[b.id].overallAvg - resMap[a.id].overallAvg);
+  const rank   = ranked.findIndex(x => x.id === sid) + 1;
   const totalEnrolled = allStudents.length;
-  const pd=window._printData;
+  const pd = window._printData;
 
-  let body=`
+  let body = `
     <div class="print-overall-box">
       <div>
         <div class="print-avg-lbl">Overall Average</div>
@@ -1456,8 +1443,8 @@ window.openStudent = function(sid){
 
     <div class="print-meta-grid">
       <div class="print-meta-box"><div class="print-meta-lbl">Name</div><div class="print-meta-val">${s.name}</div></div>
-      <div class="print-meta-box"><div class="print-meta-lbl">Adm No.</div><div class="print-meta-val">${s.admissionNumber||'—'}</div></div>
-      <div class="print-meta-box"><div class="print-meta-lbl">${rec.stream?"Grade & Stream":"Grade"}</div><div class="print-meta-val">${rec.grade}${rec.stream?" "+rec.stream:""}</div></div>
+      <div class="print-meta-box"><div class="print-meta-lbl">Adm No.</div><div class="print-meta-val">${s.admissionNumber || '—'}</div></div>
+      <div class="print-meta-box"><div class="print-meta-lbl">${rec.stream ? "Grade & Stream" : "Grade"}</div><div class="print-meta-val">${rec.grade}${rec.stream ? " " + rec.stream : ""}</div></div>
       <div class="print-meta-box"><div class="print-meta-lbl">Term / Year</div><div class="print-meta-val">${rec.term} / ${rec.year}</div></div>
       <div class="print-meta-box" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd">
         <div class="print-meta-lbl" style="color:#1e40af">Class Position</div>
@@ -1471,49 +1458,49 @@ window.openStudent = function(sid){
         <thead><tr>
           <th>Subject</th>`;
 
-  if(SUBS.some(s=>s.parts)){
-    body+=`<th style="text-align:center">Part 1</th><th style="text-align:center">Part 2</th>`;
+  if (SUBS.some(s => s.parts)) {
+    body += `<th style="text-align:center">Part 1</th><th style="text-align:center">Part 2</th>`;
   }
-  body+=`<th style="text-align:center">Score</th><th style="text-align:center">Out Of</th><th style="text-align:center">%</th><th style="text-align:center">Level</th></tr></thead><tbody>`;
+  body += `<th style="text-align:center">Score</th><th style="text-align:center">Out Of</th><th style="text-align:center">%</th><th style="text-align:center">Level</th></tr></thead><tbody>`;
 
-  SUBS.forEach(sub=>{
-    const sc=getSubjectScore(rec,sub);
-    const oof=getSubjectOof(rec,sub);
-    if(sc===null&&!SUBS.find(x=>x.id===sub.id&&x.parts)){
-      body+=`<tr><td>${sub.icon} ${sub.label}</td>`;
-      if(SUBS.some(s=>s.parts)) body+=`<td colspan="2" style="text-align:center;color:#9aaabb">—</td>`;
-      body+=`<td colspan="4" style="text-align:center;color:#9aaabb">No data</td></tr>`;
+  SUBS.forEach(sub => {
+    const sc  = getSubjectScore(rec, sub);
+    const oof = getSubjectOof(rec, sub);
+    if (sc === null && !SUBS.find(x => x.id === sub.id && x.parts)) {
+      body += `<tr><td>${sub.icon} ${sub.label}</td>`;
+      if (SUBS.some(s => s.parts)) body += `<td colspan="2" style="text-align:center;color:#9aaabb">—</td>`;
+      body += `<td colspan="4" style="text-align:center;color:#9aaabb">No data</td></tr>`;
       return;
     }
-    const pct=sc!==null?(sc/oof)*100:0;
-    const slv=getLevel(pct);
-    body+=`<tr><td style="font-weight:600">${sub.icon} ${sub.label}</td>`;
-    if(sub.parts){
-      sub.parts.forEach(p=>{
-        const ps=rec[`${sub.id}_${p.id}`]||'—';
-        const po=rec[`oof_${sub.id}_${p.id}`]||DEFAULT_OOF;
-        body+=`<td style="text-align:center">${ps}<span style="font-size:9px;color:#9aaabb">/${po}</span></td>`;
+    const pct = sc !== null ? (sc / oof) * 100 : 0;
+    const slv = getLevel(pct);
+    body += `<tr><td style="font-weight:600">${sub.icon} ${sub.label}</td>`;
+    if (sub.parts) {
+      sub.parts.forEach(p => {
+        const ps = rec[`${sub.id}_${p.id}`] || '—';
+        const po = rec[`oof_${sub.id}_${p.id}`] || DEFAULT_OOF;
+        body += `<td style="text-align:center">${ps}<span style="font-size:9px;color:#9aaabb">/${po}</span></td>`;
       });
-    } else if(SUBS.some(s=>s.parts)){
-      body+=`<td colspan="2" style="text-align:center;color:#9aaabb">—</td>`;
+    } else if (SUBS.some(s => s.parts)) {
+      body += `<td colspan="2" style="text-align:center;color:#9aaabb">—</td>`;
     }
-    body+=`<td style="text-align:center;font-weight:700">${sc!==null?sc:'—'}</td>
-           <td style="text-align:center;color:#4f6080">${oof}</td>
-           <td style="text-align:center;font-weight:700;color:#1a56db">${sc!==null?pct.toFixed(1)+'%':'—'}</td>
-           <td style="text-align:center"><span class="lbadge ${slv.c}">${slv.l}</span></td>
-           </tr>`;
+    body += `<td style="text-align:center;font-weight:700">${sc !== null ? sc : '—'}</td>
+             <td style="text-align:center;color:#4f6080">${oof}</td>
+             <td style="text-align:center;font-weight:700;color:#1a56db">${sc !== null ? pct.toFixed(1) + '%' : '—'}</td>
+             <td style="text-align:center"><span class="lbadge ${slv.c}">${slv.l}</span></td>
+             </tr>`;
   });
 
-  body+=`</tbody></table></div>`;
+  body += `</tbody></table></div>`;
 
-  if(pd){
-    body+=`<div class="print-class-compare">
+  if (pd) {
+    body += `<div class="print-class-compare">
       <div class="print-compare-box"><div class="print-compare-lbl">Class Average</div><div class="print-compare-val">${pd.classAvg}%</div></div>
       <div class="print-compare-box"><div class="print-compare-lbl">Student Average</div><div class="print-compare-val">${avg}%</div></div>
     </div>`;
   }
 
-  body+=`<div class="print-remarks" style="margin-top:10px">
+  body += `<div class="print-remarks" style="margin-top:10px">
     <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#9aaabb;margin-bottom:6px">Class Teacher's Remarks</div>
     <div style="border-bottom:1px dashed #dce1ec;height:24px;margin-bottom:6px"></div>
     <div style="border-bottom:1px dashed #dce1ec;height:24px"></div>
@@ -1524,29 +1511,29 @@ window.openStudent = function(sid){
     <div class="print-sig-line">Parent/Guardian</div>
   </div>`;
 
-  el('modalTitle').textContent=`${s.name} — Report Card`;
-  el('modalBody').innerHTML=body;
+  el('modalTitle').textContent = `${s.name} — Report Card`;
+  el('modalBody').innerHTML = body;
   el('stuModal').classList.add('open');
 };
 
-window.closeModal = function(){
+window.closeModal = function() {
   el('stuModal').classList.remove('open');
-  currentStudent=null;
+  currentStudent = null;
 };
-el('stuModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+el('stuModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 
 // ── Confirm Print All modal ──
-function confirmPrintAll(){
+function confirmPrintAll() {
   const pd = window._printData;
-  if(!pd || !pd.scored.length){ toast('No results to print','err'); return; }
-  const {grade,stream,classLabel,term,year,scored,ranked,classAvg} = pd;
-  const total = scored.length;
-  const noResults = allStudents.length - total;
+  if (!pd || !pd.scored.length) { toast('No results to print', 'err'); return; }
+  const {grade, stream, classLabel, term, year, scored, ranked, classAvg} = pd;
+  const total      = scored.length;
+  const noResults  = allStudents.length - total;
 
   el('printAllSummary').innerHTML = `
     <div style="background:var(--alight);border:1px solid #c7d9ff;border-radius:var(--r2);padding:14px 16px;margin-bottom:14px">
-      <div style="font-family:'Familjen Grotesk',sans-serif;font-size:22px;font-weight:800;color:var(--accent)">${total} Report${total>1?'s':''} Ready</div>
-      <div style="font-size:12px;color:var(--text2);margin-top:2px">${grade}${stream ? ' '+stream : ''} &nbsp;·&nbsp; ${term} ${year}</div>
+      <div style="font-family:'Familjen Grotesk',sans-serif;font-size:22px;font-weight:800;color:var(--accent)">${total} Report${total > 1 ? 's' : ''} Ready</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px">${grade}${stream ? ' ' + stream : ''} &nbsp;·&nbsp; ${term} ${year}</div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
       <div style="border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px;text-align:center">
@@ -1559,11 +1546,11 @@ function confirmPrintAll(){
       </div>
       <div style="border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px;text-align:center">
         <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">Skipped</div>
-        <div style="font-family:'Familjen Grotesk',sans-serif;font-size:24px;font-weight:800;color:${noResults>0?'#d97706':'#9aaabb'}">${noResults}</div>
+        <div style="font-family:'Familjen Grotesk',sans-serif;font-size:24px;font-weight:800;color:${noResults > 0 ? '#d97706' : '#9aaabb'}">${noResults}</div>
       </div>
     </div>
     ${noResults > 0 ? `<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:var(--r2);padding:9px 12px;font-size:12px;color:#92400e;margin-bottom:12px">
-      ⚠️ ${noResults} enrolled student${noResults>1?'s':''} have no marks saved — they will be skipped.
+      ⚠️ ${noResults} enrolled student${noResults > 1 ? 's' : ''} have no marks saved — they will be skipped.
     </div>` : ''}
     <div style="font-size:12px;color:var(--text2);line-height:1.7;border-top:1px solid var(--border);padding-top:12px">
       Reports will be sorted by <strong>class position (rank)</strong>.<br>
@@ -1574,14 +1561,14 @@ function confirmPrintAll(){
   el('printAllModal').classList.add('open');
 }
 
-function closePrintAllModal(){
+function closePrintAllModal() {
   el('printAllModal').classList.remove('open');
 }
 
-async function printAllReports(){
+async function printAllReports() {
   const pd = window._printData;
-  if(!pd) return;
-  if(!_schoolSettingsReady) await _schoolSettingsPromise;
+  if (!pd) return;
+  if (!_schoolSettingsReady) await _schoolSettingsPromise;
   closePrintAllModal();
 
   const {ranked, resMap} = pd;
@@ -1590,14 +1577,14 @@ async function printAllReports(){
   let allHtml = '';
   ranked.forEach((s, i) => {
     const rec = resMap[s.id];
-    if(!rec || !rec.overallAvg) return;
+    if (!rec || !rec.overallAvg) return;
     const avg  = Number(rec.overallAvg).toFixed(1);
     const lv   = getLevel(Number(avg));
     const rank = i + 1;
 
     allHtml += buildStudentPrintHtml(s, rec, avg, lv, rank, total, pd);
 
-    if(i < ranked.length - 1){
+    if (i < ranked.length - 1) {
       allHtml += '<div style="page-break-after:always;break-after:page"></div>';
     }
   });
@@ -1606,7 +1593,7 @@ async function printAllReports(){
   toast(`Opening ${total} reports for print…`, 'info');
 }
 
-function triggerPrint(html){
+function triggerPrint(html) {
   const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
     .map(node => node.outerHTML).join('\n');
 
@@ -1640,36 +1627,36 @@ ${html}
 </html>`;
 
   const w = window.open('', '_blank', 'width=900,height=700');
-  if(!w){ toast('Pop-up blocked! Allow pop-ups for this site to print.','err'); return; }
+  if (!w) { toast('Pop-up blocked! Allow pop-ups for this site to print.', 'err'); return; }
   w.document.open();
   w.document.write(fullHtml);
   w.document.close();
-  w.onload = function(){ w.focus(); };
+  w.onload = function() { w.focus(); };
 }
 
-window.printStudentReport = async function(){
-  if(!currentStudent) return;
-  if(!_schoolSettingsReady) await _schoolSettingsPromise;
-  const {s,rec}=currentStudent;
-  const avg=Number(rec.overallAvg).toFixed(1);
-  const lv=getLevel(Number(avg));
-  const pd=window._printData;
-  const ranked=pd?pd.ranked:[];
-  const rank=ranked.findIndex(x=>x.id===s.id)+1;
+window.printStudentReport = async function() {
+  if (!currentStudent) return;
+  if (!_schoolSettingsReady) await _schoolSettingsPromise;
+  const {s, rec} = currentStudent;
+  const avg = Number(rec.overallAvg).toFixed(1);
+  const lv  = getLevel(Number(avg));
+  const pd  = window._printData;
+  const ranked = pd ? pd.ranked : [];
+  const rank   = ranked.findIndex(x => x.id === s.id) + 1;
 
-  const printHtml=buildStudentPrintHtml(s,rec,avg,lv,rank,allStudents.length,pd);
+  const printHtml = buildStudentPrintHtml(s, rec, avg, lv, rank, allStudents.length, pd);
   triggerPrint(printHtml);
 };
 
-function buildStudentPrintHtml(s,rec,avg,lv,rank,total,pd){
-  let h=`<div class="print-page">
+function buildStudentPrintHtml(s, rec, avg, lv, rank, total, pd) {
+  let h = `<div class="print-page">
     <div class="print-school-header">
       <div style="display:flex;align-items:center">
         ${schoolSettings.logoUrl ? `<img src="${schoolSettings.logoUrl}" style="width:52px;height:52px;object-fit:contain;border-radius:6px;margin-right:12px" onerror="this.style.display='none'">` : ''}
         <div>
           <div class="print-school-name">${schoolSettings.name || 'Junior School'}</div>
           <div class="print-school-sub">${[schoolSettings.motto, schoolSettings.county, 'Kenya CBC'].filter(Boolean).join(' · ')}</div>
-          <div class="print-school-sub" style="margin-top:2px">${rec.grade}${rec.stream ? " "+rec.stream : ""} &nbsp;|&nbsp; Academic Report</div>
+          <div class="print-school-sub" style="margin-top:2px">${rec.grade}${rec.stream ? " " + rec.stream : ""} &nbsp;|&nbsp; Academic Report</div>
         </div>
       </div>
       <div style="text-align:right;font-size:11px;color:#4f6080">
@@ -1697,8 +1684,8 @@ function buildStudentPrintHtml(s,rec,avg,lv,rank,total,pd){
 
     <div class="print-meta-grid">
       <div class="print-meta-box"><div class="print-meta-lbl">Student Name</div><div class="print-meta-val">${s.name}</div></div>
-      <div class="print-meta-box"><div class="print-meta-lbl">Adm Number</div><div class="print-meta-val">${s.admissionNumber||'—'}</div></div>
-      <div class="print-meta-box"><div class="print-meta-lbl">${rec.stream?"Grade & Stream":"Grade"}</div><div class="print-meta-val">${rec.grade}${rec.stream?" "+rec.stream:""}</div></div>
+      <div class="print-meta-box"><div class="print-meta-lbl">Adm Number</div><div class="print-meta-val">${s.admissionNumber || '—'}</div></div>
+      <div class="print-meta-box"><div class="print-meta-lbl">${rec.stream ? "Grade & Stream" : "Grade"}</div><div class="print-meta-val">${rec.grade}${rec.stream ? " " + rec.stream : ""}</div></div>
       <div class="print-meta-box"><div class="print-meta-lbl">Term / Year</div><div class="print-meta-val">${rec.term} / ${rec.year}</div></div>
     </div>
 
@@ -1715,15 +1702,15 @@ function buildStudentPrintHtml(s,rec,avg,lv,rank,total,pd){
         </tr></thead>
         <tbody>`;
 
-  let totalPts=0, subCount=0;
-  SUBS.forEach(sub=>{
-    const sc=getSubjectScore(rec,sub);
-    const oof=getSubjectOof(rec,sub);
-    if(sc===null) return;
-    const pct=(sc/oof)*100;
-    const slv=getLevel(pct);
-    totalPts+=slv.p; subCount++;
-    h+=`<tr>
+  let totalPts = 0, subCount = 0;
+  SUBS.forEach(sub => {
+    const sc  = getSubjectScore(rec, sub);
+    const oof = getSubjectOof(rec, sub);
+    if (sc === null) return;
+    const pct = (sc / oof) * 100;
+    const slv = getLevel(pct);
+    totalPts += slv.p; subCount++;
+    h += `<tr>
       <td style="font-weight:600">${sub.icon} ${sub.label}</td>
       <td style="text-align:center;font-weight:700">${sc}</td>
       <td style="text-align:center;color:#4f6080">${oof}</td>
@@ -1732,7 +1719,7 @@ function buildStudentPrintHtml(s,rec,avg,lv,rank,total,pd){
       <td style="text-align:center;font-weight:800">${slv.p}</td>
     </tr>`;
   });
-  h+=`</tbody>
+  h += `</tbody>
         <tfoot>
           <tr style="background:#1e2d4d">
             <td colspan="5" style="color:#c8d8f8;font-weight:700;font-size:11px;text-align:right;padding:6px 8px">Overall Average / Total Points</td>
@@ -1742,21 +1729,21 @@ function buildStudentPrintHtml(s,rec,avg,lv,rank,total,pd){
       </table>
     </div>`;
 
-  if(pd){
-    const classLv=getLevel(Number(pd.classAvg));
-    const diff=(Number(avg)-Number(pd.classAvg)).toFixed(1);
-    const diffSign=diff>0?'+':'';
-    h+=`<div class="print-section">
+  if (pd) {
+    const classLv  = getLevel(Number(pd.classAvg));
+    const diff     = (Number(avg) - Number(pd.classAvg)).toFixed(1);
+    const diffSign = diff > 0 ? '+' : '';
+    h += `<div class="print-section">
       <div class="print-section-title">Comparison with Class</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
         <div class="print-compare-box"><div class="print-compare-lbl">Class Average</div><div class="print-compare-val">${pd.classAvg}% <span class="lbadge ${classLv.c}" style="font-size:9px">${classLv.l}</span></div></div>
         <div class="print-compare-box"><div class="print-compare-lbl">Student Average</div><div class="print-compare-val">${avg}% <span class="lbadge ${lv.c}" style="font-size:9px">${lv.l}</span></div></div>
-        <div class="print-compare-box"><div class="print-compare-lbl">Difference</div><div class="print-compare-val" style="color:${diff>=0?'#059669':'#dc2626'}">${diffSign}${diff}%</div></div>
+        <div class="print-compare-box"><div class="print-compare-lbl">Difference</div><div class="print-compare-val" style="color:${diff >= 0 ? '#059669' : '#dc2626'}">${diffSign}${diff}%</div></div>
       </div>
     </div>`;
   }
 
-  h+=`<div class="print-section">
+  h += `<div class="print-section">
       <div class="print-section-title">Remarks &amp; Signature</div>
       <div class="print-remarks">
         <div class="print-remarks-lbl">Class Teacher's Remarks</div>
@@ -1780,20 +1767,20 @@ function buildStudentPrintHtml(s,rec,avg,lv,rank,total,pd){
 }
 
 // ── Print Class Report ──
-window.printClassReport = async function(){
-  if(!_schoolSettingsReady) await _schoolSettingsPromise;
-  const pd=window._printData;
-  if(!pd||!pd.ranked.length){toast('Load analysis first','err');return;}
-  const {grade,stream,classLabel,term,year,ranked,resMap,scored,classAvg,levelCounts,subjectStats}=pd;
+window.printClassReport = async function() {
+  if (!_schoolSettingsReady) await _schoolSettingsPromise;
+  const pd = window._printData;
+  if (!pd || !pd.ranked.length) { toast('Load analysis first', 'err'); return; }
+  const {grade, stream, classLabel, term, year, ranked, resMap, scored, classAvg, levelCounts, subjectStats} = pd;
 
-  let h=`<div class="print-page" style="max-width:900px">
+  let h = `<div class="print-page" style="max-width:900px">
     <div class="print-school-header">
       <div style="display:flex;align-items:center">
         ${schoolSettings.logoUrl ? `<img src="${schoolSettings.logoUrl}" style="width:52px;height:52px;object-fit:contain;border-radius:6px;margin-right:12px" onerror="this.style.display='none'">` : ''}
         <div>
           <div class="print-school-name">${schoolSettings.name || 'Junior School'}</div>
           <div class="print-school-sub">${[schoolSettings.motto, schoolSettings.county, 'Kenya CBC'].filter(Boolean).join(' · ')}</div>
-          <div class="print-school-sub" style="margin-top:2px">${grade}${stream ? ' '+stream : ''} &nbsp;|&nbsp; Class Performance Report</div>
+          <div class="print-school-sub" style="margin-top:2px">${grade}${stream ? ' ' + stream : ''} &nbsp;|&nbsp; Class Performance Report</div>
         </div>
       </div>
       <div style="text-align:right;font-size:11px;color:#4f6080">
@@ -1805,7 +1792,7 @@ window.printClassReport = async function(){
     <div class="print-class-header-box">
       <div>
         <div style="font-size:10px;opacity:.7">Class Summary</div>
-        <div style="font-family:'Familjen Grotesk',sans-serif;font-size:24px;font-weight:800">${grade}${stream ? ' '+stream : ''}</div>
+        <div style="font-family:'Familjen Grotesk',sans-serif;font-size:24px;font-weight:800">${grade}${stream ? ' ' + stream : ''}</div>
       </div>
       <div style="text-align:center">
         <div style="font-size:10px;opacity:.7">Class Average</div>
@@ -1823,17 +1810,17 @@ window.printClassReport = async function(){
       <div class="print-section-title">CBC Level Distribution</div>
       <div class="print-dist-grid">`;
 
-  LEVELS.forEach(lv=>{
-    const cnt=levelCounts[lv.l]||0;
-    const pct=scored.length?(cnt/scored.length*100).toFixed(0):0;
-    h+=`<div class="print-dist-box">
+  LEVELS.forEach(lv => {
+    const cnt = levelCounts[lv.l] || 0;
+    const pct = scored.length ? (cnt / scored.length * 100).toFixed(0) : 0;
+    h += `<div class="print-dist-box">
       <div class="lbadge ${lv.c}" style="margin-bottom:4px">${lv.l}</div>
       <div class="print-dist-count ${lv.c}" style="background:none">${cnt}</div>
       <div class="print-dist-lbl">${pct}%</div>
     </div>`;
   });
 
-  h+=`</div></div>
+  h += `</div></div>
 
     <div class="print-section">
       <div class="print-section-title">Class Ranking</div>
@@ -1846,36 +1833,36 @@ window.printClassReport = async function(){
           <th style="text-align:center">Level</th>
           <th style="text-align:center">Points</th>`;
 
-  SUBS.forEach(sub=>{ h+=`<th style="text-align:center;font-size:8.5px">${sub.icon}<br><span style="font-weight:500;opacity:.75;font-size:7.5px">${sub.label.split(' ')[0]}</span></th>`; });
-  h+=`</tr></thead><tbody>`;
+  SUBS.forEach(sub => { h += `<th style="text-align:center;font-size:8.5px">${sub.icon}<br><span style="font-weight:500;opacity:.75;font-size:7.5px">${sub.label.split(' ')[0]}</span></th>`; });
+  h += `</tr></thead><tbody>`;
 
-  ranked.forEach((s,i)=>{
-    const rec=resMap[s.id];
-    const avg=Number(rec.overallAvg).toFixed(1);
-    const lv=getLevel(Number(avg));
-    h+=`<tr>
-      <td><div class="print-rank-no" style="color:${i<3?['#d97706','#6b7280','#92400e'][i]:'#9aaabb'}">${i+1}</div></td>
+  ranked.forEach((s, i) => {
+    const rec = resMap[s.id];
+    const avg = Number(rec.overallAvg).toFixed(1);
+    const lv  = getLevel(Number(avg));
+    h += `<tr>
+      <td><div class="print-rank-no" style="color:${i < 3 ? ['#d97706','#6b7280','#92400e'][i] : '#9aaabb'}">${i + 1}</div></td>
       <td style="font-weight:600;font-size:11px">${s.name}</td>
-      <td style="text-align:center;font-size:10px;color:#4f6080">${s.admissionNumber||'—'}</td>
+      <td style="text-align:center;font-size:10px;color:#4f6080">${s.admissionNumber || '—'}</td>
       <td style="text-align:center;font-weight:800;color:#1a56db">${avg}%</td>
       <td style="text-align:center"><span class="lbadge ${lv.c}">${lv.l}</span></td>
       <td style="text-align:center;font-weight:800">${lv.p}</td>`;
 
-    SUBS.forEach(sub=>{
-      const sc=getSubjectScore(rec,sub);
-      const oof=getSubjectOof(rec,sub);
-      if(sc===null){ h+=`<td style="text-align:center;color:#ccc;font-size:10px">—</td>`; return; }
-      const pct=(sc/oof)*100;
-      const slv=getLevel(pct);
-      h+=`<td style="text-align:center;padding:4px 3px">
+    SUBS.forEach(sub => {
+      const sc  = getSubjectScore(rec, sub);
+      const oof = getSubjectOof(rec, sub);
+      if (sc === null) { h += `<td style="text-align:center;color:#ccc;font-size:10px">—</td>`; return; }
+      const pct = (sc / oof) * 100;
+      const slv = getLevel(pct);
+      h += `<td style="text-align:center;padding:4px 3px">
         <div style="font-weight:800;font-size:10.5px;color:#131c2e;line-height:1.2">${sc}<span style="font-size:8px;color:#9aaabb;font-weight:500">/${oof}</span></div>
         <span class="lbadge ${slv.c}" style="font-size:8px;padding:1px 3px;margin-top:2px;display:inline-block">${slv.l}</span>
       </td>`;
     });
-    h+=`</tr>`;
+    h += `</tr>`;
   });
 
-  h+=`</tbody></table></div>
+  h += `</tbody></table></div>
 
     <div class="print-section">
       <div class="print-section-title">Subject Performance Summary</div>
@@ -1890,18 +1877,18 @@ window.printClassReport = async function(){
         </tr></thead>
         <tbody>`;
 
-  subjectStats.forEach(({sub,avg,count})=>{
-    if(avg===null){ h+=`<tr><td>${sub.icon} ${sub.label}</td><td colspan="5" style="text-align:center;color:#9aaabb">No data</td></tr>`; return; }
-    const lv=getLevel(Number(avg));
-    const subPcts=scored.map(s=>{
-      const rec=resMap[s.id];
-      const sc=getSubjectScore(rec,sub);
-      if(sc===null) return null;
-      return (sc/getSubjectOof(rec,sub))*100;
-    }).filter(v=>v!==null);
-    const hi=Math.max(...subPcts).toFixed(1);
-    const lo=Math.min(...subPcts).toFixed(1);
-    h+=`<tr>
+  subjectStats.forEach(({sub, avg, count}) => {
+    if (avg === null) { h += `<tr><td>${sub.icon} ${sub.label}</td><td colspan="5" style="text-align:center;color:#9aaabb">No data</td></tr>`; return; }
+    const lv = getLevel(Number(avg));
+    const subPcts = scored.map(s => {
+      const rec = resMap[s.id];
+      const sc  = getSubjectScore(rec, sub);
+      if (sc === null) return null;
+      return (sc / getSubjectOof(rec, sub)) * 100;
+    }).filter(v => v !== null);
+    const hi = Math.max(...subPcts).toFixed(1);
+    const lo = Math.min(...subPcts).toFixed(1);
+    h += `<tr>
       <td style="font-weight:600">${sub.icon} ${sub.label}</td>
       <td style="text-align:center;font-weight:800;color:#1a56db">${avg}%</td>
       <td style="text-align:center"><span class="lbadge ${lv.c}">${lv.l}</span></td>
@@ -1911,7 +1898,7 @@ window.printClassReport = async function(){
     </tr>`;
   });
 
-  h+=`</tbody></table></div>
+  h += `</tbody></table></div>
 
     <div style="display:flex;gap:28px;margin-top:20px">
       <div class="print-sig-line">Class Teacher</div>
@@ -1929,23 +1916,19 @@ window.printClassReport = async function(){
 };
 
 // ── Dark mode ──
-el('themeBtn').addEventListener('click',function(){
+el('themeBtn').addEventListener('click', function() {
   document.body.classList.toggle('dark');
-  this.textContent=document.body.classList.contains('dark')?'☀️':'🌙';
-  localStorage.setItem('cbe_theme',document.body.classList.contains('dark')?'dark':'light');
+  this.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+  localStorage.setItem('cbe_theme', document.body.classList.contains('dark') ? 'dark' : 'light');
 });
-if(localStorage.getItem('cbe_theme')==='dark'){
+if (localStorage.getItem('cbe_theme') === 'dark') {
   document.body.classList.add('dark');
-  el('themeBtn').textContent='☀️';
+  el('themeBtn').textContent = '☀️';
 }
 </script>
-<script>
-firebase.auth().onAuthStateChanged(u => {
-  if (!u) { window.location.href = 'registration.html'; return; }
-  window._schoolId = u.uid;
-});
-</script>
-<!-- Subscription guard — must come after Firebase SDK -->
-<script src="subscription-guard.js"></script>
+<!-- NOTE: The duplicate firebase.auth().onAuthStateChanged block and subscription-guard.js
+     that were in the original have been REMOVED. Auth and payment gate are now handled
+     exclusively by _authReady + _listenPayment() above, matching admin.html exactly. -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"9a6fdd38ee454483a9aa3baf59e5691f","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>

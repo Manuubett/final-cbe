@@ -124,7 +124,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:3px;background
 .rb-value.mono{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)}
 .redirect-bar{display:flex;align-items:center;justify-content:center;gap:9px;font-size:13px;color:var(--text2);margin-bottom:18px;}
 .redirect-spin{width:14px;height:14px;border:2px solid var(--accent-light);border-top-color:var(--accent);border-radius:50%;animation:sp .6s linear infinite;}
-/* Writing to Firestore status box */
 .firestore-status{display:none;align-items:center;gap:10px;background:#eff4ff;border:1px solid #b8cef5;border-radius:var(--r2);padding:10px 14px;margin-bottom:14px;font-size:12.5px;color:var(--accent);font-weight:600;}
 .firestore-status.show{display:flex}
 .firestore-status.done{background:var(--green-bg);border-color:var(--green-bdr);color:var(--green-tx)}
@@ -166,7 +165,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:3px;background
       <div class="card-body">
         <div class="billing-toggle" id="billingToggle">
           <div class="bt-opt sel" data-plan="monthly" onclick="selectPlan('monthly',this)">Monthly</div>
-          <div class="bt-opt" data-plan="termly" onclick="selectPlan('termly',this)">Termly<span class="save-badge">Save 10%</span></div>
+          <div class="bt-opt" data-plan="termly" onclick="selectPlan('termly',this)">Termly<span class="save-badge">Save 8%</span></div>
           <div class="bt-opt" data-plan="annual" onclick="selectPlan('annual',this)">Annual<span class="save-badge">Save 20%</span></div>
         </div>
         <div class="plans-grid">
@@ -182,7 +181,7 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:3px;background
             <div class="plan-inner" style="margin-top:6px">
               <div class="plan-radio"></div>
               <div class="plan-info"><div class="plan-name">Termly</div><div class="plan-desc">3-month access · Ideal for school terms</div></div>
-              <div class="plan-pricing"><div class="plan-amount">Ksh 3,999</div><div class="plan-period">per term (3 months)</div><div class="plan-equiv">≈ Ksh 1,333/mo</div></div>
+              <div class="plan-pricing"><div class="plan-amount">Ksh 3,499</div><div class="plan-period">per term (3 months)</div><div class="plan-equiv">≈ Ksh 1,166/mo</div></div>
             </div>
           </div>
           <div class="plan-card" id="planAnnual" onclick="selectPlanCard('annual')">
@@ -269,7 +268,6 @@ body::after{content:'';position:fixed;top:0;left:0;right:0;height:3px;background
           <div class="success-title">Payment Successful!</div>
           <div class="success-msg" id="successMsg">Your payment has been confirmed. Activating your subscription…</div>
 
-          <!-- THE KEY ADDITION: shows Firestore write status so user sees what's happening -->
           <div class="firestore-status" id="firestoreStatus">
             <div class="spin-sm" style="border-top-color:var(--accent);border-color:rgba(18,68,176,.2)"></div>
             <span id="firestoreStatusMsg">Activating subscription…</span>
@@ -320,11 +318,13 @@ const BACKEND    = 'https://instasend-backend.onrender.com';
 const NOTIFY_URL = 'https://instasend-backend.onrender.com/api/notify';
 const NOTIFY_KEY = 'bett254';
 
+// ══ PRODUCTION PLANS ═══════════════════════════════════════════
 const PLANS = {
-  monthly: { name:'Monthly',  duration:'1 Month',   months:1,  amount:1, display:'Ksh 1,499' },
-  termly:  { name:'Termly',   duration:'3 Months',  months:3,  amount:3999, display:'Ksh 3,999' },
-  annual:  { name:'Annual',   duration:'12 Months', months:12, amount:14388,display:'Ksh 14,388' }
+  monthly: { name:'Monthly',  duration:'1 Month',   months:1,  amount:1499,  display:'Ksh 1,499' },
+  termly:  { name:'Termly',   duration:'3 Months',  months:3,  amount:3499,  display:'Ksh 3,499' },
+  annual:  { name:'Annual',   duration:'12 Months', months:12, amount:14388, display:'Ksh 14,388' }
 };
+// ═══════════════════════════════════════════════════════════════
 
 let selectedPlanId = 'monthly';
 let currentTxRef   = null;
@@ -335,7 +335,7 @@ const urlParams    = new URLSearchParams(window.location.search);
 const fromRegister = urlParams.get('from') === 'register';
 const fromGuard    = urlParams.get('from') === 'guard';
 
-el('modeBadge').innerHTML   = fromRegister ? '🏫 New School Registration' : '🔄 Subscription Renewal';
+el('modeBadge').innerHTML      = fromRegister ? '🏫 New School Registration' : '🔄 Subscription Renewal';
 el('pageSubtitle').textContent = fromRegister
   ? 'Complete payment to activate your school account'
   : 'Renew your subscription to continue using the system';
@@ -425,7 +425,7 @@ async function initiatePayment(){
     const data = await res.json();
     if(!data.success) throw new Error(data.message||'STK push failed');
     currentTxRef = data.txRef;
-    btn.style.display     = 'none';
+    btn.style.display              = 'none';
     el('phoneField').style.display = 'none';
     el('stkPending').style.display = 'block';
     toast('✅ Payment prompt sent — check your phone!');
@@ -494,33 +494,28 @@ function retryPayment(){
   if(box){ box.style.background=''; box.style.borderColor=''; }
 }
 
-// ── THE CRITICAL FIX: write new subscriptionExpiry to Firestore ────────────
-// Previously this function only wrote to localStorage and redirected.
-// The guard and admin.html never saw a Firestore change, so they kept
-// showing the expired gate even after payment.
+// ── Payment confirmed: write Firestore + localStorage then redirect ─────────
 async function onPaymentConfirmed(){
   const plan  = PLANS[selectedPlanId];
   const phone = el('phoneNumber').value.trim();
   const now   = new Date();
   const txRef = currentTxRef;
 
-  // Show success screen immediately so user sees feedback
+  // Show success screen immediately
   showScreen(3);
   el('firestoreStatus').classList.add('show');
   el('firestoreStatusMsg').textContent = 'Activating your subscription…';
 
-  // ── Compute new expiry date ──────────────────────────────────────────────
-  // TEST MODE: expire in 3 minutes
-const expiry = new Date(now);
-expiry.setMinutes(expiry.getMinutes() + 3);
+  // ── PRODUCTION: compute expiry using real calendar months ──────────────
+  const expiry = new Date(now);
+  expiry.setMonth(expiry.getMonth() + plan.months);
   const expiryStr = expiry.toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'});
 
-  // ── Write to Firestore (this is what makes the gate disappear) ───────────
+  // ── Write to Firestore ─────────────────────────────────────────────────
   let firestoreOk = false;
   let uid = null;
 
   try{
-    // Get the currently logged-in user's UID
     const user = auth.currentUser;
     uid = user?.uid || sessionStorage.getItem('cbe_school_id') || localStorage.getItem('cbe_reg_uid');
 
@@ -531,56 +526,51 @@ expiry.setMinutes(expiry.getMinutes() + 3);
       const approvedRef = db.collection('approvedSchools').doc(uid);
       batch.set(approvedRef, {
         status:             'approved',
-        subscription:       plan.name.toLowerCase(),
+        subscription:       selectedPlanId,
         subscriptionExpiry: firebase.firestore.Timestamp.fromDate(expiry),
-        message:            '',          // clear any owner block message
+        message:            '',
         renewedAt:          firebase.firestore.FieldValue.serverTimestamp(),
         renewedByTxRef:     txRef,
         renewedPlan:        selectedPlanId
       }, { merge: true });
 
-      // 2. users/{uid} — legacy path still read by old guard versions
+      // 2. users/{uid} — also updated for guard compatibility
       const userRef = db.collection('users').doc(uid);
       batch.set(userRef, {
         subscription: {
-          plan:       selectedPlanId,
-          status:     'active',
-          paidAt:     firebase.firestore.Timestamp.fromDate(now),
-          expiresAt:  firebase.firestore.Timestamp.fromDate(expiry),
-          lastTxRef:  txRef
+          plan:      selectedPlanId,
+          status:    'active',
+          paidAt:    firebase.firestore.Timestamp.fromDate(now),
+          expiresAt: firebase.firestore.Timestamp.fromDate(expiry),
+          lastTxRef: txRef
         },
-        status:   'active',
-        approved: true,
-        suspended:false
+        status:    'active',
+        approved:  true,
+        suspended: false
       }, { merge: true });
 
       await batch.commit();
       firestoreOk = true;
       console.log('[Renew] Firestore updated. New expiry:', expiry.toISOString());
 
-      // Update firestoreStatus UI
       el('firestoreStatus').classList.add('done');
       el('firestoreStatusMsg').textContent = '✅ Subscription activated — expires ' + expiryStr;
 
     } else {
-      // No UID available (registration flow before account creation)
-      // Just store in localStorage; the register page will write Firestore
-      console.warn('[Renew] No UID available — skipping Firestore write (registration flow)');
+      // Registration flow — no UID yet; register.html will write Firestore after account creation
+      console.warn('[Renew] No UID — skipping Firestore write (registration flow)');
       el('firestoreStatus').classList.add('done');
       el('firestoreStatusMsg').textContent = '✅ Payment confirmed — completing setup…';
     }
 
   }catch(e){
     console.error('[Renew] Firestore write failed:', e.message);
-    // Don't block the user — localStorage is the fallback
     el('firestoreStatus').classList.add('err');
     el('firestoreStatusMsg').textContent = '⚠️ Could not activate automatically — admin will approve shortly.';
-    // Log to ownerLog so the developer can see failures
     db.collection('ownerLog').add({
       type:      'renewal_firestore_error',
       message:   'Firestore write failed after payment: ' + e.message,
-      txRef,
-      uid:       uid || 'unknown',
+      txRef, uid: uid||'unknown',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     }).catch(()=>{});
   }
@@ -591,7 +581,6 @@ expiry.setMinutes(expiry.getMinutes() + 3);
   localStorage.setItem('cbe_pay_phone',     phone);
   localStorage.setItem('cbe_pay_date',      now.toISOString());
   localStorage.setItem('cbe_pay_plan',      selectedPlanId);
-  // Clear session guard cache so next page load re-checks Firestore
   try{ sessionStorage.removeItem('cbe_sub_checked'); }catch(e){}
 
   // ── Populate receipt ─────────────────────────────────────────────────────
@@ -614,11 +603,10 @@ expiry.setMinutes(expiry.getMinutes() + 3);
     `🎯 Type: ${fromRegister?'Registration':'Renewal'}`
   );
 
-  // ── Redirect ─────────────────────────────────────────────────────────────
-  // Wait 3s so user can read the receipt, then redirect
+  // ── Redirect after 3s ────────────────────────────────────────────────────
   el('redirectBar').style.display    = '';
   el('manualRedirect').style.display = '';
-  el('redirectMsg').textContent      = fromGuard || !fromRegister
+  el('redirectMsg').textContent      = (fromGuard || !fromRegister)
     ? 'Returning to dashboard…'
     : 'Returning to registration…';
 
@@ -637,12 +625,9 @@ function doRedirect(){
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
-function init(){
-  selectPlan('monthly', document.querySelector('.bt-opt.sel'));
-}
-init();
+selectPlan('monthly', document.querySelector('.bt-opt.sel'));
 
-// Catch payment confirmation if tab was backgrounded during STK prompt
+// Re-check on tab focus (in case STK prompt was backgrounded)
 document.addEventListener('visibilitychange', ()=>{
   if(document.visibilityState==='visible' && currentTxRef && pollInterval){
     fetch(`${BACKEND}/api/pay/status/${currentTxRef}`)

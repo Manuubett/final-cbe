@@ -112,6 +112,8 @@ select.inp{cursor:pointer;padding-left:12px}
 .btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
 .btn-outline{width:100%;height:40px;background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:var(--r2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .14s;margin-top:8px;display:flex;align-items:center;justify-content:center}
 .btn-outline:hover{background:var(--bg)}
+.btn-danger-sm{background:none;border:1.5px solid rgba(220,38,38,.35);color:var(--red-tx);border-radius:var(--r2);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;padding:5px 12px;transition:all .14s}
+.btn-danger-sm:hover{background:var(--red-bg);border-color:var(--red)}
 .spin-sm{width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 
@@ -124,6 +126,25 @@ select.inp{cursor:pointer;padding-left:12px}
 
 .footer{text-align:center;font-size:12px;color:var(--text3);margin-top:18px;line-height:1.8}
 .footer a{color:var(--accent);text-decoration:none;font-weight:600}
+
+/* ── LocalStorage Inspector Panel ── */
+#lsPanel{
+  display:none;background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--r);box-shadow:var(--sh2);padding:16px;margin-top:14px;
+  animation:fadeUp .2s ease;
+}
+#lsPanel.show{display:block}
+#lsPanel .ls-title{font-family:'Familjen Grotesk',sans-serif;font-size:13px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+#lsPanel .ls-item{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:11.5px}
+#lsPanel .ls-item:last-child{border-bottom:none}
+#lsPanel .ls-key{font-family:monospace;font-weight:700;color:var(--accent);flex-shrink:0;max-width:160px;word-break:break-all}
+#lsPanel .ls-val{color:var(--text2);flex:1;word-break:break-all;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help}
+#lsPanel .ls-del{background:none;border:none;cursor:pointer;font-size:13px;color:var(--text3);padding:0 4px;flex-shrink:0;line-height:1}
+#lsPanel .ls-del:hover{color:var(--red)}
+#lsPanel .ls-empty{text-align:center;padding:20px;color:var(--text3);font-size:12px}
+.ls-badge{display:inline-block;padding:1px 7px;border-radius:20px;font-size:10px;font-weight:800;margin-left:6px}
+.ls-badge.cbe{background:var(--alight);color:var(--accent)}
+.ls-badge.other{background:var(--surf2);color:var(--text3)}
 
 /* ── Debug log panel ── */
 #debugPanel{position:fixed;bottom:0;left:0;right:0;max-height:220px;overflow-y:auto;background:rgba(10,14,26,.93);color:#a3e635;font-family:monospace;font-size:11px;padding:8px 12px;z-index:9999;border-top:1.5px solid #1e3a1e;display:none}
@@ -224,6 +245,25 @@ select.inp{cursor:pointer;padding-left:12px}
         <button class="btn-outline" onclick="startNewRegistration()">
           New school? Register here →
         </button>
+
+        <!-- ── LocalStorage Inspector ── -->
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+            <div style="font-size:11px;color:var(--text3);font-weight:600">Trouble signing in?</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn-danger-sm" onclick="toggleLsPanel()">🗂️ View Saved Data</button>
+              <button class="btn-danger-sm" onclick="clearAllCbeStorage()" style="border-color:rgba(220,38,38,.6)">🗑️ Clear &amp; Retry</button>
+            </div>
+          </div>
+          <div id="lsPanel">
+            <div class="ls-title">
+              <span>💾 Browser Storage <span id="lsBadgeCount" class="ls-badge cbe">0 CBE keys</span></span>
+              <button onclick="renderLsPanel()" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text3)">🔄 Refresh</button>
+            </div>
+            <div id="lsItems"></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -436,12 +476,8 @@ function log(level, msg, data){
   const dataStr = data ? (typeof data === 'object' ? JSON.stringify(data) : String(data)) : '';
   const line = `[${ts}] [${level.toUpperCase()}] ${msg}${dataStr?' — '+dataStr:''}`;
   _debugLogs.push({level, line});
-
-  // Console output
   const fn = level==='error'?console.error:level==='warn'?console.warn:console.log;
   fn('[CBE Register]', msg, data||'');
-
-  // Panel output
   const panel = el('debugPanel');
   if(panel){
     const d = document.createElement('div');
@@ -452,11 +488,120 @@ function log(level, msg, data){
   }
 }
 function toggleDebug(){
-  const p = el('debugPanel');
-  p.classList.toggle('show');
+  el('debugPanel').classList.toggle('show');
 }
-// Expose as global so it's easy to check in DevTools console
 window._cbeLog = ()=> _debugLogs.forEach(l=>console.log(l.line));
+
+// ══ LOCALSTORAGE INSPECTOR + CLEANER ══════════════════════════════════════════
+// All CBE keys that might block login or cause stale session issues
+const CBE_LS_KEYS = [
+  'cbe_reg_uid','cbe_reg_email','cbe_pay_confirmed','cbe_pay_txRef',
+  'cbe_pay_phone','cbe_pay_date','cbe_pay_plan','cbe_reg_details',
+  'cbe_school_id','cbe_user_role','cbe_streams','cbe_streams_ts',
+  'cbe_theme','cbe_school_setup_done','cbe_pending_uid','cbe_pending_email'
+];
+
+function getAllLsEntries(){
+  const cbe = [], other = [];
+  for(let i = 0; i < localStorage.length; i++){
+    const k = localStorage.key(i);
+    const v = localStorage.getItem(k);
+    if(CBE_LS_KEYS.includes(k) || k.startsWith('cbe_')){
+      cbe.push({k, v});
+    } else {
+      other.push({k, v});
+    }
+  }
+  return {cbe, other};
+}
+
+function toggleLsPanel(){
+  const panel = el('lsPanel');
+  panel.classList.toggle('show');
+  if(panel.classList.contains('show')) renderLsPanel();
+}
+
+function renderLsPanel(){
+  const {cbe, other} = getAllLsEntries();
+  const badge = el('lsBadgeCount');
+  if(badge) badge.textContent = cbe.length + ' CBE ' + (cbe.length === 1 ? 'key' : 'keys');
+
+  const container = el('lsItems');
+  if(!container) return;
+
+  if(!cbe.length && !other.length){
+    container.innerHTML = '<div class="ls-empty">✅ No stored data found — storage is clean</div>';
+    return;
+  }
+
+  let html = '';
+
+  if(cbe.length){
+    html += `<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--accent);padding:4px 0 6px;margin-bottom:2px">CBE System Keys</div>`;
+    cbe.forEach(({k, v}) => {
+      const display = v && v.length > 60 ? v.slice(0,60) + '…' : (v || '(empty)');
+      const isSensitive = k.includes('uid') || k.includes('email') || k.includes('confirmed') || k.includes('school_id');
+      html += `<div class="ls-item">
+        <span class="ls-key">${k}</span>
+        <span class="ls-val ${isSensitive ? 'style="color:var(--amber-tx)"' : ''}" title="${v || ''}">${display}</span>
+        <button class="ls-del" onclick="deleteLsKey('${k}')" title="Delete this key">🗑️</button>
+      </div>`;
+    });
+  }
+
+  if(other.length){
+    html += `<div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);padding:8px 0 6px;margin-top:4px">Other Browser Data</div>`;
+    other.forEach(({k, v}) => {
+      const display = v && v.length > 50 ? v.slice(0,50) + '…' : (v || '(empty)');
+      html += `<div class="ls-item">
+        <span class="ls-key" style="color:var(--text3)">${k}</span>
+        <span class="ls-val" title="${v || ''}">${display}</span>
+        <button class="ls-del" onclick="deleteLsKey('${k}')" title="Delete this key">🗑️</button>
+      </div>`;
+    });
+  }
+
+  container.innerHTML = html;
+}
+
+function deleteLsKey(key){
+  localStorage.removeItem(key);
+  log('info', 'Manually deleted localStorage key', key);
+  toast(`Cleared: ${key}`, 'info');
+  renderLsPanel();
+}
+
+/**
+ * clearAllCbeStorage()
+ * Clears ONLY the CBE session/auth keys that are known to block login.
+ * Preserves unrelated browser data. Signs out Firebase auth too.
+ * Shows a toast and reloads after 1.5s.
+ */
+async function clearAllCbeStorage(){
+  const authKeys = [
+    'cbe_reg_uid','cbe_reg_email','cbe_pay_confirmed','cbe_pay_txRef',
+    'cbe_pay_phone','cbe_pay_date','cbe_pay_plan',
+    'cbe_school_id','cbe_user_role','cbe_pending_uid','cbe_pending_email',
+    'cbe_school_setup_done'
+  ];
+  // Also clear sessionStorage equivalents
+  authKeys.forEach(k => {
+    localStorage.removeItem(k);
+    try { sessionStorage.removeItem(k); } catch(_){}
+  });
+
+  log('info', 'All CBE auth keys cleared from localStorage + sessionStorage');
+
+  try {
+    await auth.signOut();
+    log('info', 'Firebase auth signed out');
+  } catch(e) {
+    log('warn', 'signOut error (may already be signed out)', e.message);
+  }
+
+  toast('✅ Storage cleared — reloading…', 'ok');
+  setTimeout(() => location.reload(), 1500);
+}
 
 // ══ INIT TIMEOUT ══════════════════════════════════════════════════════════════
 const initTimeout = setTimeout(()=>{
@@ -477,7 +622,7 @@ function sendTelegramAlert(text){
 
 // ══ PLANS ════════════════════════════════════════════════════════════════════
 const PLANS = {
-  monthly:  { label:'Monthly',  duration:'1 Month',   months:1,  amount:1,  display:'Ksh 1,499' },
+  monthly:  { label:'Monthly',  duration:'1 Month',   months:1,  amount:1,     display:'Ksh 1,499' },
   termly:   { label:'Termly',   duration:'3 Months',  months:3,  amount:3999,  display:'Ksh 3,999' },
   annual:   { label:'Annual',   duration:'12 Months', months:12, amount:14388, display:'Ksh 14,388' },
 };
@@ -490,6 +635,13 @@ const PAY_DATE      = 'cbe_pay_date';
 const PAY_PLAN      = 'cbe_pay_plan';
 
 let currentStep = 1, _createdUid = null, _regUnsub = null;
+
+// ── Reset login button helper — called on ANY auth resolution ──
+function _resetLoginBtn(){
+  const btn = el('loginBtn'), txt = el('loginBtnTxt');
+  if(btn) btn.disabled = false;
+  if(txt) txt.textContent = 'Sign In →';
+}
 
 function startNewRegistration(){
   log('info','User clicked "New school — register"');
@@ -527,6 +679,8 @@ function goToStep(n){
   updateStepBar(n);
   window.scrollTo({top:0,behavior:'smooth'});
   log('info',`Navigated to screen ${n}`);
+  // Always reset login button when navigating away from auth flow
+  _resetLoginBtn();
 }
 
 function updateStepBar(n){
@@ -585,17 +739,13 @@ async function doLogin(){
   // ── Safety timeout: if Firebase hangs for 15s, unblock the button ──
   const loginTimeout = setTimeout(()=>{
     log('error','Login timed out after 15s — Firebase may be unreachable');
-    btn.disabled=false;
-    txt.textContent='Sign In →';
+    _resetLoginBtn();
     el('loginErrMsg').textContent='Sign-in timed out. Check your internet connection and try again.';
     el('loginErr').classList.add('show');
     showLoginStatus('❌ Timed out after 15s');
   }, 15000);
 
   try{
-    // FIX: set persistence BEFORE signIn, but only if it differs from default.
-    // Use SESSION as default (no localStorage write) — only switch to LOCAL if "remember me" is checked.
-    // This avoids a double round-trip on every sign-in.
     const t0 = Date.now();
     showLoginStatus('⏳ Setting auth persistence…');
     const persistence = remember
@@ -613,15 +763,14 @@ async function doLogin(){
 
     clearTimeout(loginTimeout);
     localStorage.setItem('cbe_reg_email', email);
-    // onAuthStateChanged will handle redirect
+    // onAuthStateChanged will handle redirect — button stays disabled until redirect
 
   }catch(e){
     clearTimeout(loginTimeout);
     const loginMs = Date.now() - loginStart;
     log('warn','Login failed',{code: e.code, ms: loginMs});
     showLoginStatus(`❌ Failed after ${loginMs}ms — ${e.code}`);
-    btn.disabled=false;
-    txt.textContent='Sign In →';
+    _resetLoginBtn();
     const msg = e.code==='auth/user-not-found'||e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'
       ? 'Incorrect email or password.'
       : e.code==='auth/too-many-requests' ? 'Too many attempts. Try again later.'
@@ -904,13 +1053,6 @@ function showOwnerBanner(type, title, msg, contact){
 }
 
 // ══ ROUTING ═══════════════════════════════════════════════════════════════════
-// Priority order:
-//   1. Active payment session → Step 2 (create account)
-//   2. Known returning user (has cbe_reg_email or cbe_reg_uid in localStorage) → Step 0 (login)
-//   3. Brand-new visitor → Step 1 (payment)
-//
-// NOTE: Firebase onAuthStateChanged will OVERRIDE step 0 immediately if the
-// user is already signed in — they'll be sent straight to /admin.
 async function checkPaymentAndRoute(){
   const payOk      = localStorage.getItem(PAY_CONFIRMED) === 'true';
   const savedEmail = localStorage.getItem('cbe_reg_email');
@@ -925,7 +1067,6 @@ async function checkPaymentAndRoute(){
     return;
   }
 
-  // ── KEY FIX: any sign of a previously registered user → show login ──
   if(savedEmail || savedUid){
     log('info','→ Returning user detected — showing login (step 0)');
     goToStep(0);
@@ -972,7 +1113,6 @@ checkUrlForPayment();
 
 let _authSettled = false;
 
-// Fallback: if Firebase takes >3s, run routing logic without waiting
 const _routeTimer = setTimeout(()=>{
   if(!_authSettled){
     log('warn','Firebase auth took >3s — routing without auth result');
@@ -987,7 +1127,6 @@ auth.onAuthStateChanged(async u=>{
 
   log('info','onAuthStateChanged fired', u ? {uid:u.uid, email:u.email} : 'no user');
 
-  // Active payment session always wins — don't let existing auth override
   const payOk = localStorage.getItem(PAY_CONFIRMED) === 'true';
   if(payOk){
     if(!_authSettled){
@@ -1007,7 +1146,9 @@ auth.onAuthStateChanged(async u=>{
   // ── No signed-in user ──
   if(!u){
     log('info','No authenticated user');
-    if(currentStep===0) return; // already on login, nothing to do
+    // IMPORTANT: always reset login button if no user is found
+    _resetLoginBtn();
+    if(currentStep===0) return;
     if(currentStep>=2 && currentStep<=4){
       log('warn','User logged out during registration flow — returning to login');
       goToStep(0);
@@ -1040,10 +1181,12 @@ auth.onAuthStateChanged(async u=>{
           : '🚫 Your account has been suspended.';
         log('warn','Teacher account not active',userProfile.status);
         toast(msg,'err');
-        await auth.signOut(); goToStep(0); return;
+        await auth.signOut();
+        _resetLoginBtn();
+        goToStep(0);
+        return;
       }
 
-      // Admin but not yet active — check approvedSchools
       const t1 = Date.now();
       const snap = await db.collection('approvedSchools').doc(u.uid).get();
       log('info','approvedSchools doc fetched',{ms:Date.now()-t1, exists:snap.exists});
@@ -1066,7 +1209,6 @@ auth.onAuthStateChanged(async u=>{
         return;
       }
 
-      // No approvedSchools entry — check if school details missing
       const t2 = Date.now();
       const settSnap = await db.collection('settings').doc(u.uid).get();
       log('info','settings doc fetched',{ms:Date.now()-t2, exists:settSnap.exists, hasName:!!settSnap.data()?.name});
@@ -1086,17 +1228,22 @@ auth.onAuthStateChanged(async u=>{
         window.location.href='/admin';
       }
     } else {
-      // Authenticated but no users doc — orphaned auth account
-      log('warn','Authenticated but no Firestore profile — signing out',u.uid);
+      // Authenticated but no Firestore profile — orphaned account
+      log('warn','Authenticated but no Firestore profile — signing out and clearing stale storage',u.uid);
       await auth.signOut();
-
-      // ── KEY FIX: clear stale localStorage so login screen shows correctly ──
-      localStorage.removeItem('cbe_reg_uid');
-      localStorage.removeItem('cbe_reg_email');
+      // Clear ALL stale CBE keys so user doesn't get stuck
+      ['cbe_reg_uid','cbe_reg_email','cbe_school_id','cbe_user_role',
+       'cbe_pending_uid','cbe_pending_email','cbe_school_setup_done'].forEach(k=>{
+        localStorage.removeItem(k);
+        try { sessionStorage.removeItem(k); } catch(_){}
+      });
+      _resetLoginBtn();
       goToStep(0);
     }
   }catch(e){
     log('error','Auth state profile check failed',e.message);
+    // On any Firestore error, unblock the login button so user can retry
+    _resetLoginBtn();
     goToStep(0);
   }
 });

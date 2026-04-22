@@ -1,0 +1,655 @@
+<!--
+  CBE Mark Sheet System - Payment/Renewal Page
+  Copyright © 2026 Bett Emanuel — https://bett.website
+  All rights reserved.
+  PURPOSE: Handle plan selection and M-Pesa payment ONLY
+  After successful payment, writes new subscriptionExpiry to Firestore,
+  then redirects back to admin or register page with confirmation.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSI+CiAgPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxMjQ0YjAiLz48L3N2Zz4=">
+<meta name="theme-color" content="#1244b0">
+<title>Pay | CBE Mark Sheet System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f2f8;--surface:#ffffff;--surf2:#f6f7fb;--surf3:#eef0f8;
+  --border:#dde1ef;--border2:#cdd2e8;--text:#0d1526;--text2:#4a5578;--text3:#8a95b0;
+  --accent:#1244b0;--accent-mid:#1a56db;--accent-light:#e8eefb;
+  --green:#077b50;--green-bg:#e6f5ef;--green-tx:#055c3c;--green-bdr:#9adbc2;
+  --amber:#b45c0a;--amber-bg:#fef5e7;--amber-tx:#8a4208;
+  --red:#b91c1c;--red-bg:#fde8e8;--red-tx:#8b1616;
+  --r:12px;--r2:8px;--r3:6px;
+  --sh:0 1px 4px rgba(0,0,0,.06),0 0 0 1px rgba(0,0,0,.03);
+  --sh2:0 8px 32px rgba(12,28,80,.13),0 2px 8px rgba(12,28,80,.07);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13.5px;min-height:100vh;line-height:1.5;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(18,68,176,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(18,68,176,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1244b0,#3b72f6,#1244b0);background-size:200% 100%;animation:barshift 4s linear infinite;z-index:100;}
+@keyframes barshift{0%{background-position:0%}100%{background-position:200%}}
+.page{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:36px 20px 72px}
+.hd{text-align:center;margin-bottom:24px}
+.hd-logo{width:54px;height:54px;background:var(--accent);border-radius:14px;display:grid;place-items:center;font-size:26px;margin:0 auto 14px;box-shadow:0 6px 20px rgba(18,68,176,.35),0 0 0 6px rgba(18,68,176,.1);}
+.hd-title{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px}
+.hd-sub{font-size:12.5px;color:var(--text3);font-weight:500}
+.mode-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent-light);border:1px solid #b8cef5;border-radius:20px;padding:5px 14px;font-size:11.5px;font-weight:700;color:var(--accent);margin-bottom:18px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh2);overflow:hidden;animation:fadeUp .28s cubic-bezier(.22,1,.36,1);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.card-head{padding:16px 24px;background:var(--surf2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.card-head-icon{width:34px;height:34px;background:var(--accent-light);border-radius:8px;display:grid;place-items:center;font-size:16px;flex-shrink:0;}
+.card-head-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;margin-bottom:1px}
+.card-head-sub{font-size:11.5px;color:var(--text3)}
+.card-body{padding:24px}
+.screen{display:none}.screen.active{display:block}
+.billing-toggle{display:flex;align-items:center;gap:0;background:var(--surf3);border:1px solid var(--border);border-radius:var(--r2);padding:4px;margin-bottom:22px;}
+.bt-opt{flex:1;padding:9px 0;text-align:center;border-radius:var(--r3);cursor:pointer;transition:all .18s;font-size:12.5px;font-weight:700;color:var(--text3);position:relative;user-select:none;}
+.bt-opt.sel{background:var(--surface);color:var(--accent);box-shadow:0 1px 5px rgba(12,28,80,.12);}
+.bt-opt .save-badge{position:absolute;top:-9px;right:4px;background:var(--green);color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;white-space:nowrap;}
+.plans-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:22px}
+.plan-card{border:1.5px solid var(--border);border-radius:var(--r);padding:16px 18px;cursor:pointer;transition:all .18s;position:relative;background:var(--surface);}
+.plan-card:hover{border-color:#93c5fd;background:#fafbff}
+.plan-card.selected{border-color:var(--accent);background:var(--accent-light);box-shadow:0 0 0 3px rgba(18,68,176,.1);}
+.plan-card.recommended{border-color:#10b981}
+.plan-card.recommended.selected{border-color:var(--accent)}
+.rec-chip{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#059669,#10b981);color:#fff;font-size:10px;font-weight:800;padding:3px 14px;border-radius:20px;white-space:nowrap;letter-spacing:.3px;}
+.plan-inner{display:flex;align-items:center;gap:14px}
+.plan-radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;display:grid;place-items:center;transition:all .18s;}
+.plan-card.selected .plan-radio{border-color:var(--accent);background:var(--accent)}
+.plan-radio::after{content:'';width:7px;height:7px;border-radius:50%;background:#fff;opacity:0;transition:opacity .18s;}
+.plan-card.selected .plan-radio::after{opacity:1}
+.plan-info{flex:1}
+.plan-name{font-family:'Space Grotesk',sans-serif;font-size:14.5px;font-weight:700;margin-bottom:2px}
+.plan-desc{font-size:12px;color:var(--text3)}
+.plan-pricing{text-align:right;flex-shrink:0}
+.plan-amount{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--text);line-height:1;}
+.plan-period{font-size:11.5px;color:var(--text3);margin-top:3px}
+.plan-equiv{font-size:11px;color:var(--green-tx);font-weight:700;margin-top:4px;background:var(--green-bg);padding:2px 8px;border-radius:4px;display:inline-block;}
+.features-section{background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;margin-bottom:18px;}
+.fs-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.feat-list{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.feat-item{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2);}
+.feat-dot{width:18px;height:18px;border-radius:50%;background:var(--green-bg);display:grid;place-items:center;font-size:10px;color:var(--green);flex-shrink:0;font-weight:800;}
+.summary-pill{display:flex;align-items:center;justify-content:space-between;background:var(--accent-light);border:1.5px solid #b8cef5;border-radius:var(--r2);padding:12px 16px;margin-bottom:18px;}
+.sp-label{font-size:12.5px;color:var(--text2);font-weight:600}
+.sp-value{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--accent);}
+.payment-summary{background:var(--green-bg);border:1.5px solid var(--green-bdr);border-radius:var(--r2);padding:14px 16px;margin-bottom:16px;}
+.ps-title{font-size:11px;font-weight:700;color:var(--green-tx);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.ps-row{display:flex;justify-content:space-between;margin-bottom:7px;font-size:13px;}
+.ps-row:last-child{margin-bottom:0}
+.ps-label{color:#166534;font-weight:600}
+.ps-value{font-family:'Space Grotesk',sans-serif;font-weight:700;color:#15803d;font-size:15px;}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.hint{font-size:11.5px;color:var(--text3);margin-top:5px}
+.inp-wrap{position:relative}
+.inp-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;opacity:.4;}
+.inp{width:100%;height:42px;padding:0 13px 0 36px;border:1.5px solid var(--border);border-radius:var(--r2);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:var(--surface);outline:none;transition:border-color .15s,box-shadow .15s;}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(18,68,176,.12)}
+.inp::placeholder{color:var(--text3)}
+.inp:hover:not(:focus){border-color:var(--border2)}
+.stk-pending-box{background:var(--amber-bg);border:1.5px solid #f3c97a;border-radius:var(--r2);padding:18px;margin-bottom:16px;}
+.stk-phone-display{text-align:center;font-size:28px;margin-bottom:10px;}
+.stk-title{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:var(--amber-tx);text-align:center;margin-bottom:5px;}
+.stk-desc{font-size:13px;color:var(--amber-tx);text-align:center;margin-bottom:14px;line-height:1.6}
+.stk-wait-bar{display:flex;align-items:center;gap:8px;padding:9px 14px;background:#fff;border:1px solid #f3c97a;border-radius:var(--r3);font-size:12.5px;font-weight:600;color:var(--amber-tx);}
+.wait-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:pulse 2s infinite;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.btn-primary{width:100%;height:46px;background:var(--accent);color:#fff;border:none;border-radius:var(--r2);font-family:'Space Grotesk',sans-serif;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;box-shadow:0 4px 16px rgba(18,68,176,.3);margin-top:8px;letter-spacing:-.1px;}
+.btn-primary:hover:not(:disabled){background:#1040a8;transform:translateY(-1px);box-shadow:0 6px 20px rgba(18,68,176,.38);}
+.btn-primary:active:not(:disabled){transform:translateY(0)}
+.btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.btn-outline{width:100%;height:42px;background:none;border:1.5px solid var(--border);color:var(--text2);border-radius:var(--r2);font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .14s;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-outline:hover{background:var(--surf3);border-color:var(--border2)}
+.spin-sm{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .55s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg)}}
+.alert{display:none;align-items:flex-start;gap:8px;padding:10px 13px;border-radius:var(--r3);font-size:12.5px;font-weight:500;line-height:1.55;margin-bottom:16px;}
+.alert.show{display:flex}
+.alert.err{background:var(--red-bg);border:1px solid #f8a0a0;color:var(--red-tx)}
+.success-card{text-align:center;padding:20px 10px}
+.success-icon{font-size:58px;margin-bottom:16px;animation:pop .4s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.success-title{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:10px;letter-spacing:-.3px;}
+.success-msg{font-size:13.5px;color:var(--text2);line-height:1.8;margin-bottom:22px}
+.receipt-box{background:var(--surf2);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;text-align:left;margin-bottom:16px;}
+.rb-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.rb-row:last-child{border-bottom:none;padding-bottom:0}
+.rb-label{color:var(--text3);font-weight:600}
+.rb-value{font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--text)}
+.rb-value.mono{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent)}
+.redirect-bar{display:flex;align-items:center;justify-content:center;gap:9px;font-size:13px;color:var(--text2);margin-bottom:18px;}
+.redirect-spin{width:14px;height:14px;border:2px solid var(--accent-light);border-top-color:var(--accent);border-radius:50%;animation:sp .6s linear infinite;}
+/* Writing to Firestore status box */
+.firestore-status{display:none;align-items:center;gap:10px;background:#eff4ff;border:1px solid #b8cef5;border-radius:var(--r2);padding:10px 14px;margin-bottom:14px;font-size:12.5px;color:var(--accent);font-weight:600;}
+.firestore-status.show{display:flex}
+.firestore-status.done{background:var(--green-bg);border-color:var(--green-bdr);color:var(--green-tx)}
+.firestore-status.err{background:var(--red-bg);border-color:#f8a0a0;color:var(--red-tx)}
+#tc{position:fixed;top:20px;right:18px;z-index:999;display:flex;flex-direction:column;gap:7px}
+.t{display:flex;align-items:center;gap:9px;padding:10px 16px;border-radius:var(--r2);font-size:13px;font-weight:600;box-shadow:var(--sh2);animation:tin .22s ease;min-width:220px;max-width:340px;}
+.t.ok{background:#0a3d28;color:#e6f9ef;border-left:3px solid #22c55e}
+.t.err{background:#5c0f0f;color:#fde8e8;border-left:3px solid #ef4444}
+@keyframes tin{from{transform:translateX(115%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes tout{to{transform:translateX(115%);opacity:0}}
+.footer{text-align:center;font-size:12.5px;color:var(--text3);margin-top:22px;line-height:1.9}
+.footer a{color:var(--accent);text-decoration:none;font-weight:600}
+.footer a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div id="tc"></div>
+
+<div class="page">
+  <div class="hd">
+    <div class="hd-logo">💳</div>
+    <div class="hd-title">CBE Subscription</div>
+    <div class="hd-sub" id="pageSubtitle">Complete your subscription payment via M-Pesa</div>
+  </div>
+  <div style="text-align:center;margin-bottom:20px">
+    <div class="mode-badge" id="modeBadge">🏫 New School Registration</div>
+  </div>
+
+  <!-- SCREEN 1: PLAN SELECTION -->
+  <div class="screen active" id="screen1">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">📋</div>
+        <div>
+          <div class="card-head-title">Choose Your Plan</div>
+          <div class="card-head-sub">All plans include full system access</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="billing-toggle" id="billingToggle">
+          <div class="bt-opt sel" data-plan="monthly" onclick="selectPlan('monthly',this)">Monthly</div>
+          <div class="bt-opt" data-plan="termly" onclick="selectPlan('termly',this)">Termly<span class="save-badge">Save 10%</span></div>
+          <div class="bt-opt" data-plan="annual" onclick="selectPlan('annual',this)">Annual<span class="save-badge">Save 20%</span></div>
+        </div>
+        <div class="plans-grid">
+          <div class="plan-card selected" id="planMonthly" onclick="selectPlanCard('monthly')">
+            <div class="plan-inner">
+              <div class="plan-radio"></div>
+              <div class="plan-info"><div class="plan-name">Monthly</div><div class="plan-desc">Renews every month · Cancel anytime</div></div>
+              <div class="plan-pricing"><div class="plan-amount">Ksh 1,499</div><div class="plan-period">per month</div></div>
+            </div>
+          </div>
+          <div class="plan-card recommended" id="planTermly" onclick="selectPlanCard('termly')">
+            <div class="rec-chip">✨ BEST VALUE</div>
+            <div class="plan-inner" style="margin-top:6px">
+              <div class="plan-radio"></div>
+              <div class="plan-info"><div class="plan-name">Termly</div><div class="plan-desc">3-month access · Ideal for school terms</div></div>
+              <div class="plan-pricing"><div class="plan-amount">Ksh 3,999</div><div class="plan-period">per term (3 months)</div><div class="plan-equiv">≈ Ksh 1,333/mo</div></div>
+            </div>
+          </div>
+          <div class="plan-card" id="planAnnual" onclick="selectPlanCard('annual')">
+            <div class="plan-inner">
+              <div class="plan-radio"></div>
+              <div class="plan-info"><div class="plan-name">Annual</div><div class="plan-desc">12-month access · Best long-term value</div></div>
+              <div class="plan-pricing"><div class="plan-amount">Ksh 14,388</div><div class="plan-period">per year (12 months)</div><div class="plan-equiv">≈ Ksh 1,199/mo</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="features-section">
+          <div class="fs-title">✅ All plans include</div>
+          <div class="feat-list">
+            <div class="feat-item"><div class="feat-dot">✓</div>CBC Mark Sheets G1–9</div>
+            <div class="feat-item"><div class="feat-dot">✓</div>Unlimited teachers</div>
+            <div class="feat-item"><div class="feat-dot">✓</div>Performance analysis</div>
+            <div class="feat-item"><div class="feat-dot">✓</div>Print-ready report cards</div>
+            <div class="feat-item"><div class="feat-dot">✓</div>Real-time cloud sync</div>
+            <div class="feat-item"><div class="feat-dot">✓</div>Role-based access</div>
+            <div class="feat-item"><div class="feat-dot">✓</div>Works on all devices</div>
+            <div class="feat-item"><div class="feat-dot">✓</div>WhatsApp support</div>
+          </div>
+        </div>
+        <div class="summary-pill">
+          <div class="sp-label">You pay today</div>
+          <div class="sp-value" id="summaryAmount">Ksh 1,499</div>
+        </div>
+        <button class="btn-primary" onclick="goToPayment()">Continue to Payment →</button>
+        <button class="btn-outline" onclick="goBackToRegister()">← Back to Registration</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: M-PESA PAYMENT -->
+  <div class="screen" id="screen2">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-head-icon">📱</div>
+        <div>
+          <div class="card-head-title">M-Pesa Payment</div>
+          <div class="card-head-sub">Enter your Safaricom number to receive a payment prompt</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="payment-summary">
+          <div class="ps-title">💳 Payment Summary</div>
+          <div class="ps-row"><span class="ps-label">Plan</span><span class="ps-value" id="summaryPlan">—</span></div>
+          <div class="ps-row"><span class="ps-label">Duration</span><span class="ps-value" id="summaryDuration">—</span></div>
+          <div class="ps-row"><span class="ps-label">Amount</span><span class="ps-value" id="summaryAmount2">—</span></div>
+        </div>
+        <div class="alert err" id="paymentError"><span>⚠️</span><span id="errorMsg"></span></div>
+        <div class="field" id="phoneField">
+          <label>M-Pesa Phone Number <span style="color:var(--red)">*</span></label>
+          <div class="inp-wrap">
+            <span class="inp-icon">📱</span>
+            <input class="inp" id="phoneNumber" type="tel" placeholder="0712 345 678" autocomplete="tel">
+          </div>
+          <div class="hint">Must be a Safaricom number registered for M-Pesa</div>
+        </div>
+        <div id="stkPending" style="display:none;margin-bottom:16px">
+          <div class="stk-pending-box" id="stkPendingBox">
+            <div class="stk-phone-display">📲</div>
+            <div class="stk-title">Check your phone!</div>
+            <div class="stk-desc">Enter your M-Pesa PIN to complete payment of <strong id="pendingAmount">Ksh 1,499</strong></div>
+            <div class="stk-wait-bar">
+              <div class="wait-dot"></div>
+              <span id="stkStatus">Waiting for payment confirmation…</span>
+            </div>
+          </div>
+          <button class="btn-outline" id="retryBtn" onclick="retryPayment()" style="display:none;font-size:12.5px;height:38px">Didn't get the prompt? Resend →</button>
+        </div>
+        <button class="btn-primary" id="payBtn" onclick="initiatePayment()"><span id="payBtnText">Send M-Pesa Prompt →</span></button>
+        <button class="btn-outline" onclick="goBackToPlans()">← Change Plan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: SUCCESS -->
+  <div class="screen" id="screen3">
+    <div class="card">
+      <div class="card-body">
+        <div class="success-card">
+          <div class="success-icon">✅</div>
+          <div class="success-title">Payment Successful!</div>
+          <div class="success-msg" id="successMsg">Your payment has been confirmed. Activating your subscription…</div>
+
+          <!-- THE KEY ADDITION: shows Firestore write status so user sees what's happening -->
+          <div class="firestore-status" id="firestoreStatus">
+            <div class="spin-sm" style="border-top-color:var(--accent);border-color:rgba(18,68,176,.2)"></div>
+            <span id="firestoreStatusMsg">Activating subscription…</span>
+          </div>
+
+          <div class="receipt-box" id="receiptBox" style="display:none">
+            <div class="rb-row"><span class="rb-label">Plan</span><span class="rb-value" id="receiptPlan">—</span></div>
+            <div class="rb-row"><span class="rb-label">Amount Paid</span><span class="rb-value" id="receiptAmount">—</span></div>
+            <div class="rb-row"><span class="rb-label">Expires</span><span class="rb-value" id="receiptExpiry">—</span></div>
+            <div class="rb-row"><span class="rb-label">Transaction Ref</span><span class="rb-value mono" id="receiptRef">—</span></div>
+            <div class="rb-row"><span class="rb-label">Payment Date</span><span class="rb-value" id="receiptDate">—</span></div>
+          </div>
+
+          <div class="redirect-bar" id="redirectBar" style="display:none">
+            <div class="redirect-spin"></div>
+            <span id="redirectMsg">Redirecting…</span>
+          </div>
+          <div style="font-size:12.5px;color:var(--text3);display:none" id="manualRedirect">
+            <a href="#" onclick="doRedirect()" style="color:var(--accent);font-weight:600">Click here if not redirected →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="/register">← Back to Registration</a> &nbsp;·&nbsp; CBE Mark Sheet System · Kenya CBC
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyBdabXqlBQ-6yVNJKdu8Zhb9Cm_-59_u24",
+  authDomain:"bett-294a2.firebaseapp.com",
+  projectId:"bett-294a2",
+  storageBucket:"bett-294a2.appspot.com",
+  messagingSenderId:"1055511650032",
+  appId:"1:1055511650032:web:7e0f9c28e58515f549ac35"
+});
+const db   = firebase.firestore();
+const auth = firebase.auth();
+const el   = id => document.getElementById(id);
+
+const BACKEND    = 'https://instasend-backend.onrender.com';
+const NOTIFY_URL = 'https://instasend-backend.onrender.com/api/notify';
+const NOTIFY_KEY = 'bett254';
+
+const PLANS = {
+  monthly: { name:'Monthly',  duration:'1 Month',   months:1,  amount:1499, display:'Ksh 1,499' },
+  termly:  { name:'Termly',   duration:'3 Months',  months:3,  amount:3999, display:'Ksh 3,999' },
+  annual:  { name:'Annual',   duration:'12 Months', months:12, amount:14388,display:'Ksh 14,388' }
+};
+
+let selectedPlanId = 'monthly';
+let currentTxRef   = null;
+let pollInterval   = null;
+let pollCount      = 0;
+
+const urlParams    = new URLSearchParams(window.location.search);
+const fromRegister = urlParams.get('from') === 'register';
+const fromGuard    = urlParams.get('from') === 'guard';
+
+el('modeBadge').innerHTML   = fromRegister ? '🏫 New School Registration' : '🔄 Subscription Renewal';
+el('pageSubtitle').textContent = fromRegister
+  ? 'Complete payment to activate your school account'
+  : 'Renew your subscription to continue using the system';
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, type='ok'){
+  const t = document.createElement('div');
+  t.className = `t ${type}`;
+  t.innerHTML = `<span>${type==='ok'?'✅':'❌'}</span>${msg}`;
+  el('tc').appendChild(t);
+  setTimeout(()=>{ t.style.animation='tout .25s ease forwards'; setTimeout(()=>t.remove(),280); }, 3200);
+}
+
+// ── Screen ─────────────────────────────────────────────────────────────────
+function showScreen(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  el('screen'+n).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── Plan selection ─────────────────────────────────────────────────────────
+function selectPlan(planId, btn){
+  selectedPlanId = planId;
+  document.querySelectorAll('.bt-opt').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  ['monthly','termly','annual'].forEach(p=>{
+    const card = el('plan'+p.charAt(0).toUpperCase()+p.slice(1));
+    if(card) card.classList.toggle('selected', p===planId);
+  });
+  el('summaryAmount').textContent = PLANS[planId].display;
+}
+function selectPlanCard(planId){
+  selectedPlanId = planId;
+  document.querySelectorAll('.bt-opt').forEach(b=>b.classList.toggle('sel', b.dataset.plan===planId));
+  ['monthly','termly','annual'].forEach(p=>{
+    const card = el('plan'+p.charAt(0).toUpperCase()+p.slice(1));
+    if(card) card.classList.toggle('selected', p===planId);
+  });
+  el('summaryAmount').textContent = PLANS[planId].display;
+}
+
+function goToPayment(){
+  const plan = PLANS[selectedPlanId];
+  el('summaryPlan').textContent     = plan.name;
+  el('summaryDuration').textContent = plan.duration;
+  el('summaryAmount2').textContent  = plan.display;
+  el('pendingAmount').textContent   = plan.display;
+  showScreen(2);
+}
+function goBackToPlans(){
+  if(pollInterval) clearInterval(pollInterval);
+  currentTxRef = null;
+  el('stkPending').style.display = 'none';
+  el('payBtn').style.display     = '';
+  el('phoneField').style.display = '';
+  el('payBtn').disabled          = false;
+  el('payBtnText').textContent   = 'Send M-Pesa Prompt →';
+  el('paymentError').classList.remove('show');
+  showScreen(1);
+}
+function goBackToRegister(){ window.location.href = '/register'; }
+
+// ── Notify ─────────────────────────────────────────────────────────────────
+function sendTelegramAlert(text){
+  fetch(NOTIFY_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({text, apiKey:NOTIFY_KEY})}).catch(()=>{});
+}
+
+// ── STK Push ───────────────────────────────────────────────────────────────
+async function initiatePayment(){
+  const phone = el('phoneNumber').value.trim();
+  if(!phone){
+    el('errorMsg').textContent = 'Please enter your M-Pesa phone number.';
+    el('paymentError').classList.add('show');
+    return;
+  }
+  const btn = el('payBtn'), btnText = el('payBtnText');
+  btn.disabled = true;
+  btnText.innerHTML = '<div class="spin-sm"></div> Sending prompt…';
+  const plan = PLANS[selectedPlanId];
+  try{
+    const res  = await fetch(`${BACKEND}/api/stk-push`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ amount:plan.amount, phone, userId:null, plan:selectedPlanId, type:fromRegister?'registration':'renewal' })
+    });
+    const data = await res.json();
+    if(!data.success) throw new Error(data.message||'STK push failed');
+    currentTxRef = data.txRef;
+    btn.style.display     = 'none';
+    el('phoneField').style.display = 'none';
+    el('stkPending').style.display = 'block';
+    toast('✅ Payment prompt sent — check your phone!');
+    startPolling();
+    sendTelegramAlert(
+      `📱 <b>${fromRegister?'REGISTRATION':'RENEWAL'} PAYMENT INITIATED</b>\n\n`+
+      `📋 Plan: ${plan.name} — ${plan.display}\n📞 Phone: ${phone}\n`+
+      `🔖 TxRef: <code>${currentTxRef}</code>\n⏰ ${new Date().toLocaleString('en-KE')}`
+    );
+  }catch(error){
+    btn.disabled = false;
+    btnText.textContent = 'Send M-Pesa Prompt →';
+    el('errorMsg').textContent = error.message||'Failed to initiate payment. Try again.';
+    el('paymentError').classList.add('show');
+  }
+}
+
+// ── Poll backend ────────────────────────────────────────────────────────────
+function startPolling(){
+  pollCount = 0;
+  if(pollInterval) clearInterval(pollInterval);
+  pollInterval = setInterval(async()=>{
+    pollCount++;
+    if(pollCount > 60){
+      clearInterval(pollInterval);
+      showRetry('Payment timed out — please try again.');
+      return;
+    }
+    try{
+      const res  = await fetch(`${BACKEND}/api/pay/status/${currentTxRef}`);
+      const data = await res.json();
+      if(data.status === 'confirmed'){
+        clearInterval(pollInterval);
+        el('stkStatus').textContent = '✅ Payment confirmed!';
+        toast('✅ Payment confirmed!');
+        await onPaymentConfirmed();
+        return;
+      }
+      if(data.status === 'cancelled' || data.status === 'failed'){
+        clearInterval(pollInterval);
+        showRetry(data.status==='cancelled'
+          ? 'You cancelled the M-Pesa prompt. Tap below to try again.'
+          : 'Payment failed. Please try again.');
+      }
+    }catch(e){ console.warn('Poll error:', e.message); }
+  }, 5000);
+}
+
+function showRetry(msg){
+  el('stkStatus').textContent = msg;
+  const box = el('stkPendingBox');
+  if(box){ box.style.background='#fde8e8'; box.style.borderColor='#f8a0a0'; }
+  el('retryBtn').style.display = 'flex';
+}
+function retryPayment(){
+  if(pollInterval) clearInterval(pollInterval);
+  pollCount = 0; currentTxRef = null;
+  el('stkPending').style.display = 'none';
+  el('phoneField').style.display = '';
+  el('payBtn').style.display     = '';
+  el('payBtn').disabled          = false;
+  el('payBtnText').textContent   = 'Send M-Pesa Prompt →';
+  el('retryBtn').style.display   = 'none';
+  el('paymentError').classList.remove('show');
+  const box = el('stkPendingBox');
+  if(box){ box.style.background=''; box.style.borderColor=''; }
+}
+
+// ── THE CRITICAL FIX: write new subscriptionExpiry to Firestore ────────────
+// Previously this function only wrote to localStorage and redirected.
+// The guard and admin.html never saw a Firestore change, so they kept
+// showing the expired gate even after payment.
+async function onPaymentConfirmed(){
+  const plan  = PLANS[selectedPlanId];
+  const phone = el('phoneNumber').value.trim();
+  const now   = new Date();
+  const txRef = currentTxRef;
+
+  // Show success screen immediately so user sees feedback
+  showScreen(3);
+  el('firestoreStatus').classList.add('show');
+  el('firestoreStatusMsg').textContent = 'Activating your subscription…';
+
+  // ── Compute new expiry date ──────────────────────────────────────────────
+  const expiry = new Date(now);
+  expiry.setMonth(expiry.getMonth() + plan.months);
+  const expiryStr = expiry.toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'});
+
+  // ── Write to Firestore (this is what makes the gate disappear) ───────────
+  let firestoreOk = false;
+  let uid = null;
+
+  try{
+    // Get the currently logged-in user's UID
+    const user = auth.currentUser;
+    uid = user?.uid || sessionStorage.getItem('cbe_school_id') || localStorage.getItem('cbe_reg_uid');
+
+    if(uid){
+      const batch = db.batch();
+
+      // 1. approvedSchools/{uid} — what admin.html and subscription-guard.js watch
+      const approvedRef = db.collection('approvedSchools').doc(uid);
+      batch.set(approvedRef, {
+        status:             'approved',
+        subscription:       plan.name.toLowerCase(),
+        subscriptionExpiry: firebase.firestore.Timestamp.fromDate(expiry),
+        message:            '',          // clear any owner block message
+        renewedAt:          firebase.firestore.FieldValue.serverTimestamp(),
+        renewedByTxRef:     txRef,
+        renewedPlan:        selectedPlanId
+      }, { merge: true });
+
+      // 2. users/{uid} — legacy path still read by old guard versions
+      const userRef = db.collection('users').doc(uid);
+      batch.set(userRef, {
+        subscription: {
+          plan:       selectedPlanId,
+          status:     'active',
+          paidAt:     firebase.firestore.Timestamp.fromDate(now),
+          expiresAt:  firebase.firestore.Timestamp.fromDate(expiry),
+          lastTxRef:  txRef
+        },
+        status:   'active',
+        approved: true,
+        suspended:false
+      }, { merge: true });
+
+      await batch.commit();
+      firestoreOk = true;
+      console.log('[Renew] Firestore updated. New expiry:', expiry.toISOString());
+
+      // Update firestoreStatus UI
+      el('firestoreStatus').classList.add('done');
+      el('firestoreStatusMsg').textContent = '✅ Subscription activated — expires ' + expiryStr;
+
+    } else {
+      // No UID available (registration flow before account creation)
+      // Just store in localStorage; the register page will write Firestore
+      console.warn('[Renew] No UID available — skipping Firestore write (registration flow)');
+      el('firestoreStatus').classList.add('done');
+      el('firestoreStatusMsg').textContent = '✅ Payment confirmed — completing setup…';
+    }
+
+  }catch(e){
+    console.error('[Renew] Firestore write failed:', e.message);
+    // Don't block the user — localStorage is the fallback
+    el('firestoreStatus').classList.add('err');
+    el('firestoreStatusMsg').textContent = '⚠️ Could not activate automatically — admin will approve shortly.';
+    // Log to ownerLog so the developer can see failures
+    db.collection('ownerLog').add({
+      type:      'renewal_firestore_error',
+      message:   'Firestore write failed after payment: ' + e.message,
+      txRef,
+      uid:       uid || 'unknown',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).catch(()=>{});
+  }
+
+  // ── Update localStorage ──────────────────────────────────────────────────
+  localStorage.setItem('cbe_pay_confirmed', 'true');
+  localStorage.setItem('cbe_pay_txRef',     txRef);
+  localStorage.setItem('cbe_pay_phone',     phone);
+  localStorage.setItem('cbe_pay_date',      now.toISOString());
+  localStorage.setItem('cbe_pay_plan',      selectedPlanId);
+  // Clear session guard cache so next page load re-checks Firestore
+  try{ sessionStorage.removeItem('cbe_sub_checked'); }catch(e){}
+
+  // ── Populate receipt ─────────────────────────────────────────────────────
+  el('receiptPlan').textContent   = `${plan.name} (${plan.duration})`;
+  el('receiptAmount').textContent = plan.display;
+  el('receiptExpiry').textContent = expiryStr;
+  el('receiptRef').textContent    = txRef||'—';
+  el('receiptDate').textContent   = now.toLocaleString('en-KE');
+  el('receiptBox').style.display  = '';
+
+  // ── Telegram notification ────────────────────────────────────────────────
+  sendTelegramAlert(
+    `✅ <b>PAYMENT CONFIRMED${firestoreOk?' + FIRESTORE UPDATED':' (localStorage only)'}</b>\n\n`+
+    `📋 Plan: ${plan.name} — ${plan.display}\n`+
+    `📞 Phone: ${phone}\n`+
+    `📅 Expires: ${expiryStr}\n`+
+    `🔖 TxRef: <code>${txRef}</code>\n`+
+    `🆔 UID: <code>${uid||'unknown'}</code>\n`+
+    `⏰ ${now.toLocaleString('en-KE')}\n`+
+    `🎯 Type: ${fromRegister?'Registration':'Renewal'}`
+  );
+
+  // ── Redirect ─────────────────────────────────────────────────────────────
+  // Wait 3s so user can read the receipt, then redirect
+  el('redirectBar').style.display    = '';
+  el('manualRedirect').style.display = '';
+  el('redirectMsg').textContent      = fromGuard || !fromRegister
+    ? 'Returning to dashboard…'
+    : 'Returning to registration…';
+
+  setTimeout(()=>{ doRedirect(); }, 3000);
+}
+
+function doRedirect(){
+  try{ sessionStorage.removeItem('cbe_sub_checked'); }catch(e){}
+  localStorage.removeItem('cbe_reg_email');
+  localStorage.removeItem('cbe_reg_uid');
+  if(fromGuard || !fromRegister){
+    window.location.href = '/admin';
+  } else {
+    window.location.href = '/register';
+  }
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+function init(){
+  selectPlan('monthly', document.querySelector('.bt-opt.sel'));
+}
+init();
+
+// Catch payment confirmation if tab was backgrounded during STK prompt
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='visible' && currentTxRef && pollInterval){
+    fetch(`${BACKEND}/api/pay/status/${currentTxRef}`)
+      .then(res=>res.json())
+      .then(data=>{ if(data.status==='confirmed'){ clearInterval(pollInterval); onPaymentConfirmed(); } })
+      .catch(console.warn);
+  }
+});
+</script>
+</body>
+</html>

@@ -109,7 +109,7 @@ app.get('/api/test', async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-app.post('/api/gemini', async (req, res) => {
+app.post('/api/ai-remark', async (req, res) => {
   try {
     const { prompt } = req.body;
 
@@ -117,43 +117,41 @@ app.post('/api/gemini', async (req, res) => {
       return res.status(400).json({ error: 'No prompt provided' });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY not set in environment' });
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: 'OPENAI_API_KEY not set in environment' });
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 130, temperature: 0.7 }
-        })
-      }
-    );
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        max_tokens: 130,
+        temperature: 0.7,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
 
     const data = await response.json();
+    console.log('OpenAI response:', JSON.stringify(data, null, 2));
 
-    // Log full response so we can debug
-    console.log('Gemini response:', JSON.stringify(data, null, 2));
-
-    // Check for Gemini API error
     if (data.error) {
-      return res.status(500).json({ error: data.error.message || 'Gemini API error' });
+      return res.status(500).json({ error: data.error.message || 'OpenAI API error' });
     }
 
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    const text = data?.choices?.[0]?.message?.content?.trim();
 
     if (!text) {
-      console.log('No text found in response:', JSON.stringify(data));
-      return res.status(500).json({ error: 'Gemini returned no text' });
+      return res.status(500).json({ error: 'OpenAI returned no text' });
     }
 
     res.json({ text });
 
   } catch (err) {
-    console.error('Gemini endpoint error:', err.message);
+    console.error('OpenAI endpoint error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

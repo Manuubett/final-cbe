@@ -112,8 +112,17 @@ app.get('/api/test', async (req, res) => {
 app.post('/api/gemini', async (req, res) => {
   try {
     const { prompt } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ error: 'No prompt provided' });
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'GEMINI_API_KEY not set in environment' });
+    }
+
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,10 +132,28 @@ app.post('/api/gemini', async (req, res) => {
         })
       }
     );
+
     const data = await response.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    // Log full response so we can debug
+    console.log('Gemini response:', JSON.stringify(data, null, 2));
+
+    // Check for Gemini API error
+    if (data.error) {
+      return res.status(500).json({ error: data.error.message || 'Gemini API error' });
+    }
+
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+    if (!text) {
+      console.log('No text found in response:', JSON.stringify(data));
+      return res.status(500).json({ error: 'Gemini returned no text' });
+    }
+
     res.json({ text });
+
   } catch (err) {
+    console.error('Gemini endpoint error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

@@ -1183,7 +1183,7 @@ window.generateAIRemark = async function() {
   out.innerHTML = `<span style="color:var(--text3);font-style:italic;font-size:11.5px">Writing personalised remark...</span>`;
 
 try {
-    const response = await fetch('https://instasend-backend.onrender.com/api/deepseek', {  // Changed endpoint
+    const response = await fetch('https://instasend-backend.onrender.com/api/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1209,8 +1209,7 @@ Write ONE remark of 2-3 sentences. Use CBC language (Exceeding/Meeting/Approachi
     out.innerHTML = `<span style="color:#dc2626;font-size:11.5px">Error: ${err.message}. Check connection and try again.</span>`;
     btn.innerHTML = '✨ Retry';
   }
-  btn.disabled = false;
-};
+  btn.disabled = false;};
 
 window.closeModal = function() { el('stuModal').classList.remove('open'); currentStudent = null; };
 el('stuModal').addEventListener('click', function(e) { if (e.target===this) closeModal(); });

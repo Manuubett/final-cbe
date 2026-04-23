@@ -109,7 +109,7 @@ app.get('/api/test', async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
-app.post('/api/ai-remark', async (req, res) => {
+app.post('/api/gemini', async (req, res) => {
   try {
     const { prompt } = req.body;
 
@@ -117,41 +117,70 @@ app.post('/api/ai-remark', async (req, res) => {
       return res.status(400).json({ error: 'No prompt provided' });
     }
 
-    if (!process.env.DEEPSEEK_API_KEY) {
-      return res.status(500).json({ error: 'DEEPSEEK_API_KEY not set in environment' });
+    const apiKey = process.env.DEEPSEEK_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({ error: 'DEEPSEEK_API_KEY not set' });
     }
 
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat', // or 'deepseek-coder' for coding tasks
-        max_tokens: 130,
-        temperature: 0.7,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
+    // 🔁 Retry logic
+    const callDeepSeek = async (retry = 0) => {
+      try {
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'deepseek-chat',
+            temperature: 0.7,
+            max_tokens: 150,
+            messages: [
+              { role: 'user', content: prompt }
+            ]
+          })
+        });
 
-    const data = await response.json();
-    console.log('DeepSeek response:', JSON.stringify(data, null, 2));
+        const data = await response.json();
 
-    if (data.error) {
-      return res.status(500).json({ error: data.error.message || 'DeepSeek API error' });
-    }
+        if (!response.ok) {
+          console.error("DeepSeek error:", data);
+
+          // retry on temporary issues
+          if ((response.status === 500 || response.status === 429) && retry < 2) {
+            await new Promise(r => setTimeout(r, 1000));
+            return callDeepSeek(retry + 1);
+          }
+
+          return res.status(response.status).json({
+            error: data.error?.message || 'DeepSeek API error'
+          });
+        }
+
+        return data;
+
+      } catch (err) {
+        if (retry < 2) {
+          await new Promise(r => setTimeout(r, 1000));
+          return callDeepSeek(retry + 1);
+        }
+        throw err;
+      }
+    };
+
+    const data = await callDeepSeek();
 
     const text = data?.choices?.[0]?.message?.content?.trim();
 
     if (!text) {
-      return res.status(500).json({ error: 'DeepSeek returned no text' });
+      return res.status(500).json({ error: 'No text returned from DeepSeek' });
     }
 
     res.json({ text });
 
   } catch (err) {
-    console.error('DeepSeek endpoint error:', err.message);
+    console.error('🔥 DeepSeek server error:', err);
     res.status(500).json({ error: err.message });
   }
 });

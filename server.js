@@ -117,18 +117,18 @@ app.post('/api/ai-remark', async (req, res) => {
       return res.status(400).json({ error: 'No prompt provided' });
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({ error: 'OPENAI_API_KEY not set in environment' });
+    if (!process.env.DEEPSEEK_API_KEY) {
+      return res.status(500).json({ error: 'DEEPSEEK_API_KEY not set in environment' });
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'deepseek-chat', // or 'deepseek-coder' for coding tasks
         max_tokens: 130,
         temperature: 0.7,
         messages: [{ role: 'user', content: prompt }]
@@ -136,22 +136,22 @@ app.post('/api/ai-remark', async (req, res) => {
     });
 
     const data = await response.json();
-    console.log('OpenAI response:', JSON.stringify(data, null, 2));
+    console.log('DeepSeek response:', JSON.stringify(data, null, 2));
 
     if (data.error) {
-      return res.status(500).json({ error: data.error.message || 'OpenAI API error' });
+      return res.status(500).json({ error: data.error.message || 'DeepSeek API error' });
     }
 
     const text = data?.choices?.[0]?.message?.content?.trim();
 
     if (!text) {
-      return res.status(500).json({ error: 'OpenAI returned no text' });
+      return res.status(500).json({ error: 'DeepSeek returned no text' });
     }
 
     res.json({ text });
 
   } catch (err) {
-    console.error('OpenAI endpoint error:', err.message);
+    console.error('DeepSeek endpoint error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

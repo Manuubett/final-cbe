@@ -117,33 +117,35 @@ app.post('/api/ai-remark', async (req, res) => {
       return res.status(400).json({ error: 'No prompt provided' });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY not set in environment' });
+    if (!process.env.GROQ_API_KEY) {
+      return res.status(500).json({ error: 'GROQ_API_KEY not set in environment' });
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { maxOutputTokens: 150, temperature: 0.7 }
-        })
-      }
-    );
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        max_tokens: 150,
+        temperature: 0.7,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
 
     const data = await response.json();
-    console.log('Gemini full response:', JSON.stringify(data, null, 2));
+    console.log('Groq response:', JSON.stringify(data, null, 2));
 
     if (data.error) {
-      return res.status(500).json({ error: data.error.message || 'Gemini API error' });
+      return res.status(500).json({ error: data.error.message || 'Groq API error' });
     }
 
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    const text = data?.choices?.[0]?.message?.content?.trim();
 
     if (!text) {
-      return res.status(500).json({ error: 'Gemini returned no text — check logs' });
+      return res.status(500).json({ error: 'Groq returned no text' });
     }
 
     res.json({ text });

@@ -1166,7 +1166,6 @@ window.generateAIRemark = async function() {
   const rank = ranked.findIndex(x => x.id === s.id) + 1;
   const firstName = s.name.split(' ')[0];
 
-  // Build best/worst subjects by percentage
   const subScores = SUBS.map(sub => {
     const sc = getSubjectScore(rec, sub), oof = getSubjectOof(rec, sub);
     if (sc === null) return null;
@@ -1178,12 +1177,13 @@ window.generateAIRemark = async function() {
   const btn = el('aiRemarkBtn');
   const out = el('aiRemarkText');
   const textarea = el('aiRemarkEdit');
+
   btn.disabled = true;
   btn.innerHTML = '<span class="spin" style="display:inline-block;vertical-align:middle;margin-right:4px"></span> Generating...';
   out.innerHTML = `<span style="color:var(--text3);font-style:italic;font-size:11.5px">Writing personalised remark...</span>`;
 
-try {
-    const response = await fetch('https://instasend-backend.onrender.com/api/gemini', {
+  try {
+    const response = await fetch('https://instasend-backend.onrender.com/api/ai-remark', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1197,22 +1197,37 @@ Needs improvement in: ${weak || 'N/A'}
 Write ONE remark of 2-3 sentences. Use CBC language (Exceeding/Meeting/Approaching/Below Expectation). Address the student by first name. Do not use bullet points. Do not add a heading. Output the remark only.`
       })
     });
+
     const data = await response.json();
     if (data.error) throw new Error(data.error);
-    const text = data.text?.trim() || 'Could not generate remark.';
+
+    const text = data.text?.trim() || '';
+    if (!text) throw new Error('No remark returned from server');
+
     out.style.color = 'var(--text)';
     out.textContent = text;
     textarea.value = text;
     btn.innerHTML = '🔄 Regenerate';
     toast('AI remark generated!', 'ok');
+
   } catch (err) {
     out.innerHTML = `<span style="color:#dc2626;font-size:11.5px">Error: ${err.message}. Check connection and try again.</span>`;
     btn.innerHTML = '✨ Retry';
   }
-  btn.disabled = false;};
 
-window.closeModal = function() { el('stuModal').classList.remove('open'); currentStudent = null; };
-el('stuModal').addEventListener('click', function(e) { if (e.target===this) closeModal(); });
+  btn.disabled = false;
+};
+
+window.closeModal = function() {
+  el('stuModal').classList.remove('open');
+  currentStudent = null;
+  const out = el('aiRemarkText');
+  const textarea = el('aiRemarkEdit');
+  const btn = el('aiRemarkBtn');
+  if (out) out.innerHTML = `<span style="color:var(--text3);font-style:italic;font-size:11.5px">Click "Generate AI Remark" for a personalised CBC remark, or type below.</span>`;
+  if (textarea) textarea.value = '';
+  if (btn) { btn.innerHTML = '✨ Generate AI Remark'; btn.disabled = false; }
+};
 
 function confirmPrintAll() {
   const pd = window._printData;

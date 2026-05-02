@@ -327,14 +327,14 @@
     document.body.appendChild(bn);
 
     // Global helpers
-    window.__cbeSignOut = async function(){
-      try{
-        const auth = _getAuth();
-        _cleanup();
-        if(auth) await auth.signOut();
-        window.location.href = '/login';
-      }catch(e){ window.location.href = '/login'; }
-    };
+   window.__cbeSignOut = async function(){
+  try{
+    const auth = _getAuth();
+    _cleanup();
+    if(auth) await auth.signOut();
+    window.location.href = 'registration.html';      // ✅ fixed
+  }catch(e){ window.location.href = 'registration.html'; }  // ✅ fixed
+};
     window.__cbeDismissBar = function(){
       const b = document.getElementById(STATUSBAR_ID);
       if(b){ b.classList.remove('cbe-show','cbe-warn','cbe-urgent'); }

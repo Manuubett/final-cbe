@@ -297,16 +297,13 @@
           </div>
         </div>
 
-        <div class="__cbe-actions" id="__cbe_card_actions">
-          <a class="__cbe-wa"
-             href="https://wa.me/${WA_NUMBER}?text=Hello%2C+I+need+help+renewing+my+CBE+Mark+Sheet+subscription."
-             target="_blank" rel="noopener">
-            💬 WhatsApp Support
-          </a>
-          <button class="__cbe-signout" onclick="__cbeSignOut()">← Sign out</button>
-        </div>
-      </div>`;
-    document.body.appendChild(ov);
+     <div class="__cbe-actions" id="__cbe_card_actions">
+  <a class="__cbe-wa"
+     href="https://wa.me/${WA_NUMBER}?text=Hello%2C+I+need+help+renewing+my+CBE+Mark+Sheet+subscription."
+     target="_blank" rel="noopener">
+    💬 WhatsApp Support
+  </a>
+</div>
 
     // Warning bar
     const bar = document.createElement('div');

@@ -680,7 +680,7 @@ auth.onAuthStateChanged(async u=>{
     const profile=snap.data();
     if(profile.role==='teacher'){
       log('warn','Teacher attempted admin access',u.email);
-      await auth.signOut(); show('Login'); return;
+      await auth.signOut(); show('register'); return;
     }
     _schoolId=u.uid;
     window._schoolId=u.uid;

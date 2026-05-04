@@ -1,0 +1,922 @@
+<!--
+  CBE Mark Sheet System
+  Copyright © 2026 Bett Emanuel — https://bett.website
+  All rights reserved. Unauthorized copying, modification or distribution
+  of this software is strictly prohibited.
+  Contact: wa.me/254704518130
+-->
+<!DOCTYPE html>
+<html lang="en-KE">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="msvalidate.01" content="53F9D4CBAF293FA83D71044AB6B7898F" />
+
+<!-- ═══ PRIMARY SEO ═══ -->
+<title>CBE Mark Sheet — Kenya CBC Digital School Management System</title>
+<meta name="description" content="The fastest way to manage CBC mark sheets for Kenya Primary &amp; Junior Schools (Grades 1–9). Automatic EE, ME, AE, BE level calculation, class analysis, branded report cards and real-time cloud sync. Built for Kenyan teachers and school administrators.">
+<meta name="keywords" content="CBC mark sheet, Kenya CBC, junior school marks, CBC grading, EE ME AE BE, Grade 1 2 3 4 5 6 7 8 9, CBC report card, Kenya school management, competency based curriculum, digital mark sheet">
+<meta name="author" content="CBE Mark Sheet System">
+<meta name="robots" content="index, follow">
+<meta name="language" content="English">
+<link rel="canonical" href="https://bett.website/">
+
+<!-- ═══ OPEN GRAPH ═══ -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://bett.website/">
+<meta property="og:title" content="CBE Mark Sheet — Kenya CBC Digital School Management">
+<meta property="og:description" content="Digital CBC mark sheets with automatic level calculation (EE–BE), class analysis, branded report cards and real-time sync. Built for Kenya Primary &amp; Junior Schools, Grades 1–9.">
+<meta property="og:image" content="https://bett.website/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="CBE Mark Sheet System">
+<meta property="og:locale" content="en_KE">
+
+<!-- ═══ TWITTER CARD ═══ -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://bett.website/">
+<meta name="twitter:title" content="CBE Mark Sheet — Kenya CBC Digital School Management">
+<meta name="twitter:description" content="Digital CBC mark sheets with automatic level calculation, class analysis and branded report cards for Kenya Junior Schools.">
+<meta name="twitter:image" content="https://bett.website/og-image.png">
+
+<!-- ═══ GEO / REGION ═══ -->
+<meta name="geo.region" content="KE">
+<meta name="geo.country" content="Kenya">
+<meta name="ICBM" content="-1.286389, 36.817223">
+
+<!-- ═══ FAVICON ═══ -->
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#1a56db">
+<meta name="msapplication-TileColor" content="#1553d4">
+
+<!-- ═══ STRUCTURED DATA ═══ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "CBE Mark Sheet System",
+  "applicationCategory": "EducationApplication",
+  "operatingSystem": "Web Browser",
+  "url": "https://bett.website/",
+  "description": "Digital CBC mark sheet management system for Kenya Primary and Junior Schools. Automatic CBC level calculation, class analysis and branded report card generation for Grades 1–9.",
+  "offers": {
+    "@type": "Offer",
+    "price": "2599",
+    "priceCurrency": "KES",
+    "priceSpecification": {
+      "@type": "UnitPriceSpecification",
+      "billingDuration": "P1M",
+      "billingIncrement": 1
+    }
+  },
+  "audience": {
+    "@type": "EducationalAudience",
+    "educationalRole": "teacher administrator"
+  },
+  "educationalLevel": "Primary and Junior Secondary School",
+  "countryOfOrigin": "KE",
+  "inLanguage": "en-KE"
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldd1q4sAAAAADga6Ediw118NWAhCHZSl-pmL2Pc"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0a0f1e;--ink2:#2c3a52;--ink3:#5c718a;
+  --page:#f9fafb;--card:#fff;--card2:#f2f5fa;
+  --sky:#1553d4;--sky2:#0f40b0;--sky-soft:#e8eeff;
+  --gold:#b45309;--gold-bg:#fefce8;--gold-bd:#fde68a;
+  --green:#047857;--green-bg:#ecfdf5;--green-bd:#a7f3d0;
+  --red:#b91c1c;--red-bg:#fef2f2;--red-bd:#fecaca;
+  --amber:#d97706;
+  --border:#e2e8f2;--border2:#cdd5e2;
+  --sh:0 1px 3px rgba(10,20,50,.06),0 4px 16px rgba(10,20,50,.06);
+  --sh2:0 2px 8px rgba(10,20,50,.08),0 16px 48px rgba(10,20,50,.1);
+  --r:12px;--r2:7px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--page);color:var(--ink);font-size:15px;line-height:1.6;overflow-x:hidden}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:200;background:rgba(249,250,251,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 32px;height:58px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{display:flex;align-items:center;gap:11px;text-decoration:none}
+.nav-icon{width:34px;height:34px;border-radius:8px;background:var(--sky);display:grid;place-items:center;font-size:16px;flex-shrink:0}
+.nav-name{font-size:14.5px;font-weight:700;color:var(--ink);letter-spacing:-.2px;line-height:1.2}
+.nav-tagline{font-size:10px;color:var(--ink3);font-weight:500}
+.nav-right{display:flex;align-items:center;gap:8px}
+.nav-link{font-size:13px;font-weight:500;color:var(--ink2);text-decoration:none;padding:6px 12px;border-radius:var(--r2);transition:background .14s}
+.nav-link:hover{background:var(--card2)}
+.nav-btn{font-size:13px;font-weight:700;padding:7px 18px;border-radius:var(--r2);background:var(--sky);color:#fff;text-decoration:none;transition:background .14s}
+.nav-btn:hover{background:var(--sky2)}
+
+/* ── BELL ── */
+.notif-bell-btn{position:relative;width:36px;height:36px;border-radius:var(--r2);border:1.5px solid var(--border2);background:var(--card);cursor:pointer;display:grid;place-items:center;font-size:16px;transition:all .14s;flex-shrink:0}
+.notif-bell-btn:hover{border-color:var(--sky);background:var(--sky-soft)}
+.notif-badge{position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;border-radius:10px;background:#ef4444;color:#fff;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--page);line-height:1}
+.notif-badge.show{display:flex}
+
+/* ── DRAWER OVERLAY ── */
+.notif-overlay{position:fixed;inset:0;z-index:8000;background:rgba(10,15,30,.3);opacity:0;pointer-events:none;transition:opacity .2s}
+.notif-overlay.open{opacity:1;pointer-events:all}
+
+/* ── DRAWER PANEL ── */
+.notif-drawer{position:fixed;top:0;right:0;height:100%;width:360px;max-width:95vw;background:var(--card);border-left:1px solid var(--border);z-index:8001;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 32px rgba(10,20,50,.1)}
+.notif-drawer.open{transform:none}
+.notif-drawer-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.notif-drawer-title{font-size:15px;font-weight:800;color:var(--ink)}
+.notif-drawer-actions{display:flex;align-items:center;gap:8px}
+.notif-mark-all{font-size:12px;font-weight:600;color:var(--sky);cursor:pointer;background:none;border:none;font-family:'Outfit',sans-serif;padding:4px 8px;border-radius:5px;transition:background .14s}
+.notif-mark-all:hover{background:var(--sky-soft)}
+.notif-close-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:none;cursor:pointer;font-size:16px;color:var(--ink3);display:grid;place-items:center;transition:all .14s}
+.notif-close-btn:hover{background:var(--card2);color:var(--ink)}
+.notif-drawer-body{flex:1;overflow-y:auto;padding:8px 0}
+.notif-empty{text-align:center;padding:48px 20px;color:var(--ink3);font-size:14px}
+.notif-empty-ico{font-size:32px;display:block;margin-bottom:12px}
+
+/* NOTIFICATION ITEMS */
+.notif-item{display:flex;gap:12px;padding:14px 20px;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--border);position:relative}
+.notif-item:last-child{border-bottom:none}
+.notif-item:hover{background:var(--card2)}
+.notif-item.unread{background:#fafbff}
+.notif-item.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0 2px 2px 0}
+.notif-item.unread.info::before{background:var(--sky)}
+.notif-item.unread.warning::before{background:var(--amber)}
+.notif-item.unread.success::before{background:var(--green)}
+.notif-item.unread.alert::before{background:var(--red)}
+.notif-item-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.notif-item-dot.info{background:var(--sky)}
+.notif-item-dot.warning{background:var(--amber)}
+.notif-item-dot.success{background:var(--green)}
+.notif-item-dot.alert{background:var(--red)}
+.notif-item-dot.read{background:var(--border2)}
+.notif-item-body{flex:1;min-width:0}
+.notif-item-title{font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:3px;line-height:1.3}
+.notif-item.read .notif-item-title{font-weight:500;color:var(--ink2)}
+.notif-item-msg{font-size:12.5px;color:var(--ink3);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.notif-item-footer{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.notif-item-time{font-size:11px;color:var(--ink3)}
+.notif-item-link{font-size:12px;font-weight:700;color:var(--sky);text-decoration:none}
+.notif-item-link:hover{text-decoration:underline}
+.notif-item-dismiss{font-size:11px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;font-family:'Outfit',sans-serif;transition:all .12s}
+.notif-item-dismiss:hover{background:var(--red-bg);color:var(--red)}
+
+/* DRAWER FOOTER */
+.notif-drawer-foot{padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;text-align:center}
+.notif-foot-note{font-size:11.5px;color:var(--ink3)}
+
+/* ── ANNOUNCEMENT BANNERS ── */
+#ann-banner-zone{display:flex;flex-direction:column;gap:0}
+.ann-banner{display:flex;align-items:flex-start;gap:14px;padding:11px 32px;font-size:14px;border-bottom:1px solid rgba(0,0,0,.06);position:relative;animation:annSlide .3s ease}
+@keyframes annSlide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.ann-banner.info   {background:#e8eeff;border-left:4px solid #1553d4}
+.ann-banner.warning{background:#fefce8;border-left:4px solid #b45309}
+.ann-banner.success{background:#ecfdf5;border-left:4px solid #047857}
+.ann-banner.alert  {background:#fef2f2;border-left:4px solid #b91c1c}
+.ann-banner-ico{font-size:15px;flex-shrink:0;margin-top:2px}
+.ann-banner-body{flex:1}
+.ann-banner-title{font-weight:700;color:#0a0f1e;line-height:1.3}
+.ann-banner-msg{font-size:13px;color:#2c3a52;margin-top:2px;line-height:1.5}
+.ann-banner-link{display:inline-block;margin-top:4px;font-size:13px;font-weight:700;text-decoration:underline;cursor:pointer}
+.ann-banner.info    .ann-banner-link{color:#1553d4}
+.ann-banner.warning .ann-banner-link{color:#b45309}
+.ann-banner.success .ann-banner-link{color:#047857}
+.ann-banner.alert   .ann-banner-link{color:#b91c1c}
+.ann-banner-close{margin-left:auto;font-size:18px;color:#5c718a;cursor:pointer;padding:0 4px;background:none;border:none;font-family:inherit;line-height:1;flex-shrink:0;align-self:flex-start}
+.ann-banner-close:hover{color:#0a0f1e}
+
+/* ── POPUP ── */
+#ann-popup-zone{position:fixed;inset:0;z-index:9000;background:rgba(10,15,30,.5);display:none;align-items:center;justify-content:center;padding:20px;animation:annFade .25s ease}
+@keyframes annFade{from{opacity:0}to{opacity:1}}
+#ann-popup-zone.open{display:flex}
+.ann-popup-box{background:#fff;border-radius:12px;padding:28px;max-width:420px;width:100%;box-shadow:0 16px 64px rgba(10,20,50,.25);animation:annPop .28s ease}
+@keyframes annPop{from{transform:scale(.93);opacity:0}to{transform:none;opacity:1}}
+.ann-popup-badge{display:inline-block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:3px 10px;border-radius:20px;margin-bottom:12px}
+.ann-popup-badge.info   {background:#e8eeff;color:#1553d4}
+.ann-popup-badge.warning{background:#fefce8;color:#b45309}
+.ann-popup-badge.success{background:#ecfdf5;color:#047857}
+.ann-popup-badge.alert  {background:#fef2f2;color:#b91c1c}
+.ann-popup-title{font-size:20px;font-weight:800;color:#0a0f1e;margin-bottom:10px;letter-spacing:-.3px;line-height:1.2}
+.ann-popup-msg{font-size:14px;color:#2c3a52;line-height:1.65;margin-bottom:20px}
+.ann-popup-actions{display:flex;gap:10px;align-items:center}
+.ann-popup-link-btn{padding:9px 22px;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:'Outfit',sans-serif;text-decoration:none;display:inline-block}
+.ann-popup-link-btn.info   {background:#1553d4;color:#fff}
+.ann-popup-link-btn.warning{background:#b45309;color:#fff}
+.ann-popup-link-btn.success{background:#047857;color:#fff}
+.ann-popup-link-btn.alert  {background:#b91c1c;color:#fff}
+.ann-popup-dismiss{padding:9px 18px;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid #cdd5e2;background:transparent;color:#2c3a52;font-family:'Outfit',sans-serif}
+.ann-popup-dismiss:hover{background:#f2f5fa}
+
+/* ── TOAST ── */
+#ann-toast-zone{position:fixed;bottom:24px;left:24px;z-index:9100;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.ann-toast{background:#0a0f1e;color:#fff;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;max-width:340px;pointer-events:all;box-shadow:0 4px 24px rgba(10,20,50,.25);animation:annToastIn .3s ease;transition:opacity .3s,transform .3s}
+@keyframes annToastIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:none}}
+.ann-toast.hiding{opacity:0;transform:translateX(-20px)}
+.ann-toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ann-toast-dot.info   {background:#60a5fa}
+.ann-toast-dot.warning{background:#fbbf24}
+.ann-toast-dot.success{background:#34d399}
+.ann-toast-dot.alert  {background:#f87171}
+.ann-toast-text{font-size:13px;font-weight:600;flex:1;line-height:1.35}
+.ann-toast-link{font-size:12px;color:#93c5fd;text-decoration:underline;white-space:nowrap;cursor:pointer}
+.ann-toast-close{font-size:15px;cursor:pointer;margin-left:4px;background:none;border:none;color:rgba(255,255,255,.4);line-height:1;padding:0}
+.ann-toast-close:hover{color:#fff}
+
+/* ── HERO ── */
+.hero{max-width:700px;margin:0 auto;padding:72px 32px 60px;text-align:center}
+.hero-tag{display:inline-flex;align-items:center;gap:7px;background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green);font-size:12px;font-weight:600;padding:4px 14px;border-radius:20px;margin-bottom:28px}
+.hero-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+h1{font-size:clamp(34px,5.5vw,54px);font-weight:800;line-height:1.08;letter-spacing:-.8px;color:var(--ink);margin-bottom:20px}
+h1 i{font-family:'Libre Baskerville',serif;font-style:italic;font-weight:400;color:var(--sky)}
+.hero-sub{font-size:16.5px;color:var(--ink3);line-height:1.75;max-width:520px;margin:0 auto 36px;font-weight:400}
+.hero-actions{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:48px}
+.btn-primary{display:inline-flex;align-items:center;gap:7px;padding:12px 26px;border-radius:var(--r2);background:var(--sky);color:#fff;font-size:14.5px;font-weight:700;text-decoration:none;transition:all .14s;box-shadow:0 4px 16px rgba(21,83,212,.3)}
+.btn-primary:hover{background:var(--sky2);transform:translateY(-1px)}
+.btn-outline{display:inline-flex;align-items:center;gap:7px;padding:12px 24px;border-radius:var(--r2);background:var(--card);color:var(--ink2);font-size:14.5px;font-weight:600;text-decoration:none;border:1.5px solid var(--border2);transition:all .14s}
+.btn-outline:hover{border-color:var(--sky);color:var(--sky)}
+
+/* ── STATS ── */
+.stats-strip{display:inline-flex;background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.stat{padding:16px 28px;text-align:center;position:relative}
+.stat:not(:last-child)::after{content:'';position:absolute;right:0;top:20%;height:60%;width:1px;background:var(--border)}
+.stat-val{font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.5px;line-height:1;margin-bottom:3px}
+.stat-lbl{font-size:10.5px;color:var(--ink3);font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+
+/* ── DASHBOARD MOCK ── */
+.dash-wrap{max-width:800px;margin:0 auto;padding:0 32px 72px}
+.dash-frame{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh2);overflow:hidden}
+.dash-topbar{background:var(--ink);padding:10px 16px;display:flex;align-items:center;gap:7px}
+.dash-dot{width:9px;height:9px;border-radius:50%}
+.dash-dot.r{background:#ef4444}.dash-dot.y{background:#f59e0b}.dash-dot.g{background:#22c55e}
+.dash-url{margin-left:10px;flex:1;background:rgba(255,255,255,.08);border-radius:4px;padding:3px 10px;font-size:10px;color:rgba(255,255,255,.35);font-family:monospace}
+.dash-body{padding:20px}
+.mock-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.mock-school{font-size:12.5px;font-weight:700;color:var(--ink)}
+.mock-class{font-size:11px;color:var(--ink3);margin-top:1px}
+.mock-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.mock-table-wrap{overflow-x:auto;margin-bottom:14px}
+.mock-table{width:100%;border-collapse:collapse;font-size:11px}
+.mock-table th{background:var(--ink);color:rgba(255,255,255,.65);padding:6px 8px;text-align:center;font-weight:600;font-size:9.5px;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
+.mock-table th:first-child{text-align:left;padding-left:10px}
+.mock-table td{padding:7px 8px;text-align:center;border-bottom:1px solid var(--border);color:var(--ink2)}
+.mock-table td:first-child{text-align:left;font-weight:600;color:var(--ink);padding-left:10px}
+.mock-table tr:last-child td{border-bottom:none}
+.mk-inp{display:inline-block;width:34px;height:22px;border-radius:3px;border:1.5px solid var(--border2);font-size:11px;font-weight:700;color:var(--ink);text-align:center;line-height:22px}
+.mk-inp.f{border-color:var(--sky);background:#fff9c4;color:var(--sky)}
+.mk-lv{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:800}
+.mk-lv.ee{background:#d1fae5;color:#065f46}.mk-lv.me{background:#fef3c7;color:#92400e}.mk-lv.ae{background:#ffedd5;color:#9a3412}
+.mock-saved{font-size:10px;color:var(--green);font-weight:700}
+.mock-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mock-kpi{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:10px 12px}
+.mock-kpi-val{font-size:18px;font-weight:800;color:var(--ink);line-height:1;margin-bottom:3px}
+.mock-kpi-lbl{font-size:9.5px;color:var(--ink3);font-weight:500;text-transform:uppercase;letter-spacing:.3px}
+
+/* ── DIVIDER ── */
+.sdiv{max-width:700px;margin:0 auto;padding:0 32px 56px;display:flex;align-items:center;gap:16px}
+.sdiv-line{flex:1;height:1px;background:var(--border)}
+.sdiv-lbl{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap}
+
+/* ── HOW IT WORKS ── */
+.how-section{max-width:700px;margin:0 auto;padding:0 32px 72px}
+.sec-eyebrow{font-size:11px;font-weight:700;color:var(--sky);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.sec-heading{font-size:clamp(24px,3.5vw,32px);font-weight:800;color:var(--ink);letter-spacing:-.4px;margin-bottom:10px;line-height:1.2}
+.sec-sub{font-size:15px;color:var(--ink3);line-height:1.7;margin-bottom:40px}
+.steps{display:flex;flex-direction:column}
+.step{display:flex;align-items:flex-start;gap:20px;padding:24px 0;border-bottom:1px solid var(--border)}
+.step:first-child{padding-top:0}.step:last-child{border-bottom:none;padding-bottom:0}
+.step-num{width:36px;height:36px;border-radius:50%;flex-shrink:0;background:var(--sky);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:800;margin-top:2px}
+.step-title{font-size:15.5px;font-weight:700;color:var(--ink);margin-bottom:5px;letter-spacing:-.2px}
+.step-desc{font-size:14px;color:var(--ink3);line-height:1.65}
+.step-tag{display:inline-block;margin-top:8px;font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;background:var(--sky-soft);color:var(--sky)}
+
+/* ── FEATURES ── */
+.feat-section{background:var(--ink);padding:72px 32px}
+.feat-inner{max-width:900px;margin:0 auto}
+.feat-section .sec-eyebrow{color:rgba(255,255,255,.4)}
+.feat-section .sec-heading{color:#fff}
+.feat-section .sec-sub{color:rgba(255,255,255,.45);margin-bottom:36px}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.07);border-radius:var(--r);overflow:hidden}
+.feat-card{padding:28px 26px;background:var(--ink);transition:background .15s}
+.feat-card:hover{background:#111827}
+.feat-ico{font-size:22px;margin-bottom:14px}
+.feat-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:-.2px}
+.feat-body{font-size:13.5px;color:rgba(255,255,255,.5);line-height:1.65}
+.feat-tag{display:inline-block;margin-top:14px;font-size:10.5px;font-weight:600;padding:2px 10px;border-radius:20px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.1)}
+
+/* ── CTA ── */
+.cta-section{max-width:700px;margin:0 auto;padding:72px 32px;text-align:center}
+.cta-tag{display:inline-flex;align-items:center;gap:7px;background:var(--gold-bg);border:1px solid var(--gold-bd);color:var(--gold);font-size:12px;font-weight:600;padding:4px 14px;border-radius:20px;margin-bottom:24px}
+.cta-heading{font-size:clamp(26px,4vw,38px);font-weight:800;color:var(--ink);letter-spacing:-.5px;margin-bottom:12px;line-height:1.15}
+.cta-heading i{font-family:'Libre Baskerville',serif;font-style:italic;font-weight:400;color:var(--sky)}
+.cta-sub{font-size:15px;color:var(--ink3);margin-bottom:36px;line-height:1.7;max-width:460px;margin-left:auto;margin-right:auto}
+.role-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}
+.role-card{background:var(--card);border:1.5px solid var(--border2);border-radius:var(--r);padding:26px 24px;text-align:left;text-decoration:none;transition:all .16s;display:block}
+.role-card:hover{border-color:var(--sky);box-shadow:var(--sh2);transform:translateY(-2px)}
+.role-card.teacher:hover{border-color:var(--green)}
+.rc-icon{font-size:24px;margin-bottom:14px}
+.rc-title{font-size:15.5px;font-weight:800;color:var(--ink);margin-bottom:6px;letter-spacing:-.2px}
+.rc-desc{font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:16px}
+.rc-arrow{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--sky)}
+.role-card.teacher .rc-arrow{color:var(--green)}
+.cta-note{font-size:13px;color:var(--ink3)}
+.cta-note a{color:var(--sky);font-weight:600;text-decoration:none}
+.cta-note a:hover{text-decoration:underline}
+
+/* ── FOOTER ── */
+footer{background:var(--card);border-top:1px solid var(--border);padding:26px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.foot-brand{display:flex;align-items:center;gap:10px}
+.foot-logo{width:30px;height:30px;border-radius:7px;background:var(--sky);display:grid;place-items:center;font-size:14px}
+.foot-name{font-size:13px;font-weight:700;color:var(--ink)}
+.foot-sub{font-size:10.5px;color:var(--ink3)}
+.foot-links{display:flex;align-items:center;gap:4px}
+.foot-link{font-size:12.5px;color:var(--ink3);text-decoration:none;padding:5px 10px;border-radius:5px;transition:all .14s}
+.foot-link:hover{background:var(--card2);color:var(--ink)}
+.foot-sep{color:var(--border2);font-size:12px}
+
+/* ── WA FAB ── */
+.wa-fab{position:fixed;bottom:24px;right:24px;z-index:300;width:50px;height:50px;border-radius:50%;background:#25d366;color:#fff;display:grid;place-items:center;font-size:22px;text-decoration:none;box-shadow:0 4px 18px rgba(37,211,102,.4);transition:all .16s}
+.wa-fab:hover{transform:scale(1.08)}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.hero-tag{animation:fadeUp .5s .05s both}
+h1{animation:fadeUp .5s .1s both}
+.hero-sub{animation:fadeUp .5s .15s both}
+.hero-actions{animation:fadeUp .5s .2s both}
+.stats-strip{animation:fadeUp .5s .28s both}
+.dash-frame{animation:fadeUp .6s .38s both}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  nav{padding:0 18px}
+  .nav-link{display:none}
+  .hero,.how-section,.cta-section{padding-left:20px;padding-right:20px}
+  .dash-wrap{padding:0 16px 52px}
+  .role-cards{grid-template-columns:1fr}
+  .stat{padding:13px 18px}
+  .stat-val{font-size:18px}
+  footer{padding:20px;flex-direction:column;align-items:flex-start}
+  .sdiv{padding-left:20px;padding-right:20px}
+  .feat-section{padding:52px 20px}
+  .ann-banner{padding:10px 18px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="nav-icon">📊</div>
+    <div>
+      <div class="nav-name">CBE Mark Sheet</div>
+      <div class="nav-tagline">Kenya CBC · Grades 1–9</div>
+    </div>
+  </a>
+  <div class="nav-right">
+    <a class="nav-link" href="#how">How it works</a>
+    <a class="nav-link" href="demo.html" style="color:var(--green);font-weight:700;background:rgba(16,185,129,.08);padding:5px 12px;border-radius:20px;border:1px solid rgba(16,185,129,.2)">▶ Try Demo</a>
+    <a class="nav-link" href="#features">Features</a>
+
+    <!-- NOTIFICATION BELL -->
+    <button class="notif-bell-btn" id="notifBellBtn" onclick="toggleNotifDrawer()" title="Notifications" aria-label="Open notifications">
+      🔔
+      <span class="notif-badge" id="notifBadge">0</span>
+    </button>
+
+    <a class="nav-btn" href="registration.html">Get Started</a>
+  </div>
+</nav>
+
+<!-- ══ ANNOUNCEMENT BANNERS ══ -->
+<div id="ann-banner-zone"></div>
+
+<!-- ══ HERO ══ -->
+<div class="hero">
+  <div class="hero-tag">Built for Kenya CBC · Grades 1 – 9</div>
+  <h1>Mark sheets that<br>work the <i>smart way</i></h1>
+  <p class="hero-sub">Digital CBC mark entry, automatic level calculation, class analysis and print-ready reports — for every teacher and admin in your school.</p>
+  <div class="hero-actions">
+    <a class="btn-primary" href="registration.html">Register Your School →</a>
+    <a class="btn-outline" href="login.html">Teacher Sign In</a>
+    <a class="btn-outline" href="demo.html" style="border-color:#10b981;color:#34d399">▶ Try Live Demo</a>
+  </div>
+  <div class="stats-strip">
+    <div class="stat"><div class="stat-val">9</div><div class="stat-lbl">CBC Subjects</div></div>
+    <div class="stat"><div class="stat-val">EE–BE</div><div class="stat-lbl">Auto Levels</div></div>
+    <div class="stat"><div class="stat-val">&lt;1s</div><div class="stat-lbl">Report Time</div></div>
+    <div class="stat"><div class="stat-val">100%</div><div class="stat-lbl">Cloud-Based</div></div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD MOCK ══ -->
+<div class="dash-wrap">
+  <div class="dash-frame">
+    <div class="dash-topbar">
+      <div class="dash-dot r"></div><div class="dash-dot y"></div><div class="dash-dot g"></div>
+      <div class="dash-url">cbe-marksheet · Grade 8 North · Term 2 2026</div>
+    </div>
+    <div class="dash-body">
+      <div class="mock-header">
+        <div>
+          <div class="mock-school">Embu Primary &amp; Junior School</div>
+          <div class="mock-class">Grade 8 · North Stream · Term 2, 2026</div>
+        </div>
+        <span class="mock-badge">✅ 4 Saved</span>
+      </div>
+      <div class="mock-table-wrap">
+        <table class="mock-table">
+          <thead><tr>
+            <th>#&nbsp; Student</th><th>English</th><th>Kiswahili</th>
+            <th>Maths</th><th>Science</th><th>Avg %</th><th>Level</th><th>Save</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>1&nbsp; Amina Wanjiku</td>
+              <td><span class="mk-inp">78</span></td><td><span class="mk-inp">82</span></td>
+              <td><span class="mk-inp">91</span></td><td><span class="mk-inp">85</span></td>
+              <td><strong>84.0</strong></td><td><span class="mk-lv ee">EE2</span></td>
+              <td><span class="mock-saved">✓</span></td>
+            </tr>
+            <tr>
+              <td>2&nbsp; Brian Otieno</td>
+              <td><span class="mk-inp">65</span></td><td><span class="mk-inp">70</span></td>
+              <td><span class="mk-inp">58</span></td><td><span class="mk-inp">72</span></td>
+              <td><strong>66.3</strong></td><td><span class="mk-lv me">ME1</span></td>
+              <td><span class="mock-saved">✓</span></td>
+            </tr>
+            <tr>
+              <td>3&nbsp; Cynthia Muthoni</td>
+              <td><span class="mk-inp f">74</span></td><td><span class="mk-inp" style="color:#ccc">—</span></td>
+              <td><span class="mk-inp" style="color:#ccc">—</span></td><td><span class="mk-inp" style="color:#ccc">—</span></td>
+              <td style="color:#9aaabb">—</td><td style="color:#9aaabb">—</td>
+              <td><button style="background:var(--sky);color:#fff;border:none;border-radius:4px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer">Save</button></td>
+            </tr>
+            <tr>
+              <td>4&nbsp; Daniel Kamau</td>
+              <td><span class="mk-inp">88</span></td><td><span class="mk-inp">79</span></td>
+              <td><span class="mk-inp">95</span></td><td><span class="mk-inp">90</span></td>
+              <td><strong>88.0</strong></td><td><span class="mk-lv ee">EE2</span></td>
+              <td><span class="mock-saved">✓</span></td>
+            </tr>
+            <tr>
+              <td>5&nbsp; Eva Cherono</td>
+              <td><span class="mk-inp">48</span></td><td><span class="mk-inp">52</span></td>
+              <td><span class="mk-inp">44</span></td><td><span class="mk-inp">50</span></td>
+              <td><strong>48.5</strong></td><td><span class="mk-lv ae">AE1</span></td>
+              <td><span class="mock-saved">✓</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mock-kpis">
+        <div class="mock-kpi"><div class="mock-kpi-val">5</div><div class="mock-kpi-lbl">Students</div></div>
+        <div class="mock-kpi"><div class="mock-kpi-val">71.7</div><div class="mock-kpi-lbl">Class Avg %</div></div>
+        <div class="mock-kpi"><div class="mock-kpi-val" style="color:#047857">2 EE</div><div class="mock-kpi-lbl">Exceeding</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sdiv"><div class="sdiv-line"></div><div class="sdiv-lbl">How it works</div><div class="sdiv-line"></div></div>
+
+<!-- ══ HOW IT WORKS ══ -->
+<div class="how-section" id="how">
+  <div class="sec-eyebrow">Simple by design</div>
+  <div class="sec-heading">Up and running in minutes</div>
+  <p class="sec-sub">No training needed. No Excel formulas. No printing headaches. Just your school's data, always organised.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Register your school</div>
+        <div class="step-desc">The school admin creates an account, sets up the school name, county, principal details and uploads the school logo. Takes under 2 minutes.</div>
+        <span class="step-tag">Admin · One-time setup</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Add students and teachers</div>
+        <div class="step-desc">Admit students into grades and streams. Add teachers manually or share a registration link — each teacher is linked to their class automatically.</div>
+        <span class="step-tag">Admin · Per term</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Teachers enter marks from any device</div>
+        <div class="step-desc">Teachers open the mark sheet on phone or computer, type scores and CBC levels calculate instantly. Autosave protects every entry — even offline.</div>
+        <span class="step-tag">Teachers · Every term</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-title">Print reports instantly</div>
+        <div class="step-desc">Admin opens Analysis, selects any class and prints individual student reports or a full class ranking — all carrying the school logo, name and motto automatically.</div>
+        <span class="step-tag">Admin · End of term</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FEATURES ══ -->
+<div class="feat-section" id="features">
+  <div class="feat-inner">
+    <div class="sec-eyebrow">What you get</div>
+    <div class="sec-heading" style="color:#fff">Everything your school needs</div>
+    <p class="sec-sub">A complete CBC management platform — from student admission to end-of-term reports, all in one place.</p>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="feat-ico">⚡</div><div class="feat-title">Instant CBC Level Calculation</div><div class="feat-body">Type a mark and EE, ME, AE, BE levels appear automatically. No formulas. No errors. The CBC grading scale is built in.</div><span class="feat-tag">Live calculation</span></div>
+      <div class="feat-card"><div class="feat-ico">🖨️</div><div class="feat-title">Branded Print Reports</div><div class="feat-body">School name, logo and motto appear on every report card and mark sheet. Set once in Settings — applied everywhere, every term.</div><span class="feat-tag">Auto branding</span></div>
+      <div class="feat-card"><div class="feat-ico">📈</div><div class="feat-title">Class Analysis Dashboard</div><div class="feat-body">Subject averages, level distribution charts, top performers and student rankings — generated instantly from saved marks. No extra work.</div><span class="feat-tag">One-click analysis</span></div>
+      <div class="feat-card"><div class="feat-ico">☁️</div><div class="feat-title">Real-Time Cloud Sync</div><div class="feat-body">Marks saved by a teacher are immediately visible to the admin. No USB drives, no email files, no version conflicts between devices.</div><span class="feat-tag">Firebase powered</span></div>
+      <div class="feat-card"><div class="feat-ico">🔐</div><div class="feat-title">Role-Based Access</div><div class="feat-body">Teachers see only their class. Admins see everything. No teacher can access another class's data. Approval required before any account goes live.</div><span class="feat-tag">Secure by design</span></div>
+      <div class="feat-card"><div class="feat-ico">📱</div><div class="feat-title">Works on Any Device</div><div class="feat-body">Optimised for phones, tablets and laptops. Number pad keyboard on mobile. Autosave keeps data safe even when connection drops mid-entry.</div><span class="feat-tag">Mobile-first</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CTA ══ -->
+<div class="cta-section" id="register">
+  <div class="cta-tag">⭐ Get started today</div>
+  <div class="cta-heading">Ready to run your school<br><i>the smarter way?</i></div>
+  <p class="cta-sub">Create your account in under two minutes. No credit card required. Full access from day one.</p>
+  <div class="role-cards">
+    <a class="role-card admin" href="registration.html">
+      <div class="rc-icon">⚙️</div>
+      <div class="rc-title">School Admin</div>
+      <div class="rc-desc">Register your school, manage teachers and students, view all results and generate reports across all classes.</div>
+      <span class="rc-arrow">Register as Admin →</span>
+    </a>
+    <a class="role-card teacher" href="login.html">
+      <div class="rc-icon">📊</div>
+      <div class="rc-title">Teacher</div>
+      <div class="rc-desc">To register, ask your school administrator for the registration link. Already registered? Sign in below.</div>
+      <span class="rc-arrow">Teacher Sign In →</span>
+    </a>
+  </div>
+  <div class="cta-note">Already have an account? <a href="login.html">Sign in here →</a></div>
+</div>
+
+<!-- ══ TRY DEMO CTA ══ -->
+<div style="background:var(--ink);padding:64px 24px;text-align:center">
+  <div style="max-width:640px;margin:0 auto">
+    <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px">No account · No setup · No login</div>
+    <div style="font-family:'Libre Baskerville',serif;font-size:clamp(24px,4vw,36px);font-weight:700;color:#fff;line-height:1.18;margin-bottom:12px">
+      See it work before<br>you <i>register</i>
+    </div>
+    <p style="font-size:14.5px;color:rgba(255,255,255,.45);line-height:1.75;margin-bottom:32px;max-width:440px;margin-left:auto;margin-right:auto">
+      Choose a grade (1–9) and stream, edit marks and watch CBC levels auto-calculate. Print a real report. All with demo data — no account needed.
+    </p>
+    <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:28px">
+      <span style="padding:5px 13px;border-radius:20px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);font-size:12px;color:rgba(255,255,255,.6)">✏️ Edit marks live</span>
+      <span style="padding:5px 13px;border-radius:20px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);font-size:12px;color:rgba(255,255,255,.6)">📊 Choose grade &amp; stream</span>
+      <span style="padding:5px 13px;border-radius:20px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);font-size:12px;color:rgba(255,255,255,.6)">📈 Auto class analysis</span>
+      <span style="padding:5px 13px;border-radius:20px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);font-size:12px;color:rgba(255,255,255,.6)">🖨️ Print CBC report</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+      <a href="demo.html" style="display:inline-flex;align-items:center;gap:8px;padding:13px 30px;border-radius:7px;background:#10b981;color:#fff;font-size:15px;font-weight:800;text-decoration:none;box-shadow:0 4px 18px rgba(16,185,129,.35)">▶ Launch Demo</a>
+      <a href="registration.html" style="display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:7px;border:1.5px solid rgba(255,255,255,.2);color:rgba(255,255,255,.75);font-size:14px;font-weight:700;text-decoration:none">Register School →</a>
+    </div>
+    <div style="font-size:12px;color:rgba(255,255,255,.25)">
+      💡 To use with your real school data — <a href="registration.html" style="color:#fbbf24;font-weight:700;text-decoration:none">register your school here</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="foot-brand">
+    <div class="foot-logo">📊</div>
+    <div><div class="foot-name">CBE Mark Sheet System</div><div class="foot-sub">Kenya CBC · Primary &amp; Junior School · Grades 1–9</div></div>
+  </div>
+  <div class="foot-links">
+    <a class="foot-link" href="registration.html">Register School</a>
+    <span class="foot-sep">·</span>
+    <a class="foot-link" href="login.html">Teacher Login</a>
+    <span class="foot-sep">·</span>
+    <a class="foot-link" href="admin.html">Admin</a>
+  </div>
+</footer>
+
+<!-- ══ WA FAB ══ -->
+<a class="wa-fab" href="https://wa.me/254704518130?text=Hello%2C+I+am+interested+in+CBE+Mark+Sheet+System+for+my+school." target="_blank" rel="noopener" title="Chat on WhatsApp">💬</a>
+
+<!-- ══ POPUP OVERLAY ══ -->
+<div id="ann-popup-zone">
+  <div class="ann-popup-box" id="ann-popup-box"></div>
+</div>
+
+<!-- ══ TOAST STACK ══ -->
+<div id="ann-toast-zone"></div>
+
+<!-- ══ NOTIFICATION DRAWER ══ -->
+<div class="notif-overlay" id="notifOverlay" onclick="closeNotifDrawer()"></div>
+<div class="notif-drawer" id="notifDrawer">
+  <div class="notif-drawer-head">
+    <span class="notif-drawer-title">🔔 Notifications</span>
+    <div class="notif-drawer-actions">
+      <button class="notif-mark-all" onclick="markAllRead()">Mark all read</button>
+      <button class="notif-close-btn" onclick="closeNotifDrawer()">✕</button>
+    </div>
+  </div>
+  <div class="notif-drawer-body" id="notifDrawerBody">
+    <div class="notif-empty"><span class="notif-empty-ico">🔔</span>No notifications yet</div>
+  </div>
+  <div class="notif-drawer-foot">
+    <span class="notif-foot-note">Notifications are stored on this device</span>
+  </div>
+</div>
+
+<!-- ══ FIREBASE ══ -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+<script>
+// ── Firebase init ─────────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyBDbpJNfAdmkZ-fAfGsiUYY0OWPWJ_e_IM",
+  authDomain: "manuu-27475.firebaseapp.com",
+  projectId: "manuu-27475",
+  storageBucket: "manuu-27475.firebasestorage.app",
+  messagingSenderId: "443796877180",
+  appId: "1:443796877180:web:b89c9aae6fb106e0047ef9",
+  measurementId: "G-E7G5H7FTSB"
+};
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+// ── Scroll animations ─────────────────────────────────────────────────────────
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.step,.feat-card,.role-card').forEach(el => {
+  el.style.cssText += 'opacity:0;transform:translateY(12px);transition:opacity .45s ease,transform .45s ease';
+  io.observe(el);
+});
+
+// ── reCAPTCHA ─────────────────────────────────────────────────────────────────
+function onClick(e) {
+  e.preventDefault();
+  grecaptcha.enterprise.ready(async () => {
+    const token = await grecaptcha.enterprise.execute('6Ldd1q4sAAAAADga6Ediw118NWAhCHZSl-pmL2Pc', { action: 'LOGIN' });
+  });
+}
+
+// ── Announcements + Notifications ─────────────────────────────────────────────
+(function () {
+  const COLL          = 'announcements';
+  const DISMISSED_KEY = 'cbe_ann_dismissed';
+  const POPUP_KEY     = 'cbe_ann_popup_shown';
+  const READ_KEY      = 'cbe_notif_read';
+  const ICONS         = { info:'ℹ️', warning:'⚠️', success:'✅', alert:'🚨' };
+
+  function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function timeAgo(date) {
+    if (!date) return '';
+    const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (diff < 60)    return 'Just now';
+    if (diff < 3600)  return Math.floor(diff/60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+    return date.toLocaleDateString('en-KE',{day:'2-digit',month:'short'});
+  }
+
+  // ── Main loader ──────────────────────────────────────────────────────────
+  function loadAnnouncements() {
+    if (typeof firebase === 'undefined' || !firebase.apps.length) return;
+    const db = firebase.firestore();
+    const dismissed  = JSON.parse(localStorage.getItem(DISMISSED_KEY) || '[]');
+    const shownPopup = JSON.parse(sessionStorage.getItem(POPUP_KEY)    || '[]');
+    const readIds    = JSON.parse(localStorage.getItem(READ_KEY)       || '[]');
+    const now        = new Date();
+
+    db.collection(COLL)
+      .where('active', '==', true)
+      .orderBy('createdAt', 'desc')
+      .get()
+      .then(snap => {
+        const docs = snap.docs.filter(doc => {
+          const d = doc.data();
+          if (d.target && d.target !== 'all') return false;
+          if (d.expiresAt && d.expiresAt.toDate() < now) return false;
+          return true;
+        });
+
+        const banners = docs.filter(d => d.data().type === 'banner'       && !dismissed.includes(d.id));
+        const popups  = docs.filter(d => d.data().type === 'popup'        && !shownPopup.includes(d.id));
+        const toasts  = docs.filter(d => d.data().type === 'toast');
+        const notifs  = docs.filter(d => d.data().type === 'notification');
+
+        renderBanners(banners, dismissed);
+        if (popups.length) renderPopup(popups[0], shownPopup);
+        renderToasts(toasts);
+        renderNotifications(notifs, readIds);
+      })
+      .catch(e => console.warn('CBE Announcements:', e));
+  }
+
+  // ── Banners ──────────────────────────────────────────────────────────────
+  function renderBanners(docs, dismissed) {
+    const zone = document.getElementById('ann-banner-zone');
+    if (!zone) return;
+    zone.innerHTML = '';
+    docs.forEach(doc => {
+      const d  = doc.data();
+      const el = document.createElement('div');
+      el.className = 'ann-banner ' + (d.style || 'info');
+      el.innerHTML = `
+        <span class="ann-banner-ico">${ICONS[d.style]||'ℹ️'}</span>
+        <div class="ann-banner-body">
+          <div class="ann-banner-title">${esc(d.title)}</div>
+          ${d.message ? `<div class="ann-banner-msg">${esc(d.message)}</div>` : ''}
+          ${d.link    ? `<a class="ann-banner-link" href="${esc(d.link)}" target="_blank" rel="noopener">${esc(d.linkText||'Read more →')}</a>` : ''}
+        </div>
+        <button class="ann-banner-close" aria-label="Dismiss">✕</button>`;
+      el.querySelector('.ann-banner-close').addEventListener('click', () => {
+        el.style.cssText += 'transition:opacity .25s,max-height .3s,padding .3s;opacity:0;max-height:' + el.offsetHeight + 'px';
+        setTimeout(() => { el.style.maxHeight='0';el.style.overflow='hidden';el.style.padding='0'; }, 50);
+        setTimeout(() => el.remove(), 360);
+        const list = JSON.parse(localStorage.getItem(DISMISSED_KEY)||'[]');
+        list.push(doc.id);
+        localStorage.setItem(DISMISSED_KEY, JSON.stringify(list));
+      });
+      zone.appendChild(el);
+    });
+  }
+
+  // ── Popup ────────────────────────────────────────────────────────────────
+  function renderPopup(doc, shownList) {
+    const zone = document.getElementById('ann-popup-zone');
+    const box  = document.getElementById('ann-popup-box');
+    if (!zone || !box) return;
+    const d = doc.data();
+    box.innerHTML = `
+      <div class="ann-popup-badge ${d.style||'info'}">${(d.style||'INFO').toUpperCase()}</div>
+      <div class="ann-popup-title">${esc(d.title)}</div>
+      ${d.message ? `<div class="ann-popup-msg">${esc(d.message)}</div>` : ''}
+      <div class="ann-popup-actions">
+        ${d.link ? `<a class="ann-popup-link-btn ${d.style||'info'}" href="${esc(d.link)}" target="_blank" rel="noopener">${esc(d.linkText||'Read more →')}</a>` : ''}
+        <button class="ann-popup-dismiss">Dismiss</button>
+      </div>`;
+    zone.classList.add('open');
+    function dismiss() {
+      zone.style.opacity='0';zone.style.transition='opacity .2s';
+      setTimeout(()=>{zone.classList.remove('open');zone.style.opacity='';zone.style.transition='';},200);
+      sessionStorage.setItem(POPUP_KEY, JSON.stringify([...shownList, doc.id]));
+    }
+    box.querySelector('.ann-popup-dismiss').addEventListener('click', dismiss);
+    zone.addEventListener('click', e => { if(e.target===zone) dismiss(); });
+    document.addEventListener('keydown', e => { if(e.key==='Escape') dismiss(); }, {once:true});
+  }
+
+  // ── Toasts ───────────────────────────────────────────────────────────────
+  function renderToasts(docs) {
+    const zone = document.getElementById('ann-toast-zone');
+    if (!zone) return;
+    docs.forEach((doc, idx) => {
+      setTimeout(() => {
+        const d  = doc.data();
+        const el = document.createElement('div');
+        el.className = 'ann-toast';
+        el.innerHTML = `
+          <span class="ann-toast-dot ${d.style||'info'}"></span>
+          <span class="ann-toast-text">${esc(d.title)}</span>
+          ${d.link ? `<a class="ann-toast-link" href="${esc(d.link)}" target="_blank" rel="noopener">${esc(d.linkText||'Read more')}</a>` : ''}
+          <button class="ann-toast-close" aria-label="Close">✕</button>`;
+        zone.appendChild(el);
+        const timer = setTimeout(() => removeToast(el), 7000);
+        el.querySelector('.ann-toast-close').addEventListener('click', ()=>{ clearTimeout(timer); removeToast(el); });
+      }, idx * 600);
+    });
+  }
+  function removeToast(el) { el.classList.add('hiding'); setTimeout(()=>el.remove(), 320); }
+
+  // ── Notifications (drawer) ───────────────────────────────────────────────
+  let _notifDocs = [];
+
+  function renderNotifications(docs, readIds) {
+    _notifDocs = docs;
+    const body  = document.getElementById('notifDrawerBody');
+    const badge = document.getElementById('notifBadge');
+    if (!body || !badge) return;
+
+    const unreadCount = docs.filter(d => !readIds.includes(d.id)).length;
+    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+    badge.classList.toggle('show', unreadCount > 0);
+
+    if (!docs.length) {
+      body.innerHTML = '<div class="notif-empty"><span class="notif-empty-ico">🔔</span>No notifications yet</div>';
+      return;
+    }
+
+    body.innerHTML = docs.map(doc => {
+      const d      = doc.data();
+      const isRead = readIds.includes(doc.id);
+      const created = d.createdAt ? timeAgo(d.createdAt.toDate()) : '';
+      return `
+        <div class="notif-item ${isRead ? 'read' : 'unread'} ${d.style||'info'}" id="ni-${doc.id}">
+          <div class="notif-item-dot ${isRead ? 'read' : (d.style||'info')}"></div>
+          <div class="notif-item-body">
+            <div class="notif-item-title">${esc(d.title)}</div>
+            <div class="notif-item-msg">${esc(d.message||'')}</div>
+            <div class="notif-item-footer">
+              <span class="notif-item-time">${created}</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                ${d.link ? `<a class="notif-item-link" href="${esc(d.link)}" target="_blank" rel="noopener" onclick="markRead('${doc.id}')">${esc(d.linkText||'View →')}</a>` : ''}
+                <button class="notif-item-dismiss" onclick="dismissNotif('${doc.id}')" title="Remove">✕</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    docs.forEach(doc => {
+      const el = document.getElementById('ni-' + doc.id);
+      if (el) el.addEventListener('click', (e) => {
+        if (!e.target.closest('button') && !e.target.closest('a')) markRead(doc.id);
+      });
+    });
+  }
+
+  // ── Notification helpers (global) ────────────────────────────────────────
+  window.markRead = function(id) {
+    const readIds = JSON.parse(localStorage.getItem(READ_KEY) || '[]');
+    if (!readIds.includes(id)) { readIds.push(id); localStorage.setItem(READ_KEY, JSON.stringify(readIds)); }
+    const el = document.getElementById('ni-' + id);
+    if (el) {
+      el.classList.remove('unread'); el.classList.add('read');
+      el.querySelector('.notif-item-dot').className = 'notif-item-dot read';
+    }
+    const badge  = document.getElementById('notifBadge');
+    const unread = document.querySelectorAll('.notif-item.unread').length;
+    badge.textContent = unread > 9 ? '9+' : unread;
+    badge.classList.toggle('show', unread > 0);
+  };
+
+  window.markAllRead = function() {
+    const readIds = JSON.parse(localStorage.getItem(READ_KEY) || '[]');
+    _notifDocs.forEach(doc => { if (!readIds.includes(doc.id)) readIds.push(doc.id); });
+    localStorage.setItem(READ_KEY, JSON.stringify(readIds));
+    document.querySelectorAll('.notif-item').forEach(el => {
+      el.classList.remove('unread'); el.classList.add('read');
+      const dot = el.querySelector('.notif-item-dot');
+      if (dot) dot.className = 'notif-item-dot read';
+    });
+    const badge = document.getElementById('notifBadge');
+    badge.classList.remove('show');
+  };
+
+  window.dismissNotif = function(id) {
+    const dismissed = JSON.parse(localStorage.getItem(DISMISSED_KEY) || '[]');
+    if (!dismissed.includes(id)) { dismissed.push(id); localStorage.setItem(DISMISSED_KEY, JSON.stringify(dismissed)); }
+    const el = document.getElementById('ni-' + id);
+    if (el) { el.style.cssText += 'transition:opacity .2s;opacity:0'; setTimeout(()=>el.remove(), 220); }
+    markRead(id);
+  };
+
+  // ── Drawer controls (global) ─────────────────────────────────────────────
+  window.toggleNotifDrawer = function() {
+    const drawer  = document.getElementById('notifDrawer');
+    const overlay = document.getElementById('notifOverlay');
+    const isOpen  = drawer.classList.contains('open');
+    drawer.classList.toggle('open', !isOpen);
+    overlay.classList.toggle('open', !isOpen);
+  };
+
+  window.closeNotifDrawer = function() {
+    document.getElementById('notifDrawer').classList.remove('open');
+    document.getElementById('notifOverlay').classList.remove('open');
+  };
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNotifDrawer(); });
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadAnnouncements);
+  } else {
+    loadAnnouncements();
+  }
+})();
+</script>
+
+</body>
+</html>

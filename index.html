@@ -117,6 +117,30 @@ nav{position:sticky;top:0;z-index:200;background:rgba(249,250,251,.95);backdrop-
 .nav-btn{font-size:13px;font-weight:700;padding:7px 18px;border-radius:var(--r2);background:var(--sky);color:#fff;text-decoration:none;transition:background .14s}
 .nav-btn:hover{background:var(--sky2)}
 
+/* ── NAV DROPDOWN ── */
+.nav-dropdown{position:relative}
+.nav-dropdown-toggle{font-size:13px;font-weight:500;color:var(--ink2);text-decoration:none;padding:6px 12px;border-radius:var(--r2);transition:background .14s;cursor:pointer;display:flex;align-items:center;gap:5px;background:none;border:none;font-family:'Outfit',sans-serif}
+.nav-dropdown-toggle:hover{background:var(--card2)}
+.nav-dropdown-toggle svg{width:10px;height:10px;transition:transform .2s}
+.nav-dropdown.open .nav-dropdown-toggle svg{transform:rotate(180deg)}
+.nav-dropdown-menu{position:absolute;top:calc(100% + 8px);left:0;min-width:190px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh2);padding:6px;opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .18s,transform .18s;z-index:300}
+.nav-dropdown.open .nav-dropdown-menu{opacity:1;pointer-events:all;transform:none}
+.nav-dropdown-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r2);text-decoration:none;color:var(--ink2);font-size:13px;font-weight:500;transition:background .12s}
+.nav-dropdown-item:hover{background:var(--card2);color:var(--ink)}
+.nav-dropdown-item-ico{font-size:14px;width:20px;text-align:center;flex-shrink:0}
+.nav-dropdown-sep{height:1px;background:var(--border);margin:4px 0}
+
+/* ── MOBILE MENU ── */
+.nav-menu-btn{display:none;width:36px;height:36px;border-radius:var(--r2);border:1.5px solid var(--border2);background:var(--card);cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:4px;flex-shrink:0}
+.nav-menu-btn span{display:block;width:16px;height:2px;background:var(--ink2);border-radius:2px;transition:all .2s}
+.mobile-nav{display:none;position:fixed;top:58px;left:0;right:0;background:var(--card);border-bottom:1px solid var(--border);box-shadow:var(--sh2);z-index:190;padding:12px 16px 16px;flex-direction:column;gap:4px}
+.mobile-nav.open{display:flex}
+.mobile-nav-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--r2);text-decoration:none;color:var(--ink2);font-size:14px;font-weight:500;transition:background .12s}
+.mobile-nav-link:hover{background:var(--card2)}
+.mobile-nav-link-ico{font-size:15px;width:22px;text-align:center}
+.mobile-nav-sep{height:1px;background:var(--border);margin:6px 0}
+.mobile-nav-btn{display:flex;align-items:center;justify-content:center;padding:11px;border-radius:var(--r2);background:var(--sky);color:#fff;font-size:14px;font-weight:700;text-decoration:none;margin-top:4px}
+
 /* ── BELL ── */
 .notif-bell-btn{position:relative;width:36px;height:36px;border-radius:var(--r2);border:1.5px solid var(--border2);background:var(--card);cursor:pointer;display:grid;place-items:center;font-size:16px;transition:all .14s;flex-shrink:0}
 .notif-bell-btn:hover{border-color:var(--sky);background:var(--sky-soft)}
@@ -329,16 +353,33 @@ h1 i{font-family:'Libre Baskerville',serif;font-style:italic;font-weight:400;col
 .cta-note a{color:var(--sky);font-weight:600;text-decoration:none}
 .cta-note a:hover{text-decoration:underline}
 
-/* ── FOOTER ── */
-footer{background:var(--card);border-top:1px solid var(--border);padding:26px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
-.foot-brand{display:flex;align-items:center;gap:10px}
-.foot-logo{width:30px;height:30px;border-radius:7px;background:var(--sky);display:grid;place-items:center;font-size:14px}
-.foot-name{font-size:13px;font-weight:700;color:var(--ink)}
-.foot-sub{font-size:10.5px;color:var(--ink3)}
-.foot-links{display:flex;align-items:center;gap:4px}
-.foot-link{font-size:12.5px;color:var(--ink3);text-decoration:none;padding:5px 10px;border-radius:5px;transition:all .14s}
-.foot-link:hover{background:var(--card2);color:var(--ink)}
-.foot-sep{color:var(--border2);font-size:12px}
+/* ── FOOTER (updated) ── */
+footer{background:var(--ink);color:rgba(255,255,255,.55);padding:48px 32px 28px}
+.foot-inner{max-width:960px;margin:0 auto}
+.foot-top{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:36px;padding-bottom:36px;border-bottom:1px solid rgba(255,255,255,.08)}
+.foot-brand-col{}
+.foot-logo-row{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.foot-logo{width:34px;height:34px;border-radius:8px;background:var(--sky);display:grid;place-items:center;font-size:16px;flex-shrink:0}
+.foot-name{font-size:14px;font-weight:800;color:#fff;line-height:1.2}
+.foot-tagline{font-size:10px;color:rgba(255,255,255,.35);font-weight:500}
+.foot-about{font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;margin-bottom:18px}
+.foot-contacts{display:flex;flex-direction:column;gap:7px}
+.foot-contact-item{display:flex;align-items:center;gap:8px;font-size:12.5px;color:rgba(255,255,255,.45);text-decoration:none;transition:color .14s}
+.foot-contact-item:hover{color:rgba(255,255,255,.85)}
+.foot-contact-item span{font-size:14px;width:18px;text-align:center}
+.foot-col-title{font-size:11px;font-weight:700;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.foot-col-links{display:flex;flex-direction:column;gap:8px}
+.foot-col-link{font-size:13px;color:rgba(255,255,255,.45);text-decoration:none;transition:color .14s;display:flex;align-items:center;gap:7px}
+.foot-col-link:hover{color:#fff}
+.foot-col-link-ico{font-size:12px;opacity:.6}
+.foot-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:22px}
+.foot-copy{font-size:12px;color:rgba(255,255,255,.25)}
+.foot-copy a{color:rgba(255,255,255,.4);text-decoration:none}
+.foot-copy a:hover{color:rgba(255,255,255,.75)}
+.foot-bottom-links{display:flex;align-items:center;gap:4px}
+.foot-bottom-link{font-size:12px;color:rgba(255,255,255,.3);text-decoration:none;padding:4px 8px;border-radius:4px;transition:all .14s}
+.foot-bottom-link:hover{color:rgba(255,255,255,.75);background:rgba(255,255,255,.06)}
+.foot-bottom-sep{color:rgba(255,255,255,.12);font-size:11px}
 
 /* ── WA FAB ── */
 .wa-fab{position:fixed;bottom:24px;right:24px;z-index:300;width:50px;height:50px;border-radius:50%;background:#25d366;color:#fff;display:grid;place-items:center;font-size:22px;text-decoration:none;box-shadow:0 4px 18px rgba(37,211,102,.4);transition:all .16s}
@@ -354,18 +395,30 @@ h1{animation:fadeUp .5s .1s both}
 .dash-frame{animation:fadeUp .6s .38s both}
 
 /* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .foot-top{grid-template-columns:1fr 1fr;gap:28px}
+  .foot-brand-col{grid-column:1/-1}
+  .foot-about{max-width:480px}
+}
 @media(max-width:640px){
   nav{padding:0 18px}
-  .nav-link{display:none}
+  .nav-link,.nav-dropdown{display:none}
+  .nav-menu-btn{display:flex}
   .hero,.how-section,.cta-section{padding-left:20px;padding-right:20px}
   .dash-wrap{padding:0 16px 52px}
   .role-cards{grid-template-columns:1fr}
   .stat{padding:13px 18px}
   .stat-val{font-size:18px}
-  footer{padding:20px;flex-direction:column;align-items:flex-start}
+  footer{padding:36px 20px 20px}
+  .foot-top{grid-template-columns:1fr 1fr;gap:24px}
+  .foot-brand-col{grid-column:1/-1}
+  .foot-bottom{flex-direction:column;align-items:flex-start;gap:8px}
   .sdiv{padding-left:20px;padding-right:20px}
   .feat-section{padding:52px 20px}
   .ann-banner{padding:10px 18px}
+}
+@media(max-width:420px){
+  .foot-top{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -385,6 +438,29 @@ h1{animation:fadeUp .5s .1s both}
     <a class="nav-link" href="demo.html" style="color:var(--green);font-weight:700;background:rgba(16,185,129,.08);padding:5px 12px;border-radius:20px;border:1px solid rgba(16,185,129,.2)">▶ Try Demo</a>
     <a class="nav-link" href="#features">Features</a>
 
+    <!-- More dropdown -->
+    <div class="nav-dropdown" id="moreDropdown">
+      <button class="nav-dropdown-toggle" onclick="toggleDropdown('moreDropdown')">
+        More
+        <svg viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="nav-dropdown-menu">
+        <a class="nav-dropdown-item" href="about.html">
+          <span class="nav-dropdown-item-ico">🏫</span>About Us
+        </a>
+        <a class="nav-dropdown-item" href="contact.html">
+          <span class="nav-dropdown-item-ico">💬</span>Contact
+        </a>
+        <div class="nav-dropdown-sep"></div>
+        <a class="nav-dropdown-item" href="terms.html">
+          <span class="nav-dropdown-item-ico">📄</span>Terms of Service
+        </a>
+        <a class="nav-dropdown-item" href="privacy.html">
+          <span class="nav-dropdown-item-ico">🔒</span>Privacy Policy
+        </a>
+      </div>
+    </div>
+
     <!-- NOTIFICATION BELL -->
     <button class="notif-bell-btn" id="notifBellBtn" onclick="toggleNotifDrawer()" title="Notifications" aria-label="Open notifications">
       🔔
@@ -392,8 +468,28 @@ h1{animation:fadeUp .5s .1s both}
     </button>
 
     <a class="nav-btn" href="registration.html">Get Started</a>
+
+    <!-- Mobile menu button -->
+    <button class="nav-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
+
+<!-- ══ MOBILE NAV ══ -->
+<div class="mobile-nav" id="mobileNav">
+  <a class="mobile-nav-link" href="#how"><span class="mobile-nav-link-ico">ℹ️</span>How it works</a>
+  <a class="mobile-nav-link" href="#features"><span class="mobile-nav-link-ico">⚡</span>Features</a>
+  <a class="mobile-nav-link" href="demo.html"><span class="mobile-nav-link-ico">▶</span>Try Demo</a>
+  <div class="mobile-nav-sep"></div>
+  <a class="mobile-nav-link" href="about.html"><span class="mobile-nav-link-ico">🏫</span>About Us</a>
+  <a class="mobile-nav-link" href="contact.html"><span class="mobile-nav-link-ico">💬</span>Contact</a>
+  <a class="mobile-nav-link" href="terms.html"><span class="mobile-nav-link-ico">📄</span>Terms of Service</a>
+  <a class="mobile-nav-link" href="privacy.html"><span class="mobile-nav-link-ico">🔒</span>Privacy Policy</a>
+  <div class="mobile-nav-sep"></div>
+  <a class="mobile-nav-link" href="login.html"><span class="mobile-nav-link-ico">🔑</span>Teacher Sign In</a>
+  <a class="mobile-nav-btn" href="registration.html">Register Your School →</a>
+</div>
 
 <!-- ══ ANNOUNCEMENT BANNERS ══ -->
 <div id="ann-banner-zone"></div>
@@ -568,7 +664,7 @@ h1{animation:fadeUp .5s .1s both}
 </div>
 
 <!-- ══ TRY DEMO CTA ══ -->
-<div style="background:var(--ink);padding:64px 24px;text-align:center">
+<div style="background:#0d1117;padding:64px 24px;text-align:center">
   <div style="max-width:640px;margin:0 auto">
     <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px">No account · No setup · No login</div>
     <div style="font-family:'Libre Baskerville',serif;font-size:clamp(24px,4vw,36px);font-weight:700;color:#fff;line-height:1.18;margin-bottom:12px">
@@ -593,18 +689,84 @@ h1{animation:fadeUp .5s .1s both}
   </div>
 </div>
 
-<!-- ══ FOOTER ══ -->
+<!-- ══ FOOTER (updated) ══ -->
 <footer>
-  <div class="foot-brand">
-    <div class="foot-logo">📊</div>
-    <div><div class="foot-name">CBE Mark Sheet System</div><div class="foot-sub">Kenya CBC · Primary &amp; Junior School · Grades 1–9</div></div>
-  </div>
-  <div class="foot-links">
-    <a class="foot-link" href="registration.html">Register School</a>
-    <span class="foot-sep">·</span>
-    <a class="foot-link" href="login.html">Teacher Login</a>
-    <span class="foot-sep">·</span>
-    <a class="foot-link" href="admin.html">Admin</a>
+  <div class="foot-inner">
+    <div class="foot-top">
+
+      <!-- Brand col -->
+      <div class="foot-brand-col">
+        <div class="foot-logo-row">
+          <div class="foot-logo">📊</div>
+          <div>
+            <div class="foot-name">CBE Mark Sheet System</div>
+            <div class="foot-tagline">Kenya CBC · Grades 1–9</div>
+          </div>
+        </div>
+        <p class="foot-about">Digital CBC mark sheet management for Kenya Primary &amp; Junior Schools. Built by teachers, for teachers — fast, offline-ready and 100% cloud-synced.</p>
+        <div class="foot-contacts">
+          <a class="foot-contact-item" href="https://wa.me/254704518130" target="_blank" rel="noopener">
+            <span>💬</span>+254 704 518 130 (WhatsApp)
+          </a>
+          <a class="foot-contact-item" href="mailto:info@bett.website">
+            <span>✉️</span>info@bett.website
+          </a>
+          <a class="foot-contact-item" href="https://bett.website" target="_blank" rel="noopener">
+            <span>🌐</span>bett.website
+          </a>
+        </div>
+      </div>
+
+      <!-- Product col -->
+      <div>
+        <div class="foot-col-title">Product</div>
+        <div class="foot-col-links">
+          <a class="foot-col-link" href="registration.html"><span class="foot-col-link-ico">⚙️</span>Register School</a>
+          <a class="foot-col-link" href="login.html"><span class="foot-col-link-ico">🔑</span>Teacher Login</a>
+          <a class="foot-col-link" href="admin.html"><span class="foot-col-link-ico">🛡️</span>Admin Panel</a>
+          <a class="foot-col-link" href="demo.html"><span class="foot-col-link-ico">▶</span>Try Demo</a>
+          <a class="foot-col-link" href="#features"><span class="foot-col-link-ico">⚡</span>Features</a>
+          <a class="foot-col-link" href="#how"><span class="foot-col-link-ico">ℹ️</span>How it Works</a>
+        </div>
+      </div>
+
+      <!-- Company col -->
+      <div>
+        <div class="foot-col-title">Company</div>
+        <div class="foot-col-links">
+          <a class="foot-col-link" href="about.html"><span class="foot-col-link-ico">🏫</span>About Us</a>
+          <a class="foot-col-link" href="contact.html"><span class="foot-col-link-ico">💬</span>Contact Us</a>
+          <a class="foot-col-link" href="https://wa.me/254704518130?text=Hello%2C+I+am+interested+in+CBE+Mark+Sheet+System." target="_blank" rel="noopener"><span class="foot-col-link-ico">📞</span>WhatsApp Support</a>
+        </div>
+      </div>
+
+      <!-- Legal col -->
+      <div>
+        <div class="foot-col-title">Legal</div>
+        <div class="foot-col-links">
+          <a class="foot-col-link" href="terms.html"><span class="foot-col-link-ico">📄</span>Terms of Service</a>
+          <a class="foot-col-link" href="privacy.html"><span class="foot-col-link-ico">🔒</span>Privacy Policy</a>
+          <a class="foot-col-link" href="privacy.html#cookies"><span class="foot-col-link-ico">🍪</span>Cookie Policy</a>
+          <a class="foot-col-link" href="terms.html#refunds"><span class="foot-col-link-ico">💳</span>Refund Policy</a>
+        </div>
+      </div>
+
+    </div><!-- /foot-top -->
+
+    <div class="foot-bottom">
+      <div class="foot-copy">
+        © 2026 <a href="https://bett.website" target="_blank" rel="noopener">Bett Emanuel</a> · CBE Mark Sheet System · All rights reserved.
+      </div>
+      <div class="foot-bottom-links">
+        <a class="foot-bottom-link" href="terms.html">Terms</a>
+        <span class="foot-bottom-sep">·</span>
+        <a class="foot-bottom-link" href="privacy.html">Privacy</a>
+        <span class="foot-bottom-sep">·</span>
+        <a class="foot-bottom-link" href="contact.html">Contact</a>
+        <span class="foot-bottom-sep">·</span>
+        <a class="foot-bottom-link" href="about.html">About</a>
+      </div>
+    </div>
   </div>
 </footer>
 
@@ -656,6 +818,29 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
+// ── Dropdown toggle ───────────────────────────────────────────────────────────
+function toggleDropdown(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  document.querySelectorAll('.nav-dropdown.open').forEach(d => {
+    if (!d.contains(e.target)) d.classList.remove('open');
+  });
+});
+
+// ── Mobile menu toggle ────────────────────────────────────────────────────────
+function toggleMobileMenu() {
+  document.getElementById('mobileNav').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  const btn = document.getElementById('mobileMenuBtn');
+  const nav = document.getElementById('mobileNav');
+  if (nav && btn && !nav.contains(e.target) && !btn.contains(e.target)) {
+    nav.classList.remove('open');
+  }
+});
+
 // ── Scroll animations ─────────────────────────────────────────────────────────
 const io = new IntersectionObserver(entries => {
   entries.forEach(e => {
@@ -700,7 +885,6 @@ function onClick(e) {
     return date.toLocaleDateString('en-KE',{day:'2-digit',month:'short'});
   }
 
-  // ── Main loader ──────────────────────────────────────────────────────────
   function loadAnnouncements() {
     if (typeof firebase === 'undefined' || !firebase.apps.length) return;
     const db = firebase.firestore();
@@ -720,12 +904,10 @@ function onClick(e) {
           if (d.expiresAt && d.expiresAt.toDate() < now) return false;
           return true;
         });
-
         const banners = docs.filter(d => d.data().type === 'banner'       && !dismissed.includes(d.id));
         const popups  = docs.filter(d => d.data().type === 'popup'        && !shownPopup.includes(d.id));
         const toasts  = docs.filter(d => d.data().type === 'toast');
         const notifs  = docs.filter(d => d.data().type === 'notification');
-
         renderBanners(banners, dismissed);
         if (popups.length) renderPopup(popups[0], shownPopup);
         renderToasts(toasts);
@@ -734,7 +916,6 @@ function onClick(e) {
       .catch(e => console.warn('CBE Announcements:', e));
   }
 
-  // ── Banners ──────────────────────────────────────────────────────────────
   function renderBanners(docs, dismissed) {
     const zone = document.getElementById('ann-banner-zone');
     if (!zone) return;
@@ -763,7 +944,6 @@ function onClick(e) {
     });
   }
 
-  // ── Popup ────────────────────────────────────────────────────────────────
   function renderPopup(doc, shownList) {
     const zone = document.getElementById('ann-popup-zone');
     const box  = document.getElementById('ann-popup-box');
@@ -788,7 +968,6 @@ function onClick(e) {
     document.addEventListener('keydown', e => { if(e.key==='Escape') dismiss(); }, {once:true});
   }
 
-  // ── Toasts ───────────────────────────────────────────────────────────────
   function renderToasts(docs) {
     const zone = document.getElementById('ann-toast-zone');
     if (!zone) return;
@@ -810,24 +989,19 @@ function onClick(e) {
   }
   function removeToast(el) { el.classList.add('hiding'); setTimeout(()=>el.remove(), 320); }
 
-  // ── Notifications (drawer) ───────────────────────────────────────────────
   let _notifDocs = [];
-
   function renderNotifications(docs, readIds) {
     _notifDocs = docs;
     const body  = document.getElementById('notifDrawerBody');
     const badge = document.getElementById('notifBadge');
     if (!body || !badge) return;
-
     const unreadCount = docs.filter(d => !readIds.includes(d.id)).length;
     badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
     badge.classList.toggle('show', unreadCount > 0);
-
     if (!docs.length) {
       body.innerHTML = '<div class="notif-empty"><span class="notif-empty-ico">🔔</span>No notifications yet</div>';
       return;
     }
-
     body.innerHTML = docs.map(doc => {
       const d      = doc.data();
       const isRead = readIds.includes(doc.id);
@@ -848,7 +1022,6 @@ function onClick(e) {
           </div>
         </div>`;
     }).join('');
-
     docs.forEach(doc => {
       const el = document.getElementById('ni-' + doc.id);
       if (el) el.addEventListener('click', (e) => {
@@ -857,7 +1030,6 @@ function onClick(e) {
     });
   }
 
-  // ── Notification helpers (global) ────────────────────────────────────────
   window.markRead = function(id) {
     const readIds = JSON.parse(localStorage.getItem(READ_KEY) || '[]');
     if (!readIds.includes(id)) { readIds.push(id); localStorage.setItem(READ_KEY, JSON.stringify(readIds)); }
@@ -893,7 +1065,6 @@ function onClick(e) {
     markRead(id);
   };
 
-  // ── Drawer controls (global) ─────────────────────────────────────────────
   window.toggleNotifDrawer = function() {
     const drawer  = document.getElementById('notifDrawer');
     const overlay = document.getElementById('notifOverlay');
@@ -909,7 +1080,6 @@ function onClick(e) {
 
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeNotifDrawer(); });
 
-  // ── Init ─────────────────────────────────────────────────────────────────
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', loadAnnouncements);
   } else {

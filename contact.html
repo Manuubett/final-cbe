@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxNTUzZDQiLz48cmVjdCB4PSIxMCIgeT0iMTAiIHdpZHRoPSI0NCIgaGVpZ2h0PSI4IiByeD0iMi41IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMjUpIi8+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iMTgiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC43KSIvPjxyZWN0IHg9IjMyIiB5PSIyMiIgd2lkdGg9IjgiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC45KSIvPjxyZWN0IHg9IjQ0IiB5PSIyMiIgd2lkdGg9IjEwIiBoZWlnaHQ9IjQiIHJ4PSIyIiBmaWxsPSIjNGFkZTgwIi8+PC9zdmc+">
+<meta name="theme-color" content="#1553d4">
+<meta name="description" content="Contact Bett KE Tech Ltd — get help with the CBE Mark Sheet System, report an issue, or ask about subscriptions.">
+<title>Contact Us | CBE Mark Sheet System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--surface:#fff;--border:#e2dfd8;
+  --text:#1a1714;--text2:#5c5650;--text3:#9c9690;
+  --accent:#1a56db;--accent2:#0f3d9e;
+  --green:#059669;--gold:#c9a227;--red:#dc2626;
+  --sh:0 1px 3px rgba(0,0,0,.06);--sh2:0 8px 32px rgba(0,0,0,.1);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.8;min-height:100vh}
+
+/* HEADER */
+.site-header{background:var(--text);padding:0 32px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.site-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.site-logo-mark{width:32px;height:32px;background:var(--accent);border-radius:7px;display:grid;place-items:center;font-size:15px;flex-shrink:0}
+.site-logo-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:-.2px}
+.site-nav{display:flex;align-items:center;gap:6px}
+.site-nav a{padding:6px 14px;border-radius:6px;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.65);text-decoration:none;transition:all .15s}
+.site-nav a:hover{background:rgba(255,255,255,.1);color:#fff}
+.site-nav .btn-home{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.site-nav .btn-home:hover{background:rgba(255,255,255,.2)}
+
+/* HERO */
+.hero{background:var(--text);padding:60px 32px 52px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 80% 40%,rgba(26,86,219,.14) 0%,transparent 65%),radial-gradient(ellipse 50% 50% at 20% 60%,rgba(5,150,105,.1) 0%,transparent 65%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),var(--accent),var(--gold))}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:7px;background:rgba(5,150,105,.15);border:1px solid rgba(5,150,105,.3);color:#34d399;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;margin-bottom:20px}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(32px,5vw,52px);font-weight:900;color:#fff;line-height:1.1;letter-spacing:-.5px;margin-bottom:14px}
+.hero-sub{font-size:14.5px;color:rgba(255,255,255,.5);max-width:480px;margin:0 auto;line-height:1.7}
+
+/* LAYOUT */
+.layout{max-width:1000px;margin:0 auto;padding:52px 24px 80px;display:grid;grid-template-columns:1fr 1.1fr;gap:32px;align-items:start}
+
+/* CONTACT OPTIONS */
+.contact-options{}
+.co-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:20px}
+
+.ch-card{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:16px;
+  padding:24px;
+  margin-bottom:16px;
+  box-shadow:var(--sh);
+  transition:all .2s;
+  text-decoration:none;
+  display:block;
+  color:var(--text);
+}
+.ch-card:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+.ch-card.wa{border-color:#bbf7d0}
+.ch-card.wa:hover{border-color:#16a34a}
+.ch-card.email{border-color:#bfdbfe}
+.ch-card.email:hover{border-color:var(--accent)}
+
+.ch-top{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.ch-icon{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:22px;flex-shrink:0}
+.ch-icon.wa{background:#d1fae5}
+.ch-icon.email{background:#dbeafe}
+.ch-label{font-family:'Playfair Display',serif;font-size:18px;font-weight:800;letter-spacing:-.2px}
+.ch-badge{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10.5px;font-weight:700;margin-left:8px}
+.ch-badge.fast{background:#d1fae5;color:#065f46}
+.ch-badge.std{background:#dbeafe;color:#1e40af}
+.ch-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px}
+.ch-detail{font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:7px}
+.ch-hours{font-size:12px;color:var(--text3)}
+.ch-btn{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:10px 20px;border-radius:9px;font-size:13px;font-weight:700;text-decoration:none;transition:all .15s}
+.btn-wa-solid{background:#16a34a;color:#fff}
+.btn-wa-solid:hover{background:#15803d}
+.btn-email-solid{background:var(--accent);color:#fff}
+.btn-email-solid:hover{background:var(--accent2)}
+
+/* TOPICS */
+.topics{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:var(--sh);margin-top:16px}
+.topics-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:16px}
+.topic-list{display:flex;flex-direction:column;gap:8px}
+.topic-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;background:var(--bg);border:1px solid var(--border);font-size:13px;font-weight:500;color:var(--text2)}
+.topic-ico{font-size:16px;flex-shrink:0}
+
+/* FAQ */
+.faq-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--sh)}
+.faq-header{padding:24px;border-bottom:1px solid var(--border);background:#fafaf9}
+.faq-header h2{font-family:'Playfair Display',serif;font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px}
+.faq-header p{font-size:13px;color:var(--text3)}
+.faq-body{padding:8px 0}
+.faq-item{border-bottom:1px solid var(--border)}
+.faq-item:last-child{border-bottom:none}
+.faq-q{padding:16px 24px;font-weight:700;font-size:13.5px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:background .15s;user-select:none}
+.faq-q:hover{background:var(--bg)}
+.faq-q .fq-text{flex:1}
+.faq-toggle{font-size:16px;color:var(--text3);transition:transform .25s;flex-shrink:0}
+.faq-item.open .faq-toggle{transform:rotate(45deg);color:var(--accent)}
+.faq-a{display:none;padding:0 24px 16px;font-size:13.5px;color:var(--text2);line-height:1.75}
+.faq-item.open .faq-a{display:block}
+.faq-a a{color:var(--accent);font-weight:600;text-decoration:none}
+.faq-a a:hover{text-decoration:underline}
+
+/* RESPONSE TIMES */
+.rt-card{background:var(--text);border-radius:16px;padding:24px;color:#fff;margin-top:16px}
+.rt-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.4);margin-bottom:16px}
+.rt-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px}
+.rt-row:last-child{border-bottom:none}
+.rt-label{color:rgba(255,255,255,.6)}
+.rt-time{font-weight:700;color:#34d399}
+.rt-time.amber{color:#fbbf24}
+
+/* FOOTER */
+.site-footer{background:var(--text);border-top:1px solid rgba(255,255,255,.08);padding:28px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.site-footer p{font-size:12px;color:rgba(255,255,255,.35)}
+.site-footer a{color:rgba(255,255,255,.5);text-decoration:none;font-weight:600}
+.site-footer a:hover{color:#fff}
+
+#backTop{position:fixed;bottom:24px;right:24px;width:40px;height:40px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:16px;cursor:pointer;box-shadow:0 4px 14px rgba(26,86,219,.35);transition:all .2s;opacity:0;pointer-events:none;display:grid;place-items:center}
+#backTop.show{opacity:1;pointer-events:all}
+#backTop:hover{transform:translateY(-2px)}
+
+@media(max-width:760px){
+  .layout{grid-template-columns:1fr}
+  .site-header{padding:0 16px}
+  .hero{padding:44px 20px 40px}
+}
+</style>
+</head>
+<body>
+<button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<header class="site-header">
+  <a href="/" class="site-logo">
+    <div class="site-logo-mark">🏫</div>
+    <div class="site-logo-name">CBE Mark Sheet</div>
+  </a>
+  <nav class="site-nav">
+    <a href="/about">About</a>
+    <a href="/terms">Legal</a>
+    <a href="/" class="btn-home">← Dashboard</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">💬 We're Here to Help</div>
+  <h1>Contact Us</h1>
+  <p class="hero-sub">Got a question, a problem, or feedback? We respond fast — usually within the hour on WhatsApp during business hours.</p>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT: CONTACT OPTIONS + TOPICS -->
+  <div>
+    <div class="co-title">Choose How to Reach Us</div>
+
+    <!-- WhatsApp -->
+    <a class="ch-card wa" href="https://wa.me/254704518130?text=Hello%2C%20I%20need%20help%20with%20the%20CBE%20Mark%20Sheet%20System." target="_blank">
+      <div class="ch-top">
+        <div class="ch-icon wa">💬</div>
+        <div>
+          <div class="ch-label">WhatsApp <span class="ch-badge fast">Fastest</span></div>
+        </div>
+      </div>
+      <p class="ch-desc">The quickest way to reach us. Send a message and we'll respond directly — no automated responses, no bots.</p>
+      <div class="ch-detail">📱 +254 704 518 130</div>
+      <div class="ch-hours">⏰ Mon–Sat · 7:00 AM – 9:00 PM (EAT)</div>
+      <span class="ch-btn btn-wa-solid">💬 Open WhatsApp →</span>
+    </a>
+
+    <!-- Email -->
+    <a class="ch-card email" href="mailto:support@bett.website?subject=CBE%20Mark%20Sheet%20Support">
+      <div class="ch-top">
+        <div class="ch-icon email">✉️</div>
+        <div>
+          <div class="ch-label">Email <span class="ch-badge std">Standard</span></div>
+        </div>
+      </div>
+      <p class="ch-desc">Best for detailed questions, data requests, refund applications, or anything that needs a written record.</p>
+      <div class="ch-detail">✉️ support@bett.website</div>
+      <div class="ch-hours">⏰ Replies within 24 hours on business days</div>
+      <span class="ch-btn btn-email-solid">✉️ Send Email →</span>
+    </a>
+
+    <!-- Common Topics -->
+    <div class="topics">
+      <div class="topics-title">Common reasons people contact us</div>
+      <div class="topic-list">
+        <div class="topic-item"><span class="topic-ico">💳</span>Payment not reflecting / M-Pesa issue</div>
+        <div class="topic-item"><span class="topic-ico">🔑</span>Forgotten password or locked out</div>
+        <div class="topic-item"><span class="topic-ico">🔄</span>Renewing or upgrading a subscription</div>
+        <div class="topic-item"><span class="topic-ico">🏫</span>Adding teachers to a school account</div>
+        <div class="topic-item"><span class="topic-ico">📊</span>Marks not saving or displaying incorrectly</div>
+        <div class="topic-item"><span class="topic-ico">📥</span>Requesting a data export or deletion</div>
+        <div class="topic-item"><span class="topic-ico">💡</span>Feature suggestion or feedback</div>
+      </div>
+    </div>
+
+    <!-- Response Times -->
+    <div class="rt-card">
+      <div class="rt-title">Typical Response Times</div>
+      <div class="rt-row"><span class="rt-label">💬 WhatsApp (business hours)</span><span class="rt-time">Under 1 hour</span></div>
+      <div class="rt-row"><span class="rt-label">💬 WhatsApp (evenings/weekend)</span><span class="rt-time amber">2–4 hours</span></div>
+      <div class="rt-row"><span class="rt-label">✉️ Email</span><span class="rt-time amber">Within 24 hours</span></div>
+      <div class="rt-row"><span class="rt-label">🔧 Technical issues</span><span class="rt-time">Same business day</span></div>
+      <div class="rt-row"><span class="rt-label">💳 Payment issues</span><span class="rt-time">Within 2 hours</span></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: FAQ -->
+  <div>
+    <div class="faq-wrap">
+      <div class="faq-header">
+        <h2>Frequently Asked Questions</h2>
+        <p>Quick answers to the most common questions about the CBE Mark Sheet System.</p>
+      </div>
+      <div class="faq-body" id="faqBody">
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="fq-text">My M-Pesa was deducted but my account is still locked. What do I do?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-a">First, wait up to 5 minutes — payment verification sometimes takes a moment depending on network. If your account is still not activated after 5 minutes, send us your <strong>M-Pesa transaction message</strong> (the SMS confirmation) on WhatsApp at <a href="https://wa.me/254704518130">0704 518 130</a> and we'll activate you manually within minutes.</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="fq-text">How do I add teachers to my school account?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-a">Sign in as the School Administrator, go to your <strong>Admin Dashboard</strong>, and use the "Add Teacher" option. Teachers will receive their login credentials and can sign in to enter marks for their assigned class. Each teacher sees only their own class data.</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="fq-text">What happens to my data when my subscription expires?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-a">Your data is completely safe. When a subscription expires, access to the system is suspended but <strong>all your student records, marks, and results are retained</strong> in the cloud for 90 days. Renewing your subscription restores full access instantly — nothing is lost.</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="fq-text">Can I get a refund if I'm not satisfied?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-a">We offer a full refund within 24 hours of payment if you have not yet completed school setup or entered any data. For payment failures where access was not granted, we resolve the issue or refund within 24 hours. See our full <a href="/terms#tc-refund">Refund Policy</a> for details.</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="fq-text">Which grades and subjects are supported?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-a">The system covers <strong>Grades 1–9</strong> with full CBC subject sets:<br><br>
+            <strong>Grades 1–3 (Lower Primary):</strong> Mathematical Activities, English, Kiswahili, Integrated Activities.<br><br>
+            <strong>Grades 4–6 (Upper Primary):</strong> Mathematics, English (Language + Composition), Kiswahili (Lugha + Insha), Science & Technology, CRE, Social Studies, Creative Art & Sport, Agriculture & Nutrition.<br><br>
+            <strong>Grades 7–9 (Junior Secondary):</strong> English, Kiswahili/KSL, Mathematics, Integrated Science, Social Studies, Religious Ed., Creative Arts & Sports, Pre-Technical, Agriculture & Nutrition.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="fq-text">How does the CBC level calculation work?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-a">The system uses the official 8-tier CBC performance scale:<br><br>
+            <strong>EE1</strong> (90–100%) · <strong>EE2</strong> (75–89%) · <strong>ME1</strong> (58–74%) · <strong>ME2</strong> (41–57%) · <strong>AE1</strong> (31–40%) · <strong>AE2</strong> (21–30%) · <strong>BE1</strong> (11–20%) · <strong>BE2</strong> (0–10%)<br><br>
+            Marks are converted to percentages (score ÷ out-of × 100), and the corresponding level is assigned automatically.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="fq-text">Is my school's data shared with other schools?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-a">Absolutely not. Each school's data is completely isolated using a unique School ID stored in our database. No teacher or administrator from another school can ever access your student records, marks, or results. See our <a href="/terms#pp-storage">Privacy Policy</a> for technical details.</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="fq-text">Can I export my student data and marks?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-a">Yes. The Student Admission page has a <strong>Export CSV</strong> button that downloads all your student records. For marks and results data, contact us on WhatsApp and we can assist with a custom export. We believe your data belongs to you and you should always be able to take it with you.</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="fq-text">Does the system work on mobile phones?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-a">Yes — the system is fully responsive and works on smartphones and tablets. However, for data entry (especially entering marks for a full class), we recommend a laptop or desktop for the best experience. The analysis and report viewing pages work well on mobile.</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="fq-text">I forgot my password. How do I reset it?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-a">Go to the <a href="/register">login page</a> and use the "Forgot password" option to receive a reset link via email. If you're having trouble, contact us on WhatsApp with the email address linked to your account and we'll help you regain access quickly.</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <p>© 2026 <a href="/">CBE Mark Sheet System</a> · Bett KE Tech Ltd · Kenya</p>
+  <p>
+    <a href="/about">About</a> &nbsp;·&nbsp;
+    <a href="/contact">Contact</a> &nbsp;·&nbsp;
+    <a href="/terms">Terms &amp; Privacy</a> &nbsp;·&nbsp;
+    <a href="/register">Register</a>
+  </p>
+</footer>
+
+<script>
+window.addEventListener('scroll',function(){
+  document.getElementById('backTop').classList.toggle('show',window.scrollY>400);
+});
+function toggleFaq(el){
+  const item=el.closest('.faq-item');
+  const isOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(x=>x.classList.remove('open'));
+  if(!isOpen) item.classList.add('open');
+}
+// Auto-open FAQ if hash matches
+if(window.location.hash==='#faq'){
+  document.getElementById('faqBody').scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>

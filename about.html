@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxNTUzZDQiLz48cmVjdCB4PSIxMCIgeT0iMTAiIHdpZHRoPSI0NCIgaGVpZ2h0PSI4IiByeD0iMi41IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMjUpIi8+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iMTgiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC43KSIvPjxyZWN0IHg9IjMyIiB5PSIyMiIgd2lkdGg9IjgiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC45KSIvPjxyZWN0IHg9IjQ0IiB5PSIyMiIgd2lkdGg9IjEwIiBoZWlnaHQ9IjQiIHJ4PSIyIiBmaWxsPSIjNGFkZTgwIi8+PC9zdmc+">
+<meta name="theme-color" content="#1553d4">
+<meta name="description" content="About Bett KE Tech Ltd — the team behind the CBE Mark Sheet System, Kenya's CBC school management platform.">
+<title>About Us | CBE Mark Sheet System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--surface:#fff;--border:#e2dfd8;
+  --text:#1a1714;--text2:#5c5650;--text3:#9c9690;
+  --accent:#1a56db;--accent2:#0f3d9e;
+  --green:#059669;--gold:#c9a227;
+  --sh:0 1px 3px rgba(0,0,0,.06);--sh2:0 8px 32px rgba(0,0,0,.1);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.8;min-height:100vh}
+
+/* HEADER */
+.site-header{background:var(--text);padding:0 32px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.site-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.site-logo-mark{width:32px;height:32px;background:var(--accent);border-radius:7px;display:grid;place-items:center;font-size:15px;flex-shrink:0}
+.site-logo-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:-.2px}
+.site-nav{display:flex;align-items:center;gap:6px}
+.site-nav a{padding:6px 14px;border-radius:6px;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.65);text-decoration:none;transition:all .15s}
+.site-nav a:hover{background:rgba(255,255,255,.1);color:#fff}
+.site-nav .btn-home{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.site-nav .btn-home:hover{background:rgba(255,255,255,.2)}
+
+/* HERO */
+.hero{
+  background:var(--text);
+  padding:72px 32px 60px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 15% 50%,rgba(26,86,219,.14) 0%,transparent 65%),radial-gradient(ellipse 50% 70% at 85% 20%,rgba(201,162,39,.09) 0%,transparent 65%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--gold),var(--green),var(--accent))}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:7px;background:rgba(201,162,39,.15);border:1px solid rgba(201,162,39,.3);color:var(--gold);padding:4px 14px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;margin-bottom:20px}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(34px,5vw,56px);font-weight:900;color:#fff;line-height:1.08;letter-spacing:-.5px;margin-bottom:18px;position:relative}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero-sub{font-size:15px;color:rgba(255,255,255,.5);max-width:560px;margin:0 auto 36px;line-height:1.75}
+.hero-stats{display:flex;align-items:center;justify-content:center;gap:32px;flex-wrap:wrap}
+.hero-stat{text-align:center}
+.hero-stat .hs-val{font-family:'Playfair Display',serif;font-size:32px;font-weight:800;color:#fff;line-height:1}
+.hero-stat .hs-lbl{font-size:11px;color:rgba(255,255,255,.4);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:4px}
+.hero-divider{width:1px;height:40px;background:rgba(255,255,255,.12)}
+
+/* SECTIONS */
+.section{max-width:1060px;margin:0 auto;padding:64px 24px}
+.section-sm{max-width:1060px;margin:0 auto;padding:48px 24px}
+
+/* MISSION */
+.mission-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.mission-text .eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--accent);margin-bottom:12px}
+.mission-text h2{font-family:'Playfair Display',serif;font-size:clamp(26px,3.5vw,40px);font-weight:800;line-height:1.15;letter-spacing:-.3px;margin-bottom:18px}
+.mission-text h2 em{font-style:italic;color:var(--accent)}
+.mission-text p{color:var(--text2);font-size:14px;line-height:1.8;margin-bottom:14px}
+.mission-visual{background:var(--text);border-radius:20px;padding:32px;color:#fff;position:relative;overflow:hidden}
+.mission-visual::before{content:'';position:absolute;top:-30px;right:-30px;width:160px;height:160px;border-radius:50%;background:rgba(26,86,219,.2)}
+.mission-visual::after{content:'';position:absolute;bottom:-20px;left:-20px;width:100px;height:100px;border-radius:50%;background:rgba(201,162,39,.12)}
+.mv-item{display:flex;gap:14px;margin-bottom:22px;position:relative;z-index:1}
+.mv-item:last-child{margin-bottom:0}
+.mv-icon{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex-shrink:0;background:rgba(255,255,255,.1)}
+.mv-text .mvt{font-weight:700;font-size:13.5px;color:#fff;margin-bottom:2px}
+.mv-text .mvs{font-size:12px;color:rgba(255,255,255,.5);line-height:1.5}
+
+/* STORY */
+.story-wrap{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px;box-shadow:var(--sh)}
+.story-wrap .eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--gold);margin-bottom:12px}
+.story-wrap h2{font-family:'Playfair Display',serif;font-size:clamp(24px,3vw,36px);font-weight:800;line-height:1.2;letter-spacing:-.3px;margin-bottom:24px}
+.story-wrap p{color:var(--text2);font-size:14px;line-height:1.85;margin-bottom:16px}
+.story-wrap p:last-child{margin-bottom:0}
+.story-wrap strong{color:var(--text);font-weight:700}
+
+/* VALUES */
+.values-title{text-align:center;margin-bottom:36px}
+.values-title .eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--accent);margin-bottom:10px}
+.values-title h2{font-family:'Playfair Display',serif;font-size:clamp(24px,3vw,36px);font-weight:800;letter-spacing:-.3px}
+.values-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.val-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;box-shadow:var(--sh);transition:all .2s}
+.val-card:hover{transform:translateY(-3px);box-shadow:var(--sh2);border-color:var(--accent)}
+.val-icon{font-size:28px;margin-bottom:14px}
+.val-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:800;margin-bottom:8px;letter-spacing:-.2px}
+.val-desc{font-size:13px;color:var(--text2);line-height:1.7}
+
+/* TEAM */
+.team-title{text-align:center;margin-bottom:36px}
+.team-title .eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--green);margin-bottom:10px}
+.team-title h2{font-family:'Playfair Display',serif;font-size:clamp(24px,3vw,36px);font-weight:800;letter-spacing:-.3px}
+.team-card{background:var(--text);border-radius:20px;padding:40px 48px;color:#fff;display:flex;gap:40px;align-items:center;position:relative;overflow:hidden}
+.team-card::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(26,86,219,.15)}
+.team-avatar{width:100px;height:100px;border-radius:20px;background:linear-gradient(135deg,var(--accent),#0f3d9e);display:grid;place-items:center;font-size:42px;flex-shrink:0;position:relative;z-index:1;box-shadow:0 8px 24px rgba(26,86,219,.4)}
+.team-info{position:relative;z-index:1}
+.team-info .t-name{font-family:'Playfair Display',serif;font-size:28px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px}
+.team-info .t-role{font-size:13px;color:var(--gold);font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:16px}
+.team-info .t-bio{font-size:13.5px;color:rgba(255,255,255,.6);line-height:1.8;max-width:520px}
+.team-info .t-links{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.team-info .t-links a{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:700;text-decoration:none;transition:all .15s}
+.tl-wa{background:#16a34a;color:#fff}
+.tl-wa:hover{background:#15803d}
+.tl-web{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.tl-web:hover{background:rgba(255,255,255,.2)}
+
+/* FEATURES */
+.features-title{text-align:center;margin-bottom:36px}
+.features-title .eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--accent);margin-bottom:10px}
+.features-title h2{font-family:'Playfair Display',serif;font-size:clamp(24px,3vw,36px);font-weight:800;letter-spacing:-.3px}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.feat-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--sh);display:flex;gap:12px;align-items:flex-start}
+.feat-ico{font-size:20px;flex-shrink:0;margin-top:2px}
+.feat-txt .ft{font-weight:700;font-size:13.5px;margin-bottom:3px}
+.feat-txt .fs{font-size:12px;color:var(--text2);line-height:1.5}
+
+/* CTA */
+.cta-bar{background:linear-gradient(135deg,var(--accent),#0f3d9e);border-radius:20px;padding:48px;text-align:center;color:#fff;position:relative;overflow:hidden}
+.cta-bar::before{content:'';position:absolute;top:-60px;left:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.05)}
+.cta-bar::after{content:'';position:absolute;bottom:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.06)}
+.cta-bar h2{font-family:'Playfair Display',serif;font-size:28px;font-weight:800;margin-bottom:10px;position:relative;z-index:1}
+.cta-bar p{font-size:14px;color:rgba(255,255,255,.65);margin-bottom:28px;position:relative;z-index:1}
+.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.cta-btns a{display:inline-flex;align-items:center;gap:7px;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;transition:all .15s}
+.btn-white{background:#fff;color:var(--accent)}
+.btn-white:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.2)}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.btn-ghost:hover{background:rgba(255,255,255,.2)}
+
+/* FOOTER */
+.site-footer{background:var(--text);border-top:1px solid rgba(255,255,255,.08);padding:28px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.site-footer p{font-size:12px;color:rgba(255,255,255,.35)}
+.site-footer a{color:rgba(255,255,255,.5);text-decoration:none;font-weight:600}
+.site-footer a:hover{color:#fff}
+
+#backTop{position:fixed;bottom:24px;right:24px;width:40px;height:40px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:16px;cursor:pointer;box-shadow:0 4px 14px rgba(26,86,219,.35);transition:all .2s;opacity:0;pointer-events:none;display:grid;place-items:center}
+#backTop.show{opacity:1;pointer-events:all}
+#backTop:hover{transform:translateY(-2px)}
+
+@media(max-width:800px){
+  .mission-grid{grid-template-columns:1fr}
+  .values-grid{grid-template-columns:1fr 1fr}
+  .team-card{flex-direction:column;padding:28px}
+  .site-header{padding:0 16px}
+  .section,.section-sm{padding:40px 16px}
+  .story-wrap{padding:28px}
+  .cta-bar{padding:32px 20px}
+}
+@media(max-width:540px){.values-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<header class="site-header">
+  <a href="/" class="site-logo">
+    <div class="site-logo-mark">🏫</div>
+    <div class="site-logo-name">CBE Mark Sheet</div>
+  </a>
+  <nav class="site-nav">
+    <a href="/contact">Contact</a>
+    <a href="/terms">Legal</a>
+    <a href="/" class="btn-home">← Dashboard</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">🇰🇪 Kenya CBC EdTech</div>
+  <h1>Built for <em>Kenyan</em><br>Schools, by Kenyans</h1>
+  <p class="hero-sub">We build simple, affordable digital tools that help teachers focus on what matters — teaching — not paperwork.</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hs-val">Grades<br>1–9</div>
+      <div class="hs-lbl">Full CBC Coverage</div>
+    </div>
+    <div class="hero-divider"></div>
+    <div class="hero-stat">
+      <div class="hs-val">3</div>
+      <div class="hs-lbl">Subscription Plans</div>
+    </div>
+    <div class="hero-divider"></div>
+    <div class="hero-stat">
+      <div class="hs-val">100%</div>
+      <div class="hs-lbl">Kenya CBC Aligned</div>
+    </div>
+    <div class="hero-divider"></div>
+    <div class="hero-stat">
+      <div class="hs-val">M-Pesa</div>
+      <div class="hs-lbl">Powered Payments</div>
+    </div>
+  </div>
+</div>
+
+<!-- MISSION -->
+<div class="section">
+  <div class="mission-grid">
+    <div class="mission-text">
+      <div class="eyebrow">Our Mission</div>
+      <h2>Simplify <em>school records</em> for every Kenyan teacher</h2>
+      <p>The CBC curriculum brought meaningful change to how Kenyan children learn. But it also brought a new challenge: complex, multi-subject assessments that are difficult to manage with paper mark sheets or generic spreadsheets.</p>
+      <p>The CBE Mark Sheet System was built to solve exactly that — a purpose-built digital platform that understands Kenya's CBC grading system, handles the compound subjects, calculates CBC performance levels automatically, and produces ready-to-print report cards.</p>
+      <p>No IT expertise required. Just sign in, add your students, and start entering marks.</p>
+    </div>
+    <div class="mission-visual">
+      <div class="mv-item">
+        <div class="mv-icon">📊</div>
+        <div class="mv-text">
+          <div class="mvt">CBC-native grading engine</div>
+          <div class="mvs">EE1 to BE2 levels computed automatically from raw scores across all grades.</div>
+        </div>
+      </div>
+      <div class="mv-item">
+        <div class="mv-icon">🖨️</div>
+        <div class="mv-text">
+          <div class="mvt">Print-ready report cards</div>
+          <div class="mvs">Individual student reports and class reports generated instantly, professionally formatted.</div>
+        </div>
+      </div>
+      <div class="mv-item">
+        <div class="mv-icon">☁️</div>
+        <div class="mv-text">
+          <div class="mvt">Secure cloud storage</div>
+          <div class="mvs">All data stored safely on Google Firebase — accessible from any device, never lost.</div>
+        </div>
+      </div>
+      <div class="mv-item">
+        <div class="mv-icon">💳</div>
+        <div class="mv-text">
+          <div class="mvt">M-Pesa powered</div>
+          <div class="mvs">Pay monthly, termly, or annually. Activate in minutes. No bank account needed.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STORY -->
+<div class="section-sm" style="padding-top:0">
+  <div class="story-wrap">
+    <div class="eyebrow">Our Story</div>
+    <h2>From a classroom problem<br>to a national solution</h2>
+    <p>The CBE Mark Sheet System was born from a very real frustration. When Kenya introduced the CBC curriculum, teachers across the country struggled to adapt their mark-keeping to the new assessment model. The eight-tier performance level system — from EE1 down to BE2 — meant that a simple spreadsheet was no longer enough.</p>
+    <p>In 2025, <strong>Bett KE Tech Ltd</strong> set out to build a system that understood the Kenyan classroom from the inside. Not a generic school management system retrofitted for Kenya — but one designed from scratch around the CBC curriculum, the Kenyan school calendar, M-Pesa payments, and the real constraints of school ICT budgets.</p>
+    <p>Today, the CBE Mark Sheet System supports <strong>Grades 1 through 9</strong>, covering all CBC subject sets for Lower Primary, Upper Primary, and Junior Secondary School. It handles compound subjects like English (Language + Composition) and Kiswahili (Lugha + Insha), auto-calculates overall averages, generates class rankings, and produces branded report cards — all in a browser, with no software to install.</p>
+    <p>We are based in Kenya and we build for Kenya. Every feature, every design decision, every pricing choice is made with the Kenyan teacher and school administrator in mind.</p>
+  </div>
+</div>
+
+<!-- VALUES -->
+<div class="section" style="padding-top:0">
+  <div class="values-title">
+    <div class="eyebrow">What We Stand For</div>
+    <h2>Our Core Values</h2>
+  </div>
+  <div class="values-grid">
+    <div class="val-card">
+      <div class="val-icon">🎯</div>
+      <div class="val-title">Purpose-Built</div>
+      <div class="val-desc">Every feature exists to solve a real problem faced by Kenyan teachers and administrators — nothing bloated, nothing irrelevant.</div>
+    </div>
+    <div class="val-card">
+      <div class="val-icon">💚</div>
+      <div class="val-title">Affordability</div>
+      <div class="val-desc">We price our plans within reach of Kenyan school budgets. A termly plan costs less than a ream of printed mark sheets.</div>
+    </div>
+    <div class="val-card">
+      <div class="val-icon">🔒</div>
+      <div class="val-title">Data Privacy</div>
+      <div class="val-desc">Your school's student data belongs to you. We never sell it, never share it, and keep it strictly isolated from other schools.</div>
+    </div>
+    <div class="val-card">
+      <div class="val-icon">⚡</div>
+      <div class="val-title">Simplicity</div>
+      <div class="val-desc">A teacher should be able to pick up the system on day one without training. If it needs a manual, we redesign it.</div>
+    </div>
+    <div class="val-card">
+      <div class="val-icon">🇰🇪</div>
+      <div class="val-title">Local First</div>
+      <div class="val-desc">Built by Kenyans, for Kenyan schools. M-Pesa payments, CBC alignment, and Kenyan county data built in from day one.</div>
+    </div>
+    <div class="val-card">
+      <div class="val-icon">📞</div>
+      <div class="val-title">Real Support</div>
+      <div class="val-desc">When you need help, you reach a real person on WhatsApp — not a chatbot or a ticket queue that takes three days to respond.</div>
+    </div>
+  </div>
+</div>
+
+<!-- TEAM -->
+<div class="section" style="padding-top:0">
+  <div class="team-title">
+    <div class="eyebrow">The Team</div>
+    <h2>Who Builds This</h2>
+  </div>
+  <div class="team-card">
+    <div class="team-avatar">👨‍💻</div>
+    <div class="team-info">
+      <div class="t-name">Bett Emanuel</div>
+      <div class="t-role">Founder & Lead Developer · Bett KE Tech Ltd</div>
+      <div class="t-bio">Bett is an independent software developer based in Kenya with a deep passion for building practical technology for African schools and communities. He designed and built the CBE Mark Sheet System end-to-end — from the Firebase backend and M-Pesa payment integration to the CBC grading engine and print-ready report system. He also develops the Bett Officials football predictions platform and other Kenya-focused digital products.</div>
+      <div class="t-links">
+        <a href="https://wa.me/254704518130" target="_blank" class="tl-wa">💬 WhatsApp</a>
+        <a href="mailto:support@bett.website" class="tl-web">✉️ Email</a>
+        <a href="https://bett.website" class="tl-web">🌐 bett.website</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<div class="section" style="padding-top:0">
+  <div class="features-title">
+    <div class="eyebrow">What's Included</div>
+    <h2>Everything a CBC School Needs</h2>
+  </div>
+  <div class="features-grid">
+    <div class="feat-item"><div class="feat-ico">📋</div><div class="feat-txt"><div class="ft">Grades 1–9</div><div class="fs">Full CBC subject sets for Lower Primary, Upper Primary & Junior Secondary.</div></div></div>
+    <div class="feat-item"><div class="feat-ico">🔢</div><div class="feat-txt"><div class="ft">CBC Level Calculator</div><div class="fs">Auto-computes EE1–BE2 levels from raw marks for every subject and student.</div></div></div>
+    <div class="feat-item"><div class="feat-ico">🖨️</div><div class="feat-txt"><div class="ft">Report Card Generator</div><div class="fs">Individual student and full class reports, print-ready in one click.</div></div></div>
+    <div class="feat-item"><div class="feat-ico">📈</div><div class="feat-txt"><div class="ft">Analysis Dashboard</div><div class="fs">Class rankings, subject performance, level distribution charts and trends.</div></div></div>
+    <div class="feat-item"><div class="feat-ico">👥</div><div class="feat-txt"><div class="ft">Student Admission</div><div class="fs">Register, search, edit and export students with grade and stream support.</div></div></div>
+    <div class="feat-item"><div class="feat-ico">👩‍🏫</div><div class="feat-txt"><div class="ft">Teacher Accounts</div><div class="fs">Admin adds teachers who get their own login to enter marks for their class.</div></div></div>
+    <div class="feat-item"><div class="feat-ico">💳</div><div class="feat-txt"><div class="ft">M-Pesa Payments</div><div class="fs">STK Push payments via Paynecta. Monthly, Termly and Annual plans available.</div></div></div>
+    <div class="feat-item"><div class="feat-ico">☁️</div><div class="feat-txt"><div class="ft">Cloud Sync</div><div class="fs">All data saved instantly to Firebase. Access from any device, any time.</div></div></div>
+    <div class="feat-item"><div class="feat-ico">🌙</div><div class="feat-txt"><div class="ft">Dark Mode</div><div class="fs">Light and dark themes — easy on the eyes for long data entry sessions.</div></div></div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="section" style="padding-top:0">
+  <div class="cta-bar">
+    <h2>Ready to modernise your school records?</h2>
+    <p>Join schools across Kenya using the CBE Mark Sheet System. Register in minutes — pay with M-Pesa.</p>
+    <div class="cta-btns">
+      <a href="/register" class="btn-white">🏫 Register Your School →</a>
+      <a href="/contact" class="btn-ghost">💬 Talk to Us First</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <p>© 2026 <a href="/">CBE Mark Sheet System</a> · Bett KE Tech Ltd · Kenya</p>
+  <p>
+    <a href="/about">About</a> &nbsp;·&nbsp;
+    <a href="/contact">Contact</a> &nbsp;·&nbsp;
+    <a href="/terms">Terms &amp; Privacy</a> &nbsp;·&nbsp;
+    <a href="/register">Register</a>
+  </p>
+</footer>
+
+<script>
+window.addEventListener('scroll',function(){
+  document.getElementById('backTop').classList.toggle('show',window.scrollY>400);
+});
+</script>
+</body>
+</html>

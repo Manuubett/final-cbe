@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxNTUzZDQiLz48cmVjdCB4PSIxMCIgeT0iMTAiIHdpZHRoPSI0NCIgaGVpZ2h0PSI4IiByeD0iMi41IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMjUpIi8+PHJlY3QgeD0iMTAiIHk9IjIyIiB3aWR0aD0iMTgiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC43KSIvPjxyZWN0IHg9IjMyIiB5PSIyMiIgd2lkdGg9IjgiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC45KSIvPjxyZWN0IHg9IjQ0IiB5PSIyMiIgd2lkdGg9IjEwIiBoZWlnaHQ9IjQiIHJ4PSIyIiBmaWxsPSIjNGFkZTgwIi8+PC9zdmc+">
+<meta name="theme-color" content="#1553d4">
+<meta name="robots" content="index,follow">
+<meta name="description" content="Terms & Conditions, Privacy Policy and Cookie Policy for the CBE Mark Sheet System — Kenya CBC school management platform by Bett Emanuel.">
+<title>Legal | CBE Mark Sheet System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;
+  --surface:#fff;
+  --border:#e2dfd8;
+  --text:#1a1714;
+  --text2:#5c5650;
+  --text3:#9c9690;
+  --accent:#1a56db;
+  --accent2:#0f3d9e;
+  --gold:#c9a227;
+  --sh:0 1px 3px rgba(0,0,0,.06);
+  --sh2:0 8px 32px rgba(0,0,0,.1);
+}
+
+html{scroll-behavior:smooth}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:14px;
+  line-height:1.8;
+  min-height:100vh;
+}
+
+/* ── HEADER ── */
+.site-header{
+  background:var(--text);
+  padding:0 32px;
+  height:58px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+.site-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.site-logo-mark{
+  width:32px;height:32px;
+  background:var(--accent);
+  border-radius:7px;
+  display:grid;place-items:center;
+  font-size:15px;
+  flex-shrink:0;
+}
+.site-logo-name{
+  font-family:'Playfair Display',serif;
+  font-size:15px;font-weight:700;
+  color:#fff;
+  letter-spacing:-.2px;
+}
+.site-nav{display:flex;align-items:center;gap:6px}
+.site-nav a{
+  padding:6px 14px;
+  border-radius:6px;
+  font-size:12.5px;
+  font-weight:600;
+  color:rgba(255,255,255,.65);
+  text-decoration:none;
+  transition:all .15s;
+}
+.site-nav a:hover{background:rgba(255,255,255,.1);color:#fff}
+.site-nav .btn-home{
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.2);
+}
+.site-nav .btn-home:hover{background:rgba(255,255,255,.2)}
+
+/* ── HERO ── */
+.hero{
+  background:var(--text);
+  padding:64px 32px 52px;
+  text-align:center;
+  border-bottom:3px solid var(--gold);
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 50%,rgba(26,86,219,.12) 0%,transparent 70%),
+    radial-gradient(ellipse 40% 60% at 80% 30%,rgba(201,162,39,.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  background:rgba(201,162,39,.15);
+  border:1px solid rgba(201,162,39,.3);
+  color:var(--gold);
+  padding:4px 14px;
+  border-radius:20px;
+  font-size:11.5px;
+  font-weight:700;
+  letter-spacing:.6px;
+  text-transform:uppercase;
+  margin-bottom:18px;
+}
+.hero h1{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(32px,5vw,52px);
+  font-weight:900;
+  color:#fff;
+  line-height:1.1;
+  letter-spacing:-.5px;
+  margin-bottom:16px;
+  position:relative;
+}
+.hero h1 em{
+  font-style:normal;
+  color:var(--gold);
+}
+.hero-sub{
+  font-size:14px;
+  color:rgba(255,255,255,.55);
+  max-width:520px;
+  margin:0 auto 28px;
+  line-height:1.7;
+}
+.hero-meta{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+  flex-wrap:wrap;
+  font-size:12px;
+  color:rgba(255,255,255,.4);
+}
+.hero-meta span{display:flex;align-items:center;gap:5px}
+
+/* ── LAYOUT ── */
+.layout{
+  max-width:1100px;
+  margin:0 auto;
+  padding:48px 24px 80px;
+  display:grid;
+  grid-template-columns:240px 1fr;
+  gap:32px;
+  align-items:start;
+}
+
+/* ── SIDEBAR NAV ── */
+.toc{
+  position:sticky;
+  top:78px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  box-shadow:var(--sh);
+}
+.toc-title{
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+  color:var(--text3);
+  margin-bottom:14px;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--border);
+}
+.toc-section{margin-bottom:16px}
+.toc-section-label{
+  font-size:11px;
+  font-weight:700;
+  color:var(--text2);
+  margin-bottom:6px;
+  padding:4px 8px;
+  background:var(--bg);
+  border-radius:5px;
+}
+.toc a{
+  display:block;
+  padding:5px 8px;
+  font-size:12px;
+  color:var(--text3);
+  text-decoration:none;
+  border-radius:5px;
+  transition:all .14s;
+  line-height:1.4;
+}
+.toc a:hover{background:var(--bg);color:var(--accent)}
+.toc a.active{background:#eff4ff;color:var(--accent);font-weight:600}
+
+/* ── CONTENT ── */
+.content{}
+
+/* ── DOCUMENT CARD ── */
+.doc-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:var(--sh);
+  margin-bottom:28px;
+  overflow:hidden;
+}
+.doc-header{
+  padding:24px 32px 20px;
+  border-bottom:2px solid var(--border);
+  display:flex;
+  align-items:flex-start;
+  gap:16px;
+  background:linear-gradient(135deg,#fafaf9 0%,#f5f4f0 100%);
+}
+.doc-icon{
+  width:52px;height:52px;
+  border-radius:12px;
+  display:grid;place-items:center;
+  font-size:22px;
+  flex-shrink:0;
+}
+.doc-icon.blue{background:#dbeafe;}
+.doc-icon.green{background:#d1fae5;}
+.doc-icon.amber{background:#fef3c7;}
+.doc-header-text h2{
+  font-family:'Playfair Display',serif;
+  font-size:22px;
+  font-weight:800;
+  color:var(--text);
+  margin-bottom:4px;
+  letter-spacing:-.3px;
+}
+.doc-header-text p{
+  font-size:12.5px;
+  color:var(--text3);
+}
+.doc-body{padding:28px 32px}
+
+/* ── SECTIONS ── */
+.sec{margin-bottom:32px}
+.sec:last-child{margin-bottom:0}
+.sec-num{
+  font-family:'DM Mono',monospace;
+  font-size:11px;
+  font-weight:500;
+  color:var(--accent);
+  letter-spacing:.5px;
+  margin-bottom:4px;
+}
+.sec h3{
+  font-family:'Playfair Display',serif;
+  font-size:17px;
+  font-weight:800;
+  color:var(--text);
+  margin-bottom:12px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--border);
+}
+.sec p{color:var(--text2);margin-bottom:10px;font-size:13.5px}
+.sec p:last-child{margin-bottom:0}
+.sec ul,.sec ol{padding-left:20px;color:var(--text2);font-size:13.5px}
+.sec li{margin-bottom:6px}
+
+/* HIGHLIGHT BOX */
+.hbox{
+  border-radius:8px;
+  padding:14px 16px;
+  margin:14px 0;
+  font-size:13px;
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+.hbox.blue{background:#eff4ff;border:1px solid #c7d9ff;color:#1e40af}
+.hbox.green{background:#d1fae5;border:1px solid #6ee7b7;color:#065f46}
+.hbox.amber{background:#fef3c7;border:1px solid #fcd34d;color:#92400e}
+.hbox.red{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b}
+.hbox-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.hbox-text{flex:1;line-height:1.6}
+.hbox-text strong{display:block;margin-bottom:2px;font-weight:700}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;font-size:13px;margin:14px 0}
+.data-table th{
+  background:#f5f4f0;
+  padding:8px 12px;
+  text-align:left;
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+  color:var(--text3);
+  border-bottom:2px solid var(--border);
+}
+.data-table td{
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  color:var(--text2);
+  vertical-align:top;
+}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:#fafaf9}
+
+/* DIVIDER */
+.divider{
+  height:1px;
+  background:var(--border);
+  margin:28px 0;
+}
+
+/* ── CONTACT CARD ── */
+.contact-card{
+  background:var(--text);
+  border-radius:14px;
+  padding:28px 32px;
+  color:#fff;
+  margin-top:28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  flex-wrap:wrap;
+}
+.contact-card h3{
+  font-family:'Playfair Display',serif;
+  font-size:20px;
+  font-weight:800;
+  margin-bottom:6px;
+}
+.contact-card p{font-size:13px;color:rgba(255,255,255,.6);max-width:400px;line-height:1.6}
+.contact-btns{display:flex;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.contact-btns a{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:10px 20px;border-radius:8px;
+  font-size:13px;font-weight:700;
+  text-decoration:none;transition:all .15s;
+}
+.btn-wa{background:#16a34a;color:#fff}
+.btn-wa:hover{background:#15803d}
+.btn-email{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.btn-email:hover{background:rgba(255,255,255,.2)}
+
+/* ── FOOTER ── */
+.site-footer{
+  background:var(--text);
+  border-top:1px solid rgba(255,255,255,.08);
+  padding:28px 32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:12px;
+}
+.site-footer p{font-size:12px;color:rgba(255,255,255,.35)}
+.site-footer a{color:rgba(255,255,255,.5);text-decoration:none;font-weight:600}
+.site-footer a:hover{color:#fff}
+
+/* ── BACK TO TOP ── */
+#backTop{
+  position:fixed;
+  bottom:24px;right:24px;
+  width:40px;height:40px;
+  background:var(--accent);
+  color:#fff;
+  border:none;border-radius:10px;
+  font-size:16px;cursor:pointer;
+  box-shadow:0 4px 14px rgba(26,86,219,.35);
+  transition:all .2s;
+  opacity:0;pointer-events:none;
+  display:grid;place-items:center;
+}
+#backTop.show{opacity:1;pointer-events:all}
+#backTop:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(26,86,219,.45)}
+
+/* RESPONSIVE */
+@media(max-width:860px){
+  .layout{grid-template-columns:1fr}
+  .toc{position:static}
+  .hero{padding:40px 20px 36px}
+  .doc-header,.doc-body{padding:18px 20px}
+  .contact-card{flex-direction:column}
+  .site-header{padding:0 16px}
+}
+</style>
+</head>
+<body>
+
+<button id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+
+<!-- HEADER -->
+<header class="site-header">
+  <a href="/" class="site-logo">
+    <div class="site-logo-mark">🏫</div>
+    <div class="site-logo-name">CBE Mark Sheet</div>
+  </a>
+  <nav class="site-nav">
+    <a href="#terms">T&amp;C</a>
+    <a href="#privacy">Privacy</a>
+    <a href="#cookies">Cookies</a>
+    <a href="/" class="btn-home">← Dashboard</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">📄 Legal Documents</div>
+  <h1>Terms, Privacy &amp;<br><em>Cookie Policy</em></h1>
+  <p class="hero-sub">These policies govern your use of the CBE Mark Sheet System — Kenya's CBC school management platform.</p>
+  <div class="hero-meta">
+    <span>🗓️ Effective: 1 January 2026</span>
+    <span>·</span>
+    <span>📍 Jurisdiction: Kenya</span>
+    <span>·</span>
+    <span>🔄 Last updated: May 2026</span>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="toc">
+    <div class="toc-title">Contents</div>
+
+    <div class="toc-section">
+      <div class="toc-section-label">📋 Terms &amp; Conditions</div>
+      <a href="#tc-intro">1. Introduction</a>
+      <a href="#tc-definitions">2. Definitions</a>
+      <a href="#tc-access">3. Access &amp; Eligibility</a>
+      <a href="#tc-subscription">4. Subscriptions &amp; Payment</a>
+      <a href="#tc-refund">5. Refund Policy</a>
+      <a href="#tc-data">6. School Data</a>
+      <a href="#tc-acceptable">7. Acceptable Use</a>
+      <a href="#tc-ip">8. Intellectual Property</a>
+      <a href="#tc-liability">9. Limitation of Liability</a>
+      <a href="#tc-termination">10. Termination</a>
+      <a href="#tc-changes">11. Changes to Terms</a>
+      <a href="#tc-law">12. Governing Law</a>
+    </div>
+
+    <div class="toc-section">
+      <div class="toc-section-label">🔒 Privacy Policy</div>
+      <a href="#pp-collect">13. Data We Collect</a>
+      <a href="#pp-use">14. How We Use Data</a>
+      <a href="#pp-storage">15. Data Storage</a>
+      <a href="#pp-sharing">16. Data Sharing</a>
+      <a href="#pp-rights">17. Your Rights</a>
+      <a href="#pp-security">18. Security</a>
+      <a href="#pp-retention">19. Data Retention</a>
+    </div>
+
+    <div class="toc-section">
+      <div class="toc-section-label">🍪 Cookie Policy</div>
+      <a href="#ck-what">20. What Are Cookies</a>
+      <a href="#ck-types">21. Cookies We Use</a>
+      <a href="#ck-control">22. Managing Cookies</a>
+    </div>
+
+    <div class="toc-section">
+      <div class="toc-section-label">📬 Contact</div>
+      <a href="#contact">Get in Touch</a>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- TERMS & CONDITIONS                         -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="doc-card" id="terms">
+      <div class="doc-header">
+        <div class="doc-icon blue">📋</div>
+        <div class="doc-header-text">
+          <h2>Terms &amp; Conditions</h2>
+          <p>By registering or using the CBE Mark Sheet System, you agree to these terms in full.</p>
+        </div>
+      </div>
+      <div class="doc-body">
+
+        <div class="sec" id="tc-intro">
+          <div class="sec-num">SECTION 01</div>
+          <h3>Introduction</h3>
+          <p>Welcome to the <strong>CBE Mark Sheet System</strong> ("the System", "the Platform", "we", "us"), a Kenya CBC school management platform developed and operated by <strong>Bett Emanuel</strong>, trading as CBE Mark Sheet System, based in Kenya.</p>
+          <p>These Terms &amp; Conditions ("Terms") govern your access to and use of our web-based platform at <strong>bett.website</strong> and all related services. By creating an account, registering a school, or using the System in any capacity, you confirm that you have read, understood, and agree to be bound by these Terms.</p>
+          <p>If you do not agree with any part of these Terms, you must not use the System.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="tc-definitions">
+          <div class="sec-num">SECTION 02</div>
+          <h3>Definitions</h3>
+          <table class="data-table">
+            <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><strong>"System" / "Platform"</strong></td><td>The CBE Mark Sheet System web application accessible at bett.website.</td></tr>
+              <tr><td><strong>"School Administrator" / "Admin"</strong></td><td>A person who registers a school account, manages subscriptions, and administers school settings.</td></tr>
+              <tr><td><strong>"Teacher"</strong></td><td>A member of staff added by an Administrator to enter marks and access results for their class.</td></tr>
+              <tr><td><strong>"User"</strong></td><td>Any School Administrator or Teacher accessing the System.</td></tr>
+              <tr><td><strong>"School Data"</strong></td><td>All student records, marks, results, and school settings entered into the System by Users.</td></tr>
+              <tr><td><strong>"Subscription"</strong></td><td>A paid plan (Monthly, Termly, or Annual) granting access to the System.</td></tr>
+              <tr><td><strong>"M-Pesa"</strong></td><td>The mobile money payment service used to process subscription fees.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="tc-access">
+          <div class="sec-num">SECTION 03</div>
+          <h3>Access &amp; Eligibility</h3>
+          <p>To use the System, you must:</p>
+          <ul>
+            <li>Be at least 18 years old or have explicit authorisation from a school principal or board of management.</li>
+            <li>Be acting on behalf of a registered or government-recognised educational institution in Kenya.</li>
+            <li>Provide accurate, current, and complete registration information.</li>
+            <li>Keep your login credentials confidential and not share them with unauthorised persons.</li>
+          </ul>
+          <div class="hbox blue">
+            <div class="hbox-icon">ℹ️</div>
+            <div class="hbox-text"><strong>Account Responsibility</strong>You are responsible for all activity that occurs under your account. Notify us immediately at <a href="https://wa.me/254704518130" style="color:#1e40af;font-weight:600">wa.me/254704518130</a> if you suspect unauthorised access.</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="tc-subscription">
+          <div class="sec-num">SECTION 04</div>
+          <h3>Subscriptions &amp; Payment</h3>
+          <p>Access to the System requires an active paid subscription. The following plans are available:</p>
+          <table class="data-table">
+            <thead><tr><th>Plan</th><th>Duration</th><th>Price</th><th>Renewal</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Monthly</strong></td><td>1 Month</td><td>Ksh 1,499</td><td>Manual — renew before expiry</td></tr>
+              <tr><td><strong>Termly</strong></td><td>3 Months</td><td>Ksh 3,999</td><td>Manual — renew before expiry</td></tr>
+              <tr><td><strong>Annual</strong></td><td>12 Months</td><td>Ksh 14,388</td><td>Manual — renew before expiry</td></tr>
+            </tbody>
+          </table>
+          <p>All payments are processed via <strong>M-Pesa STK Push</strong> to Till Number <strong>4585402</strong>. Upon successful payment verification, access is activated or extended immediately.</p>
+          <div class="hbox amber">
+            <div class="hbox-icon">⚠️</div>
+            <div class="hbox-text"><strong>Subscription Expiry</strong>Access to all system features is suspended automatically when your subscription expires. Your school data is safely retained during any lapsed period. Renewing restores full access instantly.</div>
+          </div>
+          <p>Prices may be updated from time to time. We will notify active subscribers at least <strong>14 days</strong> before any price change takes effect.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="tc-refund">
+          <div class="sec-num">SECTION 05</div>
+          <h3>Refund Policy</h3>
+          <p>Due to the digital nature of the System and the immediate access granted upon payment, we operate a <strong>limited refund policy</strong>:</p>
+          <ul>
+            <li><strong>Within 24 hours of payment:</strong> A full refund is available if you have not yet completed school setup or entered any data, and you contact us before the 24-hour window closes.</li>
+            <li><strong>Technical failure:</strong> If payment was deducted but access was not granted within 30 minutes, we will resolve the issue or issue a full refund within 24 hours.</li>
+            <li><strong>No refund</strong> is issued for subscriptions that have been partially or fully used, or for early cancellation.</li>
+          </ul>
+          <div class="hbox green">
+            <div class="hbox-icon">💬</div>
+            <div class="hbox-text"><strong>Refund Requests</strong>Contact us via WhatsApp at <a href="https://wa.me/254704518130" style="color:#065f46;font-weight:600">0704 518 130</a> with your M-Pesa transaction reference and school details. Refunds are processed within 3–5 business days.</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="tc-data">
+          <div class="sec-num">SECTION 06</div>
+          <h3>School Data Ownership</h3>
+          <p>You <strong>retain full ownership</strong> of all School Data you enter into the System — including student records, marks, and results. We do not claim any ownership over your data.</p>
+          <p>By using the System, you grant us a limited, non-exclusive licence to store, process, and display your data <strong>solely for the purpose of providing the service to you</strong>.</p>
+          <p>You are responsible for ensuring that any student data you enter complies with Kenya's <strong>Data Protection Act (2019)</strong> and that you have obtained any necessary consents from parents or guardians.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="tc-acceptable">
+          <div class="sec-num">SECTION 07</div>
+          <h3>Acceptable Use</h3>
+          <p>You agree not to:</p>
+          <ul>
+            <li>Use the System for any unlawful purpose or in violation of Kenyan law.</li>
+            <li>Enter false, misleading, or fabricated student data or results.</li>
+            <li>Share your login credentials with persons outside your school's authorised staff.</li>
+            <li>Attempt to reverse-engineer, copy, or redistribute any part of the System's code or design.</li>
+            <li>Use automated scripts or bots to access or scrape data from the System.</li>
+            <li>Upload or transmit malware, viruses, or any harmful code.</li>
+            <li>Impersonate another school, teacher, or system administrator.</li>
+          </ul>
+          <div class="hbox red">
+            <div class="hbox-icon">🚫</div>
+            <div class="hbox-text"><strong>Violations</strong>Breach of acceptable use may result in immediate account suspension without refund and, where applicable, reporting to relevant authorities.</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="tc-ip">
+          <div class="sec-num">SECTION 08</div>
+          <h3>Intellectual Property</h3>
+          <p>The CBE Mark Sheet System — including its source code, design, branding, layouts, and all content created by us — is the exclusive intellectual property of <strong>Bett Emanuel</strong>.</p>
+          <p>Unauthorised copying, modification, distribution, reselling, or reverse-engineering of any part of the System is strictly prohibited and may result in legal action.</p>
+          <p>The CBC curriculum subject names and grading frameworks referenced in the System are sourced from the Kenya Institute of Curriculum Development (KICD) and remain the property of their respective owners.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="tc-liability">
+          <div class="sec-num">SECTION 09</div>
+          <h3>Limitation of Liability</h3>
+          <p>The System is provided on an <strong>"as is"</strong> basis. While we strive for high availability and accuracy, we do not warrant that the System will be uninterrupted, error-free, or completely secure.</p>
+          <p>To the maximum extent permitted by Kenyan law, we shall not be liable for:</p>
+          <ul>
+            <li>Loss of data due to network failures, device issues, or circumstances beyond our control.</li>
+            <li>Indirect, incidental, or consequential damages arising from use of the System.</li>
+            <li>Errors in results caused by incorrect data entered by Users.</li>
+            <li>Downtime during scheduled or emergency maintenance.</li>
+          </ul>
+          <p>Our total liability in any dispute shall not exceed the amount paid by you in subscription fees during the preceding 3 months.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="tc-termination">
+          <div class="sec-num">SECTION 10</div>
+          <h3>Termination</h3>
+          <p>We reserve the right to suspend or terminate your access to the System at any time if:</p>
+          <ul>
+            <li>You breach these Terms.</li>
+            <li>Your subscription expires and is not renewed within the grace period.</li>
+            <li>We receive a court order or lawful direction requiring us to do so.</li>
+          </ul>
+          <p>Upon termination, you may request an export of your School Data within <strong>30 days</strong>. After 30 days, we reserve the right to delete inactive account data.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="tc-changes">
+          <div class="sec-num">SECTION 11</div>
+          <h3>Changes to These Terms</h3>
+          <p>We may update these Terms from time to time to reflect changes in our services, legal requirements, or business practices. When we make material changes, we will:</p>
+          <ul>
+            <li>Update the "Last updated" date at the top of this page.</li>
+            <li>Notify active subscribers via a banner in the System dashboard.</li>
+          </ul>
+          <p>Continued use of the System after changes are posted constitutes your acceptance of the revised Terms.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="tc-law">
+          <div class="sec-num">SECTION 12</div>
+          <h3>Governing Law &amp; Disputes</h3>
+          <p>These Terms are governed by the laws of the <strong>Republic of Kenya</strong>. Any disputes arising from your use of the System shall first be resolved through good-faith negotiation. If unresolved, disputes shall be submitted to the jurisdiction of the Kenyan courts.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- PRIVACY POLICY                             -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="doc-card" id="privacy">
+      <div class="doc-header">
+        <div class="doc-icon green">🔒</div>
+        <div class="doc-header-text">
+          <h2>Privacy Policy</h2>
+          <p>How we collect, use, store, and protect your data in compliance with Kenya's Data Protection Act (2019).</p>
+        </div>
+      </div>
+      <div class="doc-body">
+
+        <div class="sec" id="pp-collect">
+          <div class="sec-num">SECTION 13</div>
+          <h3>Data We Collect</h3>
+          <p>We collect only the data necessary to provide the service. This includes:</p>
+
+          <p><strong>Account &amp; Registration Data</strong></p>
+          <ul>
+            <li>School Administrator: full name, email address, M-Pesa phone number, school name, county, and sub-county.</li>
+            <li>Teachers: name, email address, and school association (added by the Administrator).</li>
+            <li>Payment reference numbers (M-Pesa transaction codes).</li>
+          </ul>
+
+          <p><strong>School Data (entered by Users)</strong></p>
+          <ul>
+            <li>Student names and admission numbers.</li>
+            <li>Student gender, grade, stream, and academic year.</li>
+            <li>Parent/guardian names and phone numbers (optional).</li>
+            <li>CBC subject marks and computed results.</li>
+            <li>School settings: motto, logo URL, county, principal name.</li>
+          </ul>
+
+          <p><strong>Technical Data (automatically collected)</strong></p>
+          <ul>
+            <li>Browser type and device type (via Firebase Analytics).</li>
+            <li>Pages visited within the System and session duration.</li>
+            <li>IP address (used for security and fraud prevention only).</li>
+          </ul>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="pp-use">
+          <div class="sec-num">SECTION 14</div>
+          <h3>How We Use Your Data</h3>
+          <table class="data-table">
+            <thead><tr><th>Purpose</th><th>Data Used</th><th>Legal Basis</th></tr></thead>
+            <tbody>
+              <tr><td>Providing the service</td><td>Account, School Data</td><td>Contract performance</td></tr>
+              <tr><td>Processing payments</td><td>Phone number, M-Pesa ref</td><td>Contract performance</td></tr>
+              <tr><td>Sending system notifications</td><td>Telegram/email alerts</td><td>Legitimate interest</td></tr>
+              <tr><td>Customer support</td><td>Account data, issue details</td><td>Legitimate interest</td></tr>
+              <tr><td>Security &amp; fraud prevention</td><td>IP address, session data</td><td>Legitimate interest</td></tr>
+              <tr><td>Service improvement</td><td>Aggregated usage data</td><td>Legitimate interest</td></tr>
+            </tbody>
+          </table>
+          <p>We do <strong>not</strong> use your data for advertising, sell it to third parties, or use it for any purpose beyond operating and improving the System.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="pp-storage">
+          <div class="sec-num">SECTION 15</div>
+          <h3>Data Storage &amp; Location</h3>
+          <p>Your data is stored on <strong>Google Firebase (Firestore)</strong>, a globally distributed database service operated by Google LLC. Data may be stored in servers located in the United States or other regions where Google operates data centres.</p>
+          <p>Firebase is compliant with major data protection frameworks. We have configured Firebase security rules to ensure that only authenticated Users can access their own school's data.</p>
+          <div class="hbox blue">
+            <div class="hbox-icon">🔐</div>
+            <div class="hbox-text"><strong>Data Isolation</strong>Each school's data is isolated by a unique School ID. No school can access another school's student records or results under any circumstances.</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="pp-sharing">
+          <div class="sec-num">SECTION 16</div>
+          <h3>Data Sharing</h3>
+          <p>We do not sell, rent, or trade your personal data. We share data only with the following service providers who help us operate the System:</p>
+          <table class="data-table">
+            <thead><tr><th>Provider</th><th>Purpose</th><th>Data Shared</th></tr></thead>
+            <tbody>
+              <tr><td>Google Firebase</td><td>Database &amp; authentication</td><td>All school data</td></tr>
+              <tr><td>Netlify</td><td>Web hosting</td><td>None — serves static files only</td></tr>
+              <tr><td>Paynecta / IntaSend</td><td>M-Pesa payment processing</td><td>Phone number, amount</td></tr>
+              <tr><td>Telegram</td><td>Admin notifications</td><td>School name, registration alerts</td></tr>
+              <tr><td>Render.com</td><td>Payment backend hosting</td><td>Transaction reference data</td></tr>
+            </tbody>
+          </table>
+          <p>All providers are bound by their own privacy policies and applicable data protection laws.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="pp-rights">
+          <div class="sec-num">SECTION 17</div>
+          <h3>Your Rights</h3>
+          <p>Under Kenya's <strong>Data Protection Act (2019)</strong>, you have the right to:</p>
+          <ul>
+            <li><strong>Access</strong> — request a copy of the personal data we hold about you.</li>
+            <li><strong>Rectification</strong> — ask us to correct inaccurate or incomplete data.</li>
+            <li><strong>Erasure</strong> — request deletion of your data, subject to legal obligations.</li>
+            <li><strong>Portability</strong> — request your School Data in a structured, machine-readable format (CSV export).</li>
+            <li><strong>Objection</strong> — object to certain types of processing, such as analytics.</li>
+          </ul>
+          <p>To exercise any of these rights, contact us via WhatsApp at <strong>0704 518 130</strong>. We will respond within <strong>14 days</strong>.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="pp-security">
+          <div class="sec-num">SECTION 18</div>
+          <h3>Security Measures</h3>
+          <p>We implement the following to protect your data:</p>
+          <ul>
+            <li>Firebase Authentication with email/password for all user accounts.</li>
+            <li>Firestore security rules that enforce per-school data isolation.</li>
+            <li>HTTPS encryption for all data transmitted between your browser and our servers.</li>
+            <li>Server-side payment verification — we never expose payment API keys to the browser.</li>
+            <li>Regular review of access permissions and security configurations.</li>
+          </ul>
+          <p>Despite these measures, no system can guarantee 100% security. We encourage you to use strong passwords and sign out after each session, especially on shared devices.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="pp-retention">
+          <div class="sec-num">SECTION 19</div>
+          <h3>Data Retention</h3>
+          <p>We retain your data for as long as your account is active. If your subscription lapses:</p>
+          <ul>
+            <li>Your data is preserved for <strong>90 days</strong> after expiry, allowing you to renew and regain access.</li>
+            <li>After 90 days of inactivity (no renewal), we may delete your account data permanently.</li>
+            <li>You may request immediate deletion at any time by contacting us.</li>
+          </ul>
+          <p>Anonymised, aggregated usage statistics (with no personal identifiers) may be retained indefinitely for service improvement purposes.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- COOKIE POLICY                              -->
+    <!-- ══════════════════════════════════════════ -->
+    <div class="doc-card" id="cookies">
+      <div class="doc-header">
+        <div class="doc-icon amber">🍪</div>
+        <div class="doc-header-text">
+          <h2>Cookie Policy</h2>
+          <p>How the CBE Mark Sheet System uses browser storage to deliver a better experience.</p>
+        </div>
+      </div>
+      <div class="doc-body">
+
+        <div class="sec" id="ck-what">
+          <div class="sec-num">SECTION 20</div>
+          <h3>What Are Cookies &amp; Local Storage?</h3>
+          <p>Cookies are small text files stored on your device by your browser when you visit a website. The CBE Mark Sheet System uses a combination of <strong>browser cookies</strong> and <strong>localStorage</strong> (a similar web storage mechanism) to remember your preferences and keep you signed in.</p>
+          <p>We do <strong>not</strong> use third-party advertising cookies or tracking cookies. Our use of browser storage is strictly functional.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="ck-types">
+          <div class="sec-num">SECTION 21</div>
+          <h3>Storage Items We Use</h3>
+          <table class="data-table">
+            <thead><tr><th>Key / Cookie</th><th>Type</th><th>Purpose</th><th>Duration</th></tr></thead>
+            <tbody>
+              <tr><td><code style="font-family:'DM Mono',monospace;font-size:12px">cbe_school_id</code></td><td>sessionStorage</td><td>Stores your School ID within a browser tab session to avoid re-reading from Firebase on every page load.</td><td>Session (clears on tab close)</td></tr>
+              <tr><td><code style="font-family:'DM Mono',monospace;font-size:12px">cbe_theme</code></td><td>localStorage</td><td>Remembers your dark/light mode preference.</td><td>Persistent (until cleared)</td></tr>
+              <tr><td><code style="font-family:'DM Mono',monospace;font-size:12px">cbe_streams</code></td><td>localStorage</td><td>Caches the list of class streams per grade to speed up page loads and reduce Firestore reads.</td><td>24 hours</td></tr>
+              <tr><td><code style="font-family:'DM Mono',monospace;font-size:12px">cbe_students_*</code></td><td>localStorage</td><td>Caches the student list for the admission page to reduce loading time.</td><td>Session use</td></tr>
+              <tr><td><code style="font-family:'DM Mono',monospace;font-size:12px">cbe_pay_confirmed</code><br><code style="font-family:'DM Mono',monospace;font-size:12px">cbe_pay_plan</code><br><code style="font-family:'DM Mono',monospace;font-size:12px">cbe_pay_txRef</code></td><td>localStorage</td><td>Temporarily holds payment session state during registration so you can resume if interrupted.</td><td>Cleared after registration completes</td></tr>
+              <tr><td><code style="font-family:'DM Mono',monospace;font-size:12px">cbe_reg_details</code></td><td>localStorage</td><td>Auto-saves your school details form during registration so you can return and continue.</td><td>Cleared after registration completes</td></tr>
+              <tr><td><code style="font-family:'DM Mono',monospace;font-size:12px">cbe_guard_*</code></td><td>sessionStorage</td><td>Caches subscription status for 5 minutes to avoid repeated Firestore reads on every page.</td><td>5 minutes</td></tr>
+              <tr><td>Firebase Auth cookies</td><td>Cookie / IndexedDB</td><td>Keeps you signed in securely via Firebase Authentication.</td><td>Until sign-out or 1 year</td></tr>
+              <tr><td>Cloudflare beacon</td><td>Cookie</td><td>Cloudflare's performance and security monitoring on our hosting infrastructure.</td><td>Session</td></tr>
+            </tbody>
+          </table>
+
+          <div class="hbox blue">
+            <div class="hbox-icon">ℹ️</div>
+            <div class="hbox-text"><strong>No Advertising Cookies</strong>We do not use Google Analytics, Facebook Pixel, or any third-party advertising or tracking scripts. The storage items above are all essential to the System's operation.</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec" id="ck-control">
+          <div class="sec-num">SECTION 22</div>
+          <h3>Managing &amp; Clearing Storage</h3>
+          <p>You can clear all localStorage and sessionStorage data at any time through your browser settings:</p>
+          <ul>
+            <li><strong>Chrome / Edge:</strong> Settings → Privacy &amp; Security → Clear browsing data → Cookies and other site data.</li>
+            <li><strong>Firefox:</strong> Settings → Privacy &amp; Security → Cookies and Site Data → Clear Data.</li>
+            <li><strong>Safari (iOS/macOS):</strong> Settings → Safari → Advanced → Website Data → Remove All.</li>
+          </ul>
+          <p>Note that clearing this data will sign you out and remove any cached preferences. It will <strong>not</strong> affect your school data stored in Firebase — all student records and results are safe in the cloud.</p>
+          <p>Because all storage items are <strong>strictly necessary</strong> for the System to function, we do not provide a cookie opt-out banner. Blocking these items may prevent the System from working correctly.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CONTACT CARD -->
+    <div class="contact-card" id="contact">
+      <div>
+        <h3>Questions or Concerns?</h3>
+        <p>If you have any questions about these policies, wish to exercise your data rights, or need to report a concern, reach out to us directly.</p>
+        <p style="margin-top:10px;font-size:12px;color:rgba(255,255,255,.4)">CBE Mark Sheet System · Bett Emanuel · Kenya</p>
+      </div>
+      <div class="contact-btns">
+        <a href="https://wa.me/254704518130?text=Hello%2C%20I%20have%20a%20question%20about%20the%20CBE%20Mark%20Sheet%20System%20privacy%20policy." target="_blank" class="btn-wa">💬 WhatsApp Us</a>
+        <a href="mailto:support@bett.website" class="btn-email">✉️ Email</a>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <p>© 2026 <a href="/">CBE Mark Sheet System</a> · Bett KE Tech Ltd · Kenya</p>
+  <p>
+    <a href="/about">About Us</a> &nbsp;·&nbsp;
+    <a href="/contact">Contact</a> &nbsp;·&nbsp;
+    <a href="/terms">Terms &amp; Privacy</a> &nbsp;·&nbsp;
+    Governed by Kenyan law
+  </p>
+</footer>
+
+<script>
+// Back to top button
+window.addEventListener('scroll',function(){
+  document.getElementById('backTop').classList.toggle('show',window.scrollY>400);
+});
+
+// Active TOC link highlight
+const tocLinks=document.querySelectorAll('.toc a');
+const sections=document.querySelectorAll('[id]');
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      tocLinks.forEach(l=>l.classList.remove('active'));
+      const active=document.querySelector(`.toc a[href="#${e.target.id}"]`);
+      if(active) active.classList.add('active');
+    }
+  });
+},{rootMargin:'-20% 0px -70% 0px'});
+sections.forEach(s=>observer.observe(s));
+</script>
+</body>
+</html>

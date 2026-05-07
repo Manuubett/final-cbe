@@ -82,6 +82,23 @@
   to   = "/register"
   status = 301
   force  = true
+  # ── New public pages ──────────────────────────────────────────────
+# Paste these 3 redirect blocks into your existing netlify.toml
+
+[[redirects]]
+  from   = "/about"
+  to     = "/about.html"
+  status = 200
+
+[[redirects]]
+  from   = "/contact"
+  to     = "/contact.html"
+  status = 200
+
+[[redirects]]
+  from   = "/terms"
+  to     = "/terms.html"
+  status = 200
 
 [[redirects]]
   from = "/demo.html"

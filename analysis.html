@@ -962,10 +962,11 @@ function renderAnalysis(grade, stream, term, year) {
     el('mainContent').innerHTML = `<div class="empty-msg"><div class="ei">📭</div><p>No results saved yet for <strong>${classLabel} – ${term} ${year}</strong></p></div>`;
     return;
   }
-  const avgs = scored.map(s => resMap[s.id].overallAvg);
+  const avgs = scored.map(s => Number(resMap[s.id].overallAvg));
   const classAvg = (avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(1);
   const highest = Math.max(...avgs).toFixed(1);
   const lowest  = Math.min(...avgs).toFixed(1);
+  
   const levelCounts = {};
   LEVELS.forEach(l => levelCounts[l.l] = 0);
   scored.forEach(s => { const lv = getLevel(resMap[s.id].overallAvg); levelCounts[lv.l]++; });

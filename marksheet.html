@@ -1532,7 +1532,12 @@ async function _saveRowSilent(sid){
 
   const payload = {
     studentId:sid, studentName:s.name, admissionNumber:s.admissionNumber||'',
-    grade:el('selGrade').value, stream:streamsEnabled?el('selStream').value:'',
+    grade:el('selGrade').value,
+    // FIX 1: use gradeHasStreams guard — teachers use profile stream,
+    // admins only pass a stream when the grade actually has streams
+    stream: currentUser?.role === 'teacher'
+      ? (currentUser.stream || '')
+      : (streamsEnabled && gradeHasStreams ? (el('selStream')?.value || '') : ''),
     term:el('selTerm').value,   year:el('selYear').value,
     schoolId:    currentUser?.schoolId   || sessionStorage.getItem('cbe_school_id') || '',
     teacherId:   currentUser?.uid        || '',
@@ -1595,7 +1600,10 @@ window.saveRow=async function(sid){
   const payload={
     studentId:sid, studentName:s.name, admissionNumber:s.admissionNumber||'',
     grade: saveGrade,
-    stream: currentUser?.role === 'teacher' ? (currentUser.stream || '') : (streamsEnabled ? el('selStream').value : ''),
+    // FIX 2: use gradeHasStreams guard — mirrors _saveRowSilent logic exactly
+    stream: currentUser?.role === 'teacher'
+      ? (currentUser.stream || '')
+      : (streamsEnabled && gradeHasStreams ? (el('selStream')?.value || '') : ''),
     term:el('selTerm').value,   year:el('selYear').value,
     schoolId:    currentUser?.schoolId   || sessionStorage.getItem('cbe_school_id') || '',
     teacherId:   currentUser?.uid        || '',

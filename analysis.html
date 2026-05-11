@@ -206,7 +206,6 @@ body.dark .level-row .bar-wrap{background:#1a2030}
 ._pov-out:hover{border-color:#cbd5e1;color:#64748b}
 #_expiryCountdown{display:none;background:#0f172a;border-top:1px solid rgba(255,255,255,.08);padding:10px 20px;text-align:center;font-size:12px;color:rgba(255,255,255,.6)}
 #_expiryCountdown.show{display:block}
-#_expiryCountdown strong{color:#f59e0b;font-weight:700}
 #_subBar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:99998;padding:9px 20px;font-size:12px;font-weight:600;align-items:center;justify-content:space-between;gap:12px;font-family:'Plus Jakarta Sans',sans-serif}
 ._subbar-show{display:flex!important}
 ._subbar-warn{background:#7c2d12;border-top:2px solid #f97316;color:#fed7aa}
@@ -353,8 +352,6 @@ let _analysisSchoolId = null;
 let _analysisRole     = null;
 
 // ── Track whether the currently selected grade has streams ──
-// Mirrors the same flag in marksheet.html to avoid blocking on
-// grades that have no streams (and therefore save with stream:'')
 let gradeHasStreams = false;
 
 // ── Streams enabled setting (mirrors marksheet.html) ──
@@ -703,12 +700,14 @@ function _showRenewalBanner() {
 }
 
 // ── Grade-based subject config ──
+// ✅ FIX: Added 'crt' (Creative Activities) to Grade 1-3 to match marksheet.html
 const SUBS_BY_GROUP = {
   '1-3': [
-    {id:'math',label:'Mathematical Activities',icon:'🔢'},
-    {id:'eng', label:'English',               icon:'📖'},
-    {id:'kis', label:'Kiswahili',             icon:'🗣️'},
-    {id:'int', label:'Integrated Activities', icon:'🌈'},
+    {id:'math', label:'Mathematical Activities', icon:'🔢'},
+    {id:'eng',  label:'English',                 icon:'📖'},
+    {id:'kis',  label:'Kiswahili',               icon:'🗣️'},
+    {id:'int',  label:'Integrated Activities',   icon:'🌈'},
+    {id:'crt',  label:'Creative Activities',     icon:'🎨'},
   ],
   '4-6': [
     {id:'math',label:'Mathematics',               icon:'🔢'},
@@ -783,11 +782,6 @@ _authReady.then(() => {
 
 // ══════════════════════════════════════════════════════════════════
 //  GRADE → STREAMS
-//  Mirrors onGradeChange() in marksheet.html exactly:
-//  - If no streams found for the grade → hide stream selector,
-//    set gradeHasStreams=false, load directly.
-//  - If streams found → show selector, wait for user choice.
-//  - If streamsEnabled=false → always skip stream selector.
 // ══════════════════════════════════════════════════════════════════
 window.onGradeChange = async function() {
   const grade = el('selGrade').value;
@@ -802,7 +796,6 @@ window.onGradeChange = async function() {
     return;
   }
 
-  // School has streams disabled globally → skip stream detection entirely
   if (!streamsEnabled) {
     gradeHasStreams = false;
     if (sw) sw.style.display = 'none';
@@ -810,7 +803,6 @@ window.onGradeChange = async function() {
     return;
   }
 
-  // Fetch streams for this grade
   ss.disabled = true;
   ss.innerHTML = '<option value="">Loading…</option>';
   if (sw) sw.style.display = 'flex';
@@ -819,7 +811,6 @@ window.onGradeChange = async function() {
     const schoolId = await _getSchoolId();
     let arr = [];
 
-    // Fast path: shared localStorage cache (written by marksheet page)
     try {
       const raw = localStorage.getItem('cbe_streams');
       const ts  = localStorage.getItem('cbe_streams_ts');
@@ -829,7 +820,6 @@ window.onGradeChange = async function() {
       }
     } catch(_) {}
 
-    // Always also query Firestore live to catch new streams
     const snap = await db.collection('students')
       .where('grade','==',grade)
       .where('schoolId','==',schoolId)
@@ -838,7 +828,6 @@ window.onGradeChange = async function() {
     snap.forEach(d => { const s = d.data(); if (s.stream?.trim()) set.add(s.stream.trim()); });
     arr = [...set].sort();
 
-    // Update shared cache
     try {
       const raw = localStorage.getItem('cbe_streams');
       const map = raw ? JSON.parse(raw) : {};
@@ -848,9 +837,6 @@ window.onGradeChange = async function() {
     } catch(_) {}
 
     if (!arr.length) {
-      // ── No streams for this grade → load directly without stream filter ──
-      // This matches marksheet.html which also hides stream selector and loads.
-      // Results saved by marksheet will have stream:'' for these students.
       gradeHasStreams = false;
       if (sw) sw.style.display = 'none';
       ss.innerHTML = '<option value="">__none__</option>';
@@ -860,14 +846,12 @@ window.onGradeChange = async function() {
       return;
     }
 
-    // Streams exist for this grade
     gradeHasStreams = true;
     if (sw) sw.style.display = 'flex';
     ss.innerHTML = '<option value="">-- Stream --</option>' +
       arr.map(s => `<option>${s}</option>`).join('');
     ss.disabled = false;
 
-    // Auto-select if only one stream
     if (arr.length === 1) { ss.value = arr[0]; loadAnalysis(); }
 
   } catch(e) {
@@ -880,9 +864,6 @@ window.onGradeChange = async function() {
 
 // ══════════════════════════════════════════════════════════════════
 //  LOAD ANALYSIS
-//  Key fix: only block on missing stream when gradeHasStreams=true.
-//  When gradeHasStreams=false, results were saved with stream:''
-//  so we query without a stream filter — matching marksheet save logic.
 // ══════════════════════════════════════════════════════════════════
 window.loadAnalysis = async function() {
   const grade  = el('selGrade').value;
@@ -893,8 +874,6 @@ window.loadAnalysis = async function() {
   if (!grade) return;
   SUBS = getSubsForGrade(grade);
 
-  // Only require a stream selection when the grade actually has streams
-  // AND streams are globally enabled — mirrors the marksheet loadStudents() guard
   if (streamsEnabled && gradeHasStreams && !stream) return;
 
   el('mainContent').innerHTML = `<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading analysis…</div></div>`;
@@ -902,13 +881,10 @@ window.loadAnalysis = async function() {
   try {
     const schoolId = await _getSchoolId();
 
-    // Build student query — filter by stream only if grade has streams
     let stuQuery = db.collection('students')
       .where('grade','==',grade)
       .where('schoolId','==',schoolId);
 
-    // Build results query — filter by stream only when grade has streams
-    // (matches how marksheet saves: stream field is '' when no streams)
     let resQuery = db.collection('results')
       .where('grade','==',grade)
       .where('term','==',term)
@@ -916,11 +892,8 @@ window.loadAnalysis = async function() {
       .where('schoolId','==',schoolId);
 
     if (streamsEnabled && gradeHasStreams && stream) {
-      // Grade has streams and user selected one → filter both queries
       resQuery = resQuery.where('stream','==',stream);
     } else if (!streamsEnabled || !gradeHasStreams) {
-      // No streams → results were saved with stream:'' → filter for empty stream
-      // This prevents mixing results from different grades' no-stream records
       resQuery = resQuery.where('stream','==','');
     }
 
@@ -929,13 +902,10 @@ window.loadAnalysis = async function() {
     allStudents = [];
     stuSnap.forEach(d => allStudents.push({id:d.id,...d.data()}));
 
-    // Filter students by stream on client side
     if (streamsEnabled && gradeHasStreams && stream) {
       allStudents = allStudents.filter(s => (s.stream||'').trim() === stream);
     } else if (!streamsEnabled || !gradeHasStreams) {
-      // Students with no stream or empty stream value
       allStudents = allStudents.filter(s => !(s.stream||'').trim());
-      // If that's empty, include all — handles schools where stream field is absent
       if (!allStudents.length) {
         allStudents = [];
         stuSnap.forEach(d => allStudents.push({id:d.id,...d.data()}));

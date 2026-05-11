@@ -135,7 +135,6 @@ body.dark .level-row .bar-wrap{background:#1a2030}
 .close-btn{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text3);padding:2px 6px;border-radius:4px}
 .close-btn:hover{background:var(--bg);color:var(--text)}
 @media print{header,.toolbar,#tc{display:none!important}}
-.print-page-break{page-break-after:always;break-after:page}
 #printArea{display:none}
 .print-page{font-family:'Plus Jakarta Sans',sans-serif;background:#fff;color:#000;padding:24px 28px;max-width:800px;margin:0 auto}
 .print-school-header{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #1a56db;padding-bottom:12px;margin-bottom:16px}
@@ -234,7 +233,7 @@ body.dark .level-row .bar-wrap{background:#1a2030}
   </div>
   <div class="hdr-r">
     <button class="btn btn-outline btn-sm" id="themeBtn">🌙</button>
-    <a href="admin" class="btn btn-outline btn-sm">📋 DASHBOARD </a>
+    <a href="admin" class="btn btn-outline btn-sm">📋 DASHBOARD</a>
   </div>
 </header>
 
@@ -242,7 +241,9 @@ body.dark .level-row .bar-wrap{background:#1a2030}
   <span class="tb-lbl">Grade</span>
   <select class="fsel" id="selGrade" onchange="onGradeChange()">
     <option value="">-- Grade --</option>
-    <option>Grade 1</option><option>Grade 2</option><option>Grade 3</option><option>Grade 4</option><option>Grade 5</option><option>Grade 6</option><option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+    <option>Grade 1</option><option>Grade 2</option><option>Grade 3</option>
+    <option>Grade 4</option><option>Grade 5</option><option>Grade 6</option>
+    <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
   </select>
   <span id="streamWrap" style="display:flex;align-items:center;gap:8px">
     <span class="tb-lbl">Stream</span>
@@ -351,14 +352,11 @@ const _schoolSettingsPromise = new Promise(res => { _schoolSettingsResolve = res
 let _analysisSchoolId = null;
 let _analysisRole     = null;
 
-// ── Track whether the currently selected grade has streams ──
-let gradeHasStreams = false;
-
-// ── Streams enabled setting (mirrors marksheet.html) ──
+// ── Streams enabled setting ──
 let streamsEnabled = true;
 
 // ══════════════════════════════════════════════════════════════════
-//  AUTH — resolves schoolId from sessionStorage (fast) or Firestore
+//  AUTH
 // ══════════════════════════════════════════════════════════════════
 const _authReady = new Promise(resolve => {
   const unsub = firebase.auth().onAuthStateChanged(async u => {
@@ -449,7 +447,6 @@ function applySchoolSettings(s) {
   }
   if (s.name) document.title = s.name + ' | CBC Analysis';
 
-  // Read streamsEnabled from school settings (mirrors marksheet.html)
   if (s.streamsEnabled !== undefined) {
     streamsEnabled = s.streamsEnabled;
     _applyStreamMode();
@@ -468,7 +465,6 @@ function applySchoolSettings(s) {
   }
 }
 
-// ── Apply stream visibility based on streamsEnabled setting ──
 function _applyStreamMode() {
   const sw = el('streamWrap');
   const ss = el('selStream');
@@ -551,7 +547,7 @@ function _startPaymentGate(schoolId) {
       _startCountdown(newExp);
       _scheduleExpiryCheck(schoolId, newExp);
 
-    }, e => {
+    }, () => {
       _stopCountdown(); _hideWarningBar();
       _showGate({ schoolName: schoolSettings.name },
         'Unable to verify subscription. Please check your connection and refresh.');
@@ -699,8 +695,7 @@ function _showRenewalBanner() {
   setTimeout(() => { b.style.display = 'none'; b.style.opacity = ''; b.style.transition = ''; _renewalShown = false; }, 3200);
 }
 
-// ── Grade-based subject config ──
-// ✅ FIX: Added 'crt' (Creative Activities) to Grade 1-3 to match marksheet.html
+// ── Subject config ──
 const SUBS_BY_GROUP = {
   '1-3': [
     {id:'math', label:'Mathematical Activities', icon:'🔢'},
@@ -773,7 +768,6 @@ _authReady.then(() => {
     ss.disabled = false;
     if (sw) sw.style.display = 'flex';
     ss.value = stream;
-    gradeHasStreams = true;
     loadAnalysis();
   } else if (grade) {
     onGradeChange();
@@ -789,7 +783,6 @@ window.onGradeChange = async function() {
   SUBS = getSubsForGrade(grade);
 
   if (!grade) {
-    gradeHasStreams = false;
     ss.innerHTML = '<option value="">-- Stream --</option>';
     ss.disabled = true;
     if (sw) sw.style.display = streamsEnabled ? 'flex' : 'none';
@@ -797,7 +790,6 @@ window.onGradeChange = async function() {
   }
 
   if (!streamsEnabled) {
-    gradeHasStreams = false;
     if (sw) sw.style.display = 'none';
     loadAnalysis();
     return;
@@ -837,7 +829,6 @@ window.onGradeChange = async function() {
     } catch(_) {}
 
     if (!arr.length) {
-      gradeHasStreams = false;
       if (sw) sw.style.display = 'none';
       ss.innerHTML = '<option value="">__none__</option>';
       ss.value = '';
@@ -846,7 +837,6 @@ window.onGradeChange = async function() {
       return;
     }
 
-    gradeHasStreams = true;
     if (sw) sw.style.display = 'flex';
     ss.innerHTML = '<option value="">-- Stream --</option>' +
       arr.map(s => `<option>${s}</option>`).join('');
@@ -855,7 +845,6 @@ window.onGradeChange = async function() {
     if (arr.length === 1) { ss.value = arr[0]; loadAnalysis(); }
 
   } catch(e) {
-    gradeHasStreams = false;
     ss.innerHTML = '<option value="">-- Stream --</option>';
     ss.disabled = false;
     toast('Failed to load streams: ' + e.message, 'err');
@@ -863,7 +852,7 @@ window.onGradeChange = async function() {
 };
 
 // ══════════════════════════════════════════════════════════════════
-//  LOAD ANALYSIS
+//  LOAD ANALYSIS — FIXED: stream filter no longer races gradeHasStreams
 // ══════════════════════════════════════════════════════════════════
 window.loadAnalysis = async function() {
   const grade  = el('selGrade').value;
@@ -874,56 +863,76 @@ window.loadAnalysis = async function() {
   if (!grade) return;
   SUBS = getSubsForGrade(grade);
 
-  if (streamsEnabled && gradeHasStreams && !stream) return;
-
   el('mainContent').innerHTML = `<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading analysis…</div></div>`;
 
   try {
     const schoolId = await _getSchoolId();
 
+    // ── Student query: filter by grade + school, optionally by stream ──
     let stuQuery = db.collection('students')
       .where('grade','==',grade)
       .where('schoolId','==',schoolId);
 
+    // ── Results query: filter by grade/term/year/school.
+    //    ONLY add a stream filter when a specific stream is actually selected.
+    //    Do NOT use gradeHasStreams here — it may not be set on fresh page loads
+    //    or when arriving via URL params, which would wrongly filter by stream=''
+    //    and miss all records saved with a real stream value.
     let resQuery = db.collection('results')
       .where('grade','==',grade)
       .where('term','==',term)
       .where('year','==',year)
       .where('schoolId','==',schoolId);
 
-    if (streamsEnabled && gradeHasStreams && stream) {
+    if (streamsEnabled && stream) {
+      // A specific stream is chosen — filter Firestore by it for efficiency
       resQuery = resQuery.where('stream','==',stream);
-    } else if (!streamsEnabled || !gradeHasStreams) {
-      resQuery = resQuery.where('stream','==','');
     }
+    // When no stream is selected we fetch ALL results for this grade/term/year
+    // and then post-filter in JS below. This avoids the gradeHasStreams race.
 
     const [stuSnap, resSnap] = await Promise.all([stuQuery.get(), resQuery.get()]);
 
+    // ── Build student list, filtered by stream in JS ──
     allStudents = [];
     stuSnap.forEach(d => allStudents.push({id:d.id,...d.data()}));
 
-    if (streamsEnabled && gradeHasStreams && stream) {
+    if (streamsEnabled && stream) {
       allStudents = allStudents.filter(s => (s.stream||'').trim() === stream);
-    } else if (!streamsEnabled || !gradeHasStreams) {
-      allStudents = allStudents.filter(s => !(s.stream||'').trim());
-      if (!allStudents.length) {
-        allStudents = [];
-        stuSnap.forEach(d => allStudents.push({id:d.id,...d.data()}));
+    } else if (!stream) {
+      // No stream selected: keep only students with no stream assignment,
+      // unless the grade has no streams at all (keep everyone).
+      const anyHaveStreams = allStudents.some(s => (s.stream||'').trim() !== '');
+      if (anyHaveStreams) {
+        // Grade has streams but none selected — show all students
+        // (user sees the full grade across all streams)
       }
+      // otherwise all students have no stream — keep them all
     }
 
     allStudents.sort((a,b) => (a.name||'').localeCompare(b.name||''));
 
+    // ── Build results list, post-filter by stream in JS ──
     allResults = [];
     resSnap.forEach(d => allResults.push({id:d.id,...d.data()}));
 
-    renderAnalysis(grade, (streamsEnabled && gradeHasStreams) ? stream : '', term, year);
+    if (streamsEnabled && stream) {
+      // Already filtered by Firestore — no further action needed
+    } else if (!stream) {
+      // No specific stream chosen: keep results that match the visible students.
+      // Build a set of visible student IDs for O(1) lookup.
+      const visibleIds = new Set(allStudents.map(s => s.id));
+      allResults = allResults.filter(r => visibleIds.has(r.studentId));
+    }
+
+    renderAnalysis(grade, stream, term, year);
 
   } catch(e) {
     el('mainContent').innerHTML = `<div class="empty-msg"><div class="ei">❌</div><p>${e.message}</p></div>`;
   }
 };
 
+// ── Helpers ──
 function getSubjectScore(rec, sub) {
   if (!rec) return null;
   if (sub.parts) {
@@ -1650,7 +1659,7 @@ if (localStorage.getItem('cbe_theme') === 'dark') {
   el('themeBtn').textContent = '☀️';
 }
 </script>
-   
+
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"9a6fdd38ee454483a9aa3baf59e5691f","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>

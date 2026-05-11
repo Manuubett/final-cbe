@@ -741,7 +741,7 @@ const LEVELS = [
   {l:'AE1',p:4,c:'ae1',min:31},{l:'AE2',p:3,c:'ae2',min:21},
   {l:'BE1',p:2,c:'be1',min:11},{l:'BE2',p:1,c:'be2',min:0},
 ];
-function getLevel(pct) { for (const lv of LEVELS) if (pct >= lv.min) return lv; return LEVELS[7]; }
+function getLevel(pct) { for (const lv of LEVELS) if (Number(pct) >= lv.min) return lv; return LEVELS[7]; }
 
 function toast(msg, type='ok') {
   const t = document.createElement('div');
@@ -852,7 +852,7 @@ window.onGradeChange = async function() {
 };
 
 // ══════════════════════════════════════════════════════════════════
-//  LOAD ANALYSIS — FIXED: stream filter no longer races gradeHasStreams
+//  LOAD ANALYSIS
 // ══════════════════════════════════════════════════════════════════
 window.loadAnalysis = async function() {
   const grade  = el('selGrade').value;
@@ -868,16 +868,10 @@ window.loadAnalysis = async function() {
   try {
     const schoolId = await _getSchoolId();
 
-    // ── Student query: filter by grade + school, optionally by stream ──
     let stuQuery = db.collection('students')
       .where('grade','==',grade)
       .where('schoolId','==',schoolId);
 
-    // ── Results query: filter by grade/term/year/school.
-    //    ONLY add a stream filter when a specific stream is actually selected.
-    //    Do NOT use gradeHasStreams here — it may not be set on fresh page loads
-    //    or when arriving via URL params, which would wrongly filter by stream=''
-    //    and miss all records saved with a real stream value.
     let resQuery = db.collection('results')
       .where('grade','==',grade)
       .where('term','==',term)
@@ -885,42 +879,24 @@ window.loadAnalysis = async function() {
       .where('schoolId','==',schoolId);
 
     if (streamsEnabled && stream) {
-      // A specific stream is chosen — filter Firestore by it for efficiency
       resQuery = resQuery.where('stream','==',stream);
     }
-    // When no stream is selected we fetch ALL results for this grade/term/year
-    // and then post-filter in JS below. This avoids the gradeHasStreams race.
 
     const [stuSnap, resSnap] = await Promise.all([stuQuery.get(), resQuery.get()]);
 
-    // ── Build student list, filtered by stream in JS ──
     allStudents = [];
     stuSnap.forEach(d => allStudents.push({id:d.id,...d.data()}));
 
     if (streamsEnabled && stream) {
       allStudents = allStudents.filter(s => (s.stream||'').trim() === stream);
-    } else if (!stream) {
-      // No stream selected: keep only students with no stream assignment,
-      // unless the grade has no streams at all (keep everyone).
-      const anyHaveStreams = allStudents.some(s => (s.stream||'').trim() !== '');
-      if (anyHaveStreams) {
-        // Grade has streams but none selected — show all students
-        // (user sees the full grade across all streams)
-      }
-      // otherwise all students have no stream — keep them all
     }
 
     allStudents.sort((a,b) => (a.name||'').localeCompare(b.name||''));
 
-    // ── Build results list, post-filter by stream in JS ──
     allResults = [];
     resSnap.forEach(d => allResults.push({id:d.id,...d.data()}));
 
-    if (streamsEnabled && stream) {
-      // Already filtered by Firestore — no further action needed
-    } else if (!stream) {
-      // No specific stream chosen: keep results that match the visible students.
-      // Build a set of visible student IDs for O(1) lookup.
+    if (!stream) {
       const visibleIds = new Set(allStudents.map(s => s.id));
       allResults = allResults.filter(r => visibleIds.has(r.studentId));
     }
@@ -937,7 +913,7 @@ function getSubjectScore(rec, sub) {
   if (!rec) return null;
   if (sub.parts) {
     const tot = rec[`${sub.id}_tot`];
-    if (tot !== undefined && tot !== null && tot > 0) return tot;
+    if (tot !== undefined && tot !== null && Number(tot) > 0) return Number(tot);
     const partSum = sub.parts.reduce((a,p) => {
       const v = rec[`${sub.id}_${p.id}`];
       return a + (v !== undefined && v !== null ? Number(v) : 0);
@@ -945,32 +921,45 @@ function getSubjectScore(rec, sub) {
     return partSum > 0 ? partSum : null;
   }
   const sc = rec[`${sub.id}_score`];
-  return (sc !== undefined && sc !== null && sc > 0) ? sc : null;
-}
-function getSubjectOof(rec, sub) {
-  if (!rec) return DEFAULT_OOF;
-  if (sub.parts) return sub.parts.reduce((a,p) => a+(rec[`oof_${sub.id}_${p.id}`]||DEFAULT_OOF), 0);
-  return rec[`oof_${sub.id}`] || DEFAULT_OOF;
+  return (sc !== undefined && sc !== null && Number(sc) > 0) ? Number(sc) : null;
 }
 
+function getSubjectOof(rec, sub) {
+  if (!rec) return DEFAULT_OOF;
+  if (sub.parts) return sub.parts.reduce((a,p) => a+(Number(rec[`oof_${sub.id}_${p.id}`])||DEFAULT_OOF), 0);
+  return Number(rec[`oof_${sub.id}`]) || DEFAULT_OOF;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  RENDER ANALYSIS — all overallAvg values wrapped in Number()
+// ══════════════════════════════════════════════════════════════════
 function renderAnalysis(grade, stream, term, year) {
   const resMap = {};
   allResults.forEach(r => resMap[r.studentId] = r);
-  const scored = allStudents.filter(s => resMap[s.id]?.overallAvg > 0);
+
+  // FIX: use Number() when filtering so string "0" is treated as 0
+  const scored = allStudents.filter(s => Number(resMap[s.id]?.overallAvg) > 0);
   const classLabel = stream ? `${grade} ${stream}` : grade;
+
   if (!scored.length) {
     el('mainContent').innerHTML = `<div class="empty-msg"><div class="ei">📭</div><p>No results saved yet for <strong>${classLabel} – ${term} ${year}</strong></p></div>`;
     return;
   }
+
+  // FIX 1: Number() on avgs array — prevents string concatenation in reduce
   const avgs = scored.map(s => Number(resMap[s.id].overallAvg));
-  const classAvg = (avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(1);
+  const classAvg = (avgs.reduce((a,b) => a+b, 0) / avgs.length).toFixed(1);
   const highest = Math.max(...avgs).toFixed(1);
   const lowest  = Math.min(...avgs).toFixed(1);
-  
+
   const levelCounts = {};
   LEVELS.forEach(l => levelCounts[l.l] = 0);
-  scored.forEach(s => { const lv = getLevel(resMap[s.id].overallAvg); levelCounts[lv.l]++; });
-  const ranked = [...scored].sort((a,b) => resMap[b.id].overallAvg - resMap[a.id].overallAvg);
+  // FIX 2: Number() when computing level distribution
+  scored.forEach(s => { const lv = getLevel(Number(resMap[s.id].overallAvg)); levelCounts[lv.l]++; });
+
+  // FIX 3: Number() in ranked sort — prevents string subtraction edge cases
+  const ranked = [...scored].sort((a,b) => Number(resMap[b.id].overallAvg) - Number(resMap[a.id].overallAvg));
+
   const subjectStats = SUBS.map(sub => {
     const vals = scored.map(s => {
       const rec = resMap[s.id], sc = getSubjectScore(rec, sub);
@@ -1143,7 +1132,9 @@ window.openStudent = function(sid) {
   currentStudent = {s,rec};
   const avg = Number(rec.overallAvg).toFixed(1), lv = getLevel(Number(avg));
   const resMap = {}; allResults.forEach(r => resMap[r.studentId]=r);
-  const ranked = [...allStudents.filter(st=>resMap[st.id]?.overallAvg>0)].sort((a,b)=>resMap[b.id].overallAvg-resMap[a.id].overallAvg);
+  // FIX 4: Number() in openStudent ranked sort
+  const ranked = [...allStudents.filter(st => Number(resMap[st.id]?.overallAvg) > 0)]
+    .sort((a,b) => Number(resMap[b.id].overallAvg) - Number(resMap[a.id].overallAvg));
   const rank = ranked.findIndex(x=>x.id===sid)+1;
   const totalEnrolled = allStudents.length;
   const pd = window._printData;
@@ -1365,7 +1356,7 @@ async function printAllReports() {
   for (let i = 0; i < ranked.length; i++) {
     const s = ranked[i];
     const rec = resMap[s.id];
-    if (!rec || !rec.overallAvg) continue;
+    if (!rec || !Number(rec.overallAvg)) continue;
 
     updateProgress(i, s.name);
 
@@ -1413,7 +1404,8 @@ Write ONE remark of 2-3 sentences. Use CBC language (Exceeding/Meeting/Approachi
 
   let allHtml = '';
   ranked.forEach((s, i) => {
-    const rec = resMap[s.id]; if (!rec || !rec.overallAvg) return;
+    const rec = resMap[s.id];
+    if (!rec || !Number(rec.overallAvg)) return;
     const avg = Number(rec.overallAvg).toFixed(1), lv = getLevel(Number(avg));
     const remark = remarks[s.id] || '';
     allHtml += buildStudentPrintHtml(s, rec, avg, lv, i + 1, allStudents.length, pd, remark);
@@ -1526,7 +1518,7 @@ function buildStudentPrintHtml(s, rec, avg, lv, rank, total, pd, autoRemark = ''
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
         <div class="print-compare-box"><div class="print-compare-lbl">Class Average</div><div class="print-compare-val">${pd.classAvg}% <span class="lbadge ${classLv.c}" style="font-size:9px">${classLv.l}</span></div></div>
         <div class="print-compare-box"><div class="print-compare-lbl">Student Average</div><div class="print-compare-val">${avg}% <span class="lbadge ${lv.c}" style="font-size:9px">${lv.l}</span></div></div>
-        <div class="print-compare-box"><div class="print-compare-lbl">Difference</div><div class="print-compare-val" style="color:${diff>=0?'#059669':'#dc2626'}">${diff>0?'+':''}${diff}%</div></div>
+        <div class="print-compare-box"><div class="print-compare-lbl">Difference</div><div class="print-compare-val" style="color:${Number(diff)>=0?'#059669':'#dc2626'}">${Number(diff)>0?'+':''}${diff}%</div></div>
       </div>
     </div>`;
   }

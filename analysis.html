@@ -735,17 +735,15 @@ window.loadAnalysis = async function() {
     // ── 2. Fetch results — NEVER filter by stream in Firestore for no-stream grades ──
     // Reason: marksheet may have saved with stream='', stream=undefined, or no stream field.
     // Any Firestore stream filter risks missing records. We reconcile client-side instead.
-    let resQuery = db.collection('results')
-      .where('grade','==',grade)
-      .where('term','==',term)
-      .where('year','==',year)
-      .where('schoolId','==',schoolId);
+// ── 2. Fetch results — ALWAYS filter by stream (matching marksheet behavior) ──
+let resQuery = db.collection('results')
+  .where('grade','==',grade)
+  .where('term','==',term)
+  .where('year','==',year)
+  .where('schoolId','==',schoolId)
+  .where('stream','==', gradeHasStreams ? stream : ''); // ← ALWAYS include stream
 
-    // ONLY add stream filter when the grade genuinely has streams AND user selected one.
-    // For no-stream grades: fetch ALL results for grade+term+year, then reconcile by studentId.
-    if (gradeHasStreams && stream) {
-      resQuery = resQuery.where('stream','==',stream);
-    }
+// Then reconcile by studentId on the client side (keep existing code at line 757-765)
 
     const [stuSnap, resSnap] = await Promise.all([stuQuery.get(), resQuery.get()]);
 

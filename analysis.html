@@ -355,37 +355,43 @@ let _analysisRole     = null;
 // ── Streams enabled setting ──
 let streamsEnabled = true;
 
-// ── FIX A: gradeHasStreams tracks whether the current grade has stream data.
-// Without this, loadAnalysis() cannot distinguish between:
-//   (a) stream=='' because the grade genuinely has no streams → load immediately
-//   (b) stream=='' because the user hasn't chosen one yet → wait
-// It also controls the Firestore query strategy to match how marksheet saves data.
+// ── gradeHasStreams: set by onGradeChange so loadAnalysis knows the fetch strategy ──
 let gradeHasStreams = false;
 
 // ══════════════════════════════════════════════════════════════════
 //  AUTH
+//
+//  KEY FIX: Removed the sessionStorage early-return that was
+//  bypassing the profile.schoolId read on every page load where
+//  sessionStorage already had a value (e.g. set by marksheet.html).
+//  When the early-return fired, _analysisSchoolId was set to whatever
+//  value was cached — which could be the admin's Firebase Auth uid
+//  (from old code) rather than their actual schoolId, causing all
+//  Firestore queries to return zero results.
+//
+//  Now we ALWAYS read the Firestore user profile on auth so that
+//  _analysisSchoolId is guaranteed to match the value marksheet
+//  saved data against (profile.schoolId).  We still write the
+//  resolved schoolId back to sessionStorage so the payment gate
+//  and other pages that legitimately use it continue to work.
 // ══════════════════════════════════════════════════════════════════
 const _authReady = new Promise(resolve => {
   const unsub = firebase.auth().onAuthStateChanged(async u => {
     unsub();
     if (!u) { window.location.href = '/admin'; resolve(null); return; }
 
-    const stored = sessionStorage.getItem('cbe_school_id');
-    if (stored) {
-      _analysisSchoolId = stored;
-      window._schoolId  = stored;
-      resolve(stored);
-      return;
-    }
-
+    // Always read from Firestore profile — never short-circuit via sessionStorage.
+    // sessionStorage may hold a stale/wrong value from a prior session or page.
     try {
       const snap = await db.collection('users').doc(u.uid).get();
       if (snap.exists) {
         const profile = snap.data();
         _analysisRole = profile.role;
-        // CORRECT — reads schoolId from Firestore profile, same as marksheet
-if (profile.role === 'admin') {
-  _analysisSchoolId = profile.schoolId || u.uid;
+
+        // Use profile.schoolId for both admin and teacher — this is the same
+        // value that marksheet.html stores when saving results to Firestore.
+        if (profile.role === 'admin') {
+          _analysisSchoolId = profile.schoolId || u.uid;
         } else if (profile.role === 'teacher' && profile.schoolId) {
           _analysisSchoolId = profile.schoolId;
         } else {
@@ -393,7 +399,9 @@ if (profile.role === 'admin') {
           resolve(null);
           return;
         }
+
         window._schoolId = _analysisSchoolId;
+        // Write correct value back so payment gate and other dependents work
         sessionStorage.setItem('cbe_school_id', _analysisSchoolId);
         resolve(_analysisSchoolId);
       } else {
@@ -776,7 +784,6 @@ _authReady.then(() => {
     ss.disabled = false;
     if (sw) sw.style.display = 'flex';
     ss.value = stream;
-    // FIX A: mark grade as having streams when URL provides one
     gradeHasStreams = true;
     loadAnalysis();
   } else if (grade) {
@@ -786,10 +793,6 @@ _authReady.then(() => {
 
 // ══════════════════════════════════════════════════════════════════
 //  GRADE → STREAMS
-//  FIX A: set gradeHasStreams so loadAnalysis() knows the fetch strategy.
-//  - Grade with streams: gradeHasStreams=true, wait for stream selection.
-//  - Grade without streams: gradeHasStreams=false, load immediately.
-//  This mirrors the identical logic in marksheet.html's onGradeChange().
 // ══════════════════════════════════════════════════════════════════
 window.onGradeChange = async function() {
   const grade = el('selGrade').value;
@@ -845,7 +848,6 @@ window.onGradeChange = async function() {
     } catch(_) {}
 
     if (!arr.length) {
-      // FIX A: no streams found for this grade → load without stream filter
       gradeHasStreams = false;
       if (sw) sw.style.display = 'none';
       ss.innerHTML = '<option value=""></option>';
@@ -855,7 +857,6 @@ window.onGradeChange = async function() {
       return;
     }
 
-    // FIX A: streams exist → mark grade and wait for user selection
     gradeHasStreams = true;
     if (sw) sw.style.display = 'flex';
     ss.innerHTML = '<option value="">-- Stream --</option>' +
@@ -874,17 +875,6 @@ window.onGradeChange = async function() {
 
 // ══════════════════════════════════════════════════════════════════
 //  LOAD ANALYSIS
-//
-//  FIX B: Block loading when grade HAS streams but none is selected yet.
-//  Without this guard, selecting a grade with streams immediately fires
-//  a cross-stream query (stream=='') before the user picks one.
-//
-//  FIX C: Match the Firestore query to how marksheet.html saves data:
-//    - Grade WITH streams + stream selected  → filter by stream (Firestore + client)
-//    - Grade WITHOUT streams                 → filter stream=='' (matches marksheet save)
-//  The old code used no stream filter for no-stream grades, which meant Firestore
-//  returned records regardless of their saved stream value — hiding data that
-//  marksheet had correctly saved with stream=''.
 // ══════════════════════════════════════════════════════════════════
 window.loadAnalysis = async function() {
   const grade  = el('selGrade').value;
@@ -895,8 +885,7 @@ window.loadAnalysis = async function() {
   if (!grade) return;
   SUBS = getSubsForGrade(grade);
 
-  // FIX B: If this grade has streams but the user hasn't selected one yet, wait.
-  // (gradeHasStreams is set by onGradeChange before calling loadAnalysis.)
+  // Block if grade has streams but none selected yet
   if (streamsEnabled && gradeHasStreams && !stream) return;
 
   el('mainContent').innerHTML = `<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading analysis…</div></div>`;
@@ -914,15 +903,13 @@ window.loadAnalysis = async function() {
       .where('year','==',year)
       .where('schoolId','==',schoolId);
 
-    // FIX C: query strategy must mirror marksheet's save strategy exactly.
+    // Mirror marksheet's save strategy exactly:
+    // - Grade WITH streams + stream selected → filter by stream
+    // - Grade WITHOUT streams → filter stream=='' (marksheet saved with stream='')
+    // - Grade with streams, no stream chosen → no filter (all streams, client filters)
     if (streamsEnabled && gradeHasStreams && stream) {
-      // Grade has streams, user selected one → filter both queries by stream
       resQuery = resQuery.where('stream','==',stream);
     } else if (!streamsEnabled || !gradeHasStreams) {
-      // Grade has no streams → marksheet saved with stream=''
-      // Add the stream=='' filter so Firestore returns only no-stream records.
-      // Without this, Firestore returns ALL results for the grade regardless of
-      // stream value, which can cause cross-stream data contamination.
       resQuery = resQuery.where('stream','==','');
     }
 
@@ -931,25 +918,19 @@ window.loadAnalysis = async function() {
     allStudents = [];
     stuSnap.forEach(d => allStudents.push({id:d.id,...d.data()}));
 
-    // Client-side student filter — only when grade has streams
     if (streamsEnabled && gradeHasStreams && stream) {
       allStudents = allStudents.filter(s => (s.stream||'').trim() === stream);
     } else if (!streamsEnabled || !gradeHasStreams) {
-      // No-stream grade: keep students without a stream value
       const unstreamed = allStudents.filter(s => !(s.stream||'').trim());
-      // Fall back to all students if none have an empty stream field
-      // (handles schools where stream field is simply absent from student docs)
       allStudents = unstreamed.length ? unstreamed : allStudents;
     }
 
     allStudents.sort((a,b) => (a.name||'').localeCompare(b.name||''));
 
-    // FIX C cont.: collect results, then client-side filter to visible students only
     allResults = [];
     resSnap.forEach(d => allResults.push({id:d.id,...d.data()}));
 
-    // Always reconcile results against the visible student list so stray
-    // records from other streams / grades never bleed into the view
+    // Always reconcile against visible students to prevent cross-stream bleed
     const visibleIds = new Set(allStudents.map(s => s.id));
     allResults = allResults.filter(r => visibleIds.has(r.studentId));
 

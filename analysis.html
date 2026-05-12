@@ -736,12 +736,13 @@ window.loadAnalysis = async function() {
     // Reason: marksheet may have saved with stream='', stream=undefined, or no stream field.
     // Any Firestore stream filter risks missing records. We reconcile client-side instead.
 // ── 2. Fetch results — ALWAYS filter by stream (matching marksheet behavior) ──
+// ── 2. Fetch results — ALWAYS filter by stream (matching marksheet behavior) ──
 let resQuery = db.collection('results')
   .where('grade','==',grade)
   .where('term','==',term)
   .where('year','==',year)
   .where('schoolId','==',schoolId)
-  .where('stream','==', gradeHasStreams ? stream : ''); // ← ALWAYS include stream
+  .where('stream','==', gradeHasStreams ? stream : '');  // ← ALWAYS include stream filter
 
 // Then reconcile by studentId on the client side (keep existing code at line 757-765)
 

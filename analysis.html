@@ -204,9 +204,13 @@ body.dark .level-row .bar-wrap{background:#1a2030}
 ._pov-wa:hover{background:#15803d}
 ._pov-out{padding:9px 14px;border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;background:none;border:1.5px solid #e2e8f0;color:#94a3b8;transition:all .14s}
 ._pov-out:hover{border-color:#cbd5e1;color:#64748b}
+
+/* Expired countdown inside gate */
 #_expiryCountdown{display:none;background:#0f172a;border-top:1px solid rgba(255,255,255,.08);padding:10px 20px;text-align:center;font-size:12px;color:rgba(255,255,255,.6)}
 #_expiryCountdown.show{display:block}
 #_expiryCountdown strong{color:#f59e0b;font-weight:700}
+
+/* Warning bar */
 #_subBar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:99998;padding:9px 20px;font-size:12px;font-weight:600;align-items:center;justify-content:space-between;gap:12px;font-family:'Plus Jakarta Sans',sans-serif}
 ._subbar-show{display:flex!important}
 ._subbar-warn{background:#7c2d12;border-top:2px solid #f97316;color:#fed7aa}
@@ -217,6 +221,8 @@ body.dark .level-row .bar-wrap{background:#1a2030}
 ._subbar-renew{padding:5px 14px;border-radius:5px;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;border:none;white-space:nowrap;text-decoration:none;display:inline-block}
 ._subbar-warn  ._subbar-renew{background:#f97316;color:#fff}
 ._subbar-urgent ._subbar-renew{background:#ef4444;color:#fff}
+
+/* Renewal banner */
 #_renewalBanner{display:none;position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#064e3b;color:#ecfdf5;border:1.5px solid #10b981;border-radius:10px;padding:12px 28px;font-size:13px;font-weight:700;z-index:999999;box-shadow:0 8px 24px rgba(0,0,0,.35);white-space:nowrap;font-family:'Plus Jakarta Sans',sans-serif;animation:_bnin .3s ease}
 @keyframes _bnin{from{opacity:0;transform:translateX(-50%) translateY(-14px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 </style>
@@ -352,14 +358,6 @@ const _schoolSettingsPromise = new Promise(res => { _schoolSettingsResolve = res
 let _analysisSchoolId = null;
 let _analysisRole     = null;
 
-// ── Track whether the currently selected grade has streams ──
-// Mirrors the same flag in marksheet.html to avoid blocking on
-// grades that have no streams (and therefore save with stream:'')
-let gradeHasStreams = false;
-
-// ── Streams enabled setting (mirrors marksheet.html) ──
-let streamsEnabled = true;
-
 // ══════════════════════════════════════════════════════════════════
 //  AUTH — resolves schoolId from sessionStorage (fast) or Firestore
 // ══════════════════════════════════════════════════════════════════
@@ -368,6 +366,7 @@ const _authReady = new Promise(resolve => {
     unsub();
     if (!u) { window.location.href = '/admin'; resolve(null); return; }
 
+    // Fast path: sessionStorage already has schoolId
     const stored = sessionStorage.getItem('cbe_school_id');
     if (stored) {
       _analysisSchoolId = stored;
@@ -376,6 +375,7 @@ const _authReady = new Promise(resolve => {
       return;
     }
 
+    // Slow path: read Firestore user profile
     try {
       const snap = await db.collection('users').doc(u.uid).get();
       if (snap.exists) {
@@ -386,6 +386,7 @@ const _authReady = new Promise(resolve => {
         } else if (profile.role === 'teacher' && profile.schoolId) {
           _analysisSchoolId = profile.schoolId;
         } else {
+          console.warn('[Analysis] Cannot resolve schoolId from profile');
           window.location.href = '/admin';
           resolve(null);
           return;
@@ -398,6 +399,7 @@ const _authReady = new Promise(resolve => {
         resolve(null);
       }
     } catch(e) {
+      console.warn('[Analysis] Auth profile read failed:', e.message);
       window.location.href = '/admin';
       resolve(null);
     }
@@ -409,6 +411,7 @@ function _getSchoolId() {
   return _authReady;
 }
 
+// ── Sign-out helper (used by gate button) ──
 window.doAnalysisLogout = async function() {
   _clearPayTimers();
   _lastExpiry = null;
@@ -425,7 +428,7 @@ window.doAnalysisLogout = async function() {
 async function loadSchoolSettings() {
   try {
     const sid = await _getSchoolId();
-    if (!sid) return;
+    if (!sid) { console.warn('[Analysis] No schoolId — settings not loaded'); return; }
     const snap = await db.collection('settings').doc(sid).get();
     if (snap.exists) applySchoolSettings(snap.data());
   } catch(e) {
@@ -451,13 +454,6 @@ function applySchoolSettings(s) {
     document.documentElement.style.setProperty('--ah', s.primaryColor);
   }
   if (s.name) document.title = s.name + ' | CBC Analysis';
-
-  // Read streamsEnabled from school settings (mirrors marksheet.html)
-  if (s.streamsEnabled !== undefined) {
-    streamsEnabled = s.streamsEnabled;
-    _applyStreamMode();
-  }
-
   const strip = el('schoolBrandingStrip');
   if (strip) {
     const logoHtml = s.logoUrl
@@ -471,37 +467,28 @@ function applySchoolSettings(s) {
   }
 }
 
-// ── Apply stream visibility based on streamsEnabled setting ──
-function _applyStreamMode() {
-  const sw = el('streamWrap');
-  const ss = el('selStream');
-  if (!streamsEnabled) {
-    if (sw) sw.style.display = 'none';
-    if (ss) { ss.value = ''; ss.disabled = true; }
-  } else {
-    if (sw) sw.style.display = 'flex';
-  }
-}
-
 _authReady.then(sid => { if (sid) { loadSchoolSettings(); _startPaymentGate(sid); } });
 
 // ══════════════════════════════════════════════════════════════════
-//  PAYMENT GATE
+//  PAYMENT GATE  — correct decision order matching admin.html
 // ══════════════════════════════════════════════════════════════════
 let _payUnsub       = null;
-let _payExpiryTimer = null;
-let _payPollTimer   = null;
-let _payCountdown   = null;
-let _lastExpiry     = null;
-let _renewalShown   = false;
+let _payExpiryTimer = null;   // one-shot: fires exactly at expiry moment
+let _payPollTimer   = null;   // 30s poll while expired/blocked
+let _payCountdown   = null;   // 1s tick: live countdown in warning bar
+let _lastExpiry     = null;   // last known expiry Date
+let _renewalShown   = false;  // guard: show renewal banner only once
 const WARN_DAYS     = 7;
 
 function _startPaymentGate(schoolId) {
   if (_payUnsub) { _payUnsub(); _payUnsub = null; }
   _clearPayTimers();
+  console.log('[Analysis] Payment gate listener started', schoolId);
 
   _payUnsub = db.collection('approvedSchools').doc(schoolId)
     .onSnapshot(snap => {
+
+      // Step 1: No doc → no subscription record → block
       if (!snap.exists) {
         _stopCountdown(); _hideWarningBar();
         _showGate({ schoolName: schoolSettings.name },
@@ -513,6 +500,7 @@ function _startPaymentGate(schoolId) {
       const d = snap.data(), now = new Date();
       const newExp = d.subscriptionExpiry?.toDate?.() || null;
 
+      // Step 2: Suspended — always wins regardless of expiry
       if (d.status === 'suspended') {
         _stopCountdown(); _hideWarningBar();
         _showGate(d, 'Your account has been suspended. Contact the administrator to reactivate.');
@@ -520,6 +508,7 @@ function _startPaymentGate(schoolId) {
         return;
       }
 
+      // Step 3: No expiry + message = legacy manual block
       if (!newExp && d.message?.trim()) {
         _stopCountdown(); _hideWarningBar();
         _showGate(d, d.message);
@@ -527,8 +516,13 @@ function _startPaymentGate(schoolId) {
         return;
       }
 
-      if (!newExp) { _hideGate(); return; }
+      // Step 4: No expiry, no message, not suspended = allow freely
+      if (!newExp) {
+        _hideGate();
+        return;
+      }
 
+      // Step 5: Expired
       if (newExp <= now) {
         _clearPayTimers();
         _stopCountdown(); _hideWarningBar();
@@ -539,7 +533,10 @@ function _startPaymentGate(schoolId) {
         return;
       }
 
+      // Step 6: Valid — expiry is in the future
+      // Renewal: expiry moved forward from what we last saw
       if (_lastExpiry && newExp > _lastExpiry) {
+        console.log('[Analysis] Renewal detected via snapshot');
         _clearPayTimers();
         _lastExpiry = newExp;
         _showRenewalBanner();
@@ -549,12 +546,15 @@ function _startPaymentGate(schoolId) {
         return;
       }
 
+      // First valid load
       _lastExpiry = newExp;
       _hideGate();
       _startCountdown(newExp);
       _scheduleExpiryCheck(schoolId, newExp);
 
     }, e => {
+      // On error: show gate — never silently allow on failure
+      console.warn('[Analysis] Payment gate listener error', e.message);
       _stopCountdown(); _hideWarningBar();
       _showGate({ schoolName: schoolSettings.name },
         'Unable to verify subscription. Please check your connection and refresh.');
@@ -567,15 +567,20 @@ function _showGate(d, message) {
   const mg = el('_povMsg');
   if (mg && message) mg.textContent = message;
   const ov = el('_payOverlay');
-  if (ov && !ov.classList.contains('show')) ov.classList.add('show');
+  if (ov && !ov.classList.contains('show')) {
+    ov.classList.add('show');
+    console.log('[Analysis] Payment gate shown');
+  }
 }
 
 function _hideGate() {
   const ov = el('_payOverlay');
   if (ov && ov.classList.contains('show')) {
     ov.classList.remove('show');
+    console.log('[Analysis] Payment gate hidden — access restored');
     toast('✅ Access restored — subscription active');
   }
+  // Only clear expiry/poll timers — NOT the countdown (it runs while access is valid)
   if (_payExpiryTimer) { clearTimeout(_payExpiryTimer); _payExpiryTimer = null; }
   if (_payPollTimer)   { clearInterval(_payPollTimer);  _payPollTimer   = null; }
   const cd = el('_expiryCountdown');
@@ -588,6 +593,7 @@ function _clearPayTimers() {
   if (_payCountdown)   { clearInterval(_payCountdown);   _payCountdown   = null; }
 }
 
+// Fires exactly when subscription expires to re-check Firestore
 function _scheduleExpiryCheck(schoolId, expiresAt) {
   if (_payExpiryTimer) { clearTimeout(_payExpiryTimer); _payExpiryTimer = null; }
   const ms = expiresAt - new Date();
@@ -596,7 +602,8 @@ function _scheduleExpiryCheck(schoolId, expiresAt) {
     db.collection('approvedSchools').doc(schoolId).get().then(snap => {
       if (!snap.exists) {
         _stopCountdown(); _hideWarningBar();
-        _showGate({ schoolName: schoolSettings.name }, 'Access not configured. Please contact the administrator.');
+        _showGate({ schoolName: schoolSettings.name },
+          'Access not configured. Please contact the administrator.');
         _startRenewalPoll(schoolId);
         return;
       }
@@ -611,6 +618,7 @@ function _scheduleExpiryCheck(schoolId, expiresAt) {
   }, ms + 500);
 }
 
+// Polls every 30s while expired/blocked — detects renewals
 function _startRenewalPoll(schoolId) {
   if (_payPollTimer) return;
   _payPollTimer = setInterval(async () => {
@@ -631,6 +639,7 @@ function _startRenewalPoll(schoolId) {
   }, 30000);
 }
 
+// Live countdown — shows warning bar when within WARN_DAYS of expiry
 function _startCountdown(expiresAt) {
   _stopCountdown();
   function tick() {
@@ -666,6 +675,7 @@ function _startCountdown(expiresAt) {
 }
 function _stopCountdown() { if (_payCountdown) { clearInterval(_payCountdown); _payCountdown = null; } }
 
+// "Expired X ago" counter inside the gate overlay
 function _startExpiredCountdown(expiredAt) {
   const cd = el('_expiryCountdown');
   if (!cd) return;
@@ -772,73 +782,39 @@ _authReady.then(() => {
     const ss = el('selStream'), sw = el('streamWrap');
     ss.innerHTML = `<option value="${stream}">${stream}</option>`;
     ss.disabled = false;
-    if (sw) sw.style.display = 'flex';
+    if (sw) sw.style.display = '';
     ss.value = stream;
-    gradeHasStreams = true;
     loadAnalysis();
   } else if (grade) {
     onGradeChange();
   }
 });
 
-// ══════════════════════════════════════════════════════════════════
-//  GRADE → STREAMS
-//  Mirrors onGradeChange() in marksheet.html exactly:
-//  - If no streams found for the grade → hide stream selector,
-//    set gradeHasStreams=false, load directly.
-//  - If streams found → show selector, wait for user choice.
-//  - If streamsEnabled=false → always skip stream selector.
-// ══════════════════════════════════════════════════════════════════
+// ── Grade → streams ──
 window.onGradeChange = async function() {
-  const grade = el('selGrade').value;
-  const ss = el('selStream'), sw = el('streamWrap');
+  const grade = el('selGrade').value, ss = el('selStream'), streamWrap = el('streamWrap');
   SUBS = getSubsForGrade(grade);
-
+  ss.disabled = true; ss.innerHTML = '<option value="">Loading…</option>';
   if (!grade) {
-    gradeHasStreams = false;
     ss.innerHTML = '<option value="">-- Stream --</option>';
-    ss.disabled = true;
-    if (sw) sw.style.display = streamsEnabled ? 'flex' : 'none';
+    ss.disabled = false;
+    if (streamWrap) streamWrap.style.display = '';
     return;
   }
-
-  // School has streams disabled globally → skip stream detection entirely
-  if (!streamsEnabled) {
-    gradeHasStreams = false;
-    if (sw) sw.style.display = 'none';
-    loadAnalysis();
-    return;
-  }
-
-  // Fetch streams for this grade
-  ss.disabled = true;
-  ss.innerHTML = '<option value="">Loading…</option>';
-  if (sw) sw.style.display = 'flex';
-
   try {
     const schoolId = await _getSchoolId();
     let arr = [];
-
-    // Fast path: shared localStorage cache (written by marksheet page)
     try {
-      const raw = localStorage.getItem('cbe_streams');
-      const ts  = localStorage.getItem('cbe_streams_ts');
+      const raw = localStorage.getItem('cbe_streams'), ts = localStorage.getItem('cbe_streams_ts');
       if (raw && ts && (Date.now()-parseInt(ts)) < 24*60*60*1000) {
         const map = JSON.parse(raw);
         if (map[grade]?.length) arr = map[grade];
       }
     } catch(_) {}
-
-    // Always also query Firestore live to catch new streams
-    const snap = await db.collection('students')
-      .where('grade','==',grade)
-      .where('schoolId','==',schoolId)
-      .get();
+    const snap = await db.collection('students').where('grade','==',grade).where('schoolId','==',schoolId).get();
     const set = new Set(arr);
     snap.forEach(d => { const s = d.data(); if (s.stream?.trim()) set.add(s.stream.trim()); });
     arr = [...set].sort();
-
-    // Update shared cache
     try {
       const raw = localStorage.getItem('cbe_streams');
       const map = raw ? JSON.parse(raw) : {};
@@ -846,109 +822,49 @@ window.onGradeChange = async function() {
       localStorage.setItem('cbe_streams', JSON.stringify(map));
       localStorage.setItem('cbe_streams_ts', Date.now().toString());
     } catch(_) {}
-
     if (!arr.length) {
-      // ── No streams for this grade → load directly without stream filter ──
-      // This matches marksheet.html which also hides stream selector and loads.
-      // Results saved by marksheet will have stream:'' for these students.
-      gradeHasStreams = false;
-      if (sw) sw.style.display = 'none';
+      if (streamWrap) streamWrap.style.display = 'none';
       ss.innerHTML = '<option value="">__none__</option>';
-      ss.value = '';
-      ss.disabled = true;
-      loadAnalysis();
-      return;
+      ss.value = ''; ss.disabled = true;
+      loadAnalysis(); return;
     }
-
-    // Streams exist for this grade
-    gradeHasStreams = true;
-    if (sw) sw.style.display = 'flex';
-    ss.innerHTML = '<option value="">-- Stream --</option>' +
-      arr.map(s => `<option>${s}</option>`).join('');
+    if (streamWrap) streamWrap.style.display = '';
+    ss.innerHTML = '<option value="">-- Stream --</option>' + arr.map(s=>`<option>${s}</option>`).join('');
     ss.disabled = false;
-
-    // Auto-select if only one stream
     if (arr.length === 1) { ss.value = arr[0]; loadAnalysis(); }
-
   } catch(e) {
-    gradeHasStreams = false;
     ss.innerHTML = '<option value="">-- Stream --</option>';
     ss.disabled = false;
+    if (el('streamWrap')) el('streamWrap').style.display = '';
     toast('Failed to load streams: ' + e.message, 'err');
   }
 };
 
-// ══════════════════════════════════════════════════════════════════
-//  LOAD ANALYSIS
-//  Key fix: only block on missing stream when gradeHasStreams=true.
-//  When gradeHasStreams=false, results were saved with stream:''
-//  so we query without a stream filter — matching marksheet save logic.
-// ══════════════════════════════════════════════════════════════════
 window.loadAnalysis = async function() {
-  const grade  = el('selGrade').value;
-  const stream = el('selStream').value;
-  const term   = el('selTerm').value;
-  const year   = el('selYear').value;
-
+  const grade = el('selGrade').value, stream = el('selStream').value,
+        term  = el('selTerm').value,  year   = el('selYear').value;
   if (!grade) return;
   SUBS = getSubsForGrade(grade);
-
-  // Only require a stream selection when the grade actually has streams
-  // AND streams are globally enabled — mirrors the marksheet loadStudents() guard
-  if (streamsEnabled && gradeHasStreams && !stream) return;
-
+  const streamWrap = el('streamWrap');
+  const streamVisible = streamWrap && streamWrap.style.display !== 'none';
+  if (streamVisible && !stream) return;
   el('mainContent').innerHTML = `<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading analysis…</div></div>`;
-
   try {
     const schoolId = await _getSchoolId();
-
-    // Build student query — filter by stream only if grade has streams
-    let stuQuery = db.collection('students')
-      .where('grade','==',grade)
-      .where('schoolId','==',schoolId);
-
-    // Build results query — filter by stream only when grade has streams
-    // (matches how marksheet saves: stream field is '' when no streams)
+    const hasStream = Boolean(stream);
+    let stuQuery = db.collection('students').where('grade','==',grade).where('schoolId','==',schoolId);
     let resQuery = db.collection('results')
-      .where('grade','==',grade)
-      .where('term','==',term)
-      .where('year','==',year)
-      .where('schoolId','==',schoolId);
-
-    if (streamsEnabled && gradeHasStreams && stream) {
-      // Grade has streams and user selected one → filter both queries
-      resQuery = resQuery.where('stream','==',stream);
-    } else if (!streamsEnabled || !gradeHasStreams) {
-      // No streams → results were saved with stream:'' → filter for empty stream
-      // This prevents mixing results from different grades' no-stream records
-      resQuery = resQuery.where('stream','==','');
-    }
-
+      .where('grade','==',grade).where('term','==',term)
+      .where('year','==',year).where('schoolId','==',schoolId);
+    if (hasStream) resQuery = resQuery.where('stream','==',stream);
     const [stuSnap, resSnap] = await Promise.all([stuQuery.get(), resQuery.get()]);
-
     allStudents = [];
     stuSnap.forEach(d => allStudents.push({id:d.id,...d.data()}));
-
-    // Filter students by stream on client side
-    if (streamsEnabled && gradeHasStreams && stream) {
-      allStudents = allStudents.filter(s => (s.stream||'').trim() === stream);
-    } else if (!streamsEnabled || !gradeHasStreams) {
-      // Students with no stream or empty stream value
-      allStudents = allStudents.filter(s => !(s.stream||'').trim());
-      // If that's empty, include all — handles schools where stream field is absent
-      if (!allStudents.length) {
-        allStudents = [];
-        stuSnap.forEach(d => allStudents.push({id:d.id,...d.data()}));
-      }
-    }
-
+    if (hasStream) allStudents = allStudents.filter(s => (s.stream||'').trim() === stream);
     allStudents.sort((a,b) => (a.name||'').localeCompare(b.name||''));
-
     allResults = [];
     resSnap.forEach(d => allResults.push({id:d.id,...d.data()}));
-
-    renderAnalysis(grade, (streamsEnabled && gradeHasStreams) ? stream : '', term, year);
-
+    renderAnalysis(grade, hasStream ? stream : '', term, year);
   } catch(e) {
     el('mainContent').innerHTML = `<div class="empty-msg"><div class="ei">❌</div><p>${e.message}</p></div>`;
   }
@@ -1284,6 +1200,7 @@ Write ONE remark of 2-3 sentences. Use CBC language (Exceeding/Meeting/Approachi
 
     const data = await response.json();
     if (data.error) throw new Error(data.error);
+
     const text = data.text?.trim() || '';
     if (!text) throw new Error('No remark returned from server');
 
@@ -1354,8 +1271,10 @@ async function printAllReports() {
   const {ranked, resMap} = pd;
   const total = ranked.length;
 
+  // Show progress toast
   toast(`Generating AI remarks for ${total} students…`, 'info');
 
+  // Progress overlay
   const progressDiv = document.createElement('div');
   progressDiv.id = '_printProgress';
   progressDiv.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif`;
@@ -1381,6 +1300,7 @@ async function printAllReports() {
     if (cnt) cnt.textContent = `${i} of ${total} students`;
   };
 
+  // Generate remarks for all students
   const remarks = {};
   for (let i = 0; i < ranked.length; i++) {
     const s = ranked[i];
@@ -1421,16 +1341,20 @@ Write ONE remark of 2-3 sentences. Use CBC language (Exceeding/Meeting/Approachi
       remarks[s.id] = data.text?.trim() || '';
     } catch (err) {
       console.warn(`Remark failed for ${s.name}:`, err.message);
-      remarks[s.id] = '';
+      remarks[s.id] = ''; // leave blank if failed
     }
 
+    // Small delay to avoid rate limiting
     await new Promise(r => setTimeout(r, 300));
   }
 
   updateProgress(total, 'Done!');
   await new Promise(r => setTimeout(r, 400));
+
+  // Remove progress overlay
   document.body.removeChild(progressDiv);
 
+  // Build all reports with remarks
   let allHtml = '';
   ranked.forEach((s, i) => {
     const rec = resMap[s.id]; if (!rec || !rec.overallAvg) return;

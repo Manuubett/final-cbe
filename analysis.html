@@ -383,8 +383,9 @@ const _authReady = new Promise(resolve => {
       if (snap.exists) {
         const profile = snap.data();
         _analysisRole = profile.role;
-        if (profile.role === 'admin') {
-          _analysisSchoolId = u.uid;
+        // CORRECT — reads schoolId from Firestore profile, same as marksheet
+if (profile.role === 'admin') {
+  _analysisSchoolId = profile.schoolId || u.uid;
         } else if (profile.role === 'teacher' && profile.schoolId) {
           _analysisSchoolId = profile.schoolId;
         } else {

@@ -245,10 +245,11 @@ body.dark .level-row .bar-wrap{background:#1a2030}
     <option>Grade 4</option><option>Grade 5</option><option>Grade 6</option>
     <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
   </select>
-  <span id="streamWrap" style="display:flex;align-items:center;gap:8px">
+  <!-- Stream wrap — hidden for no-stream schools, shown dynamically -->
+  <span id="streamWrap" style="display:none;align-items:center;gap:8px">
     <span class="tb-lbl">Stream</span>
-    <select class="fsel" id="selStream" disabled onchange="loadAnalysis()">
-      <option value="">All / No Stream</option>
+    <select class="fsel" id="selStream" onchange="loadAnalysis()">
+      <option value="">-- Stream --</option>
     </select>
   </span>
   <span class="tb-lbl">Term</span>
@@ -266,7 +267,7 @@ body.dark .level-row .bar-wrap{background:#1a2030}
   <div id="schoolBrandingStrip" style="display:none;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;margin-bottom:14px;box-shadow:var(--sh)"></div>
 </div>
 <div class="outer" id="mainContent" style="padding-top:0">
-  <div class="empty-msg"><div class="ei">📈</div><p>Select a <strong>Grade</strong> to view analysis — stream is optional</p></div>
+  <div class="empty-msg"><div class="ei">📈</div><p>Select a <strong>Grade</strong> to view analysis</p></div>
 </div>
 
 <!-- PRINT ALL MODAL -->
@@ -352,44 +353,34 @@ const _schoolSettingsPromise = new Promise(res => { _schoolSettingsResolve = res
 let _analysisSchoolId = null;
 let _analysisRole     = null;
 
-// ── Streams enabled setting ──
-let streamsEnabled = true;
+// ── Whether this school uses streams at all (loaded from Firestore settings) ──
+let streamsEnabled = false; // default OFF — set to true only if Firestore confirms it
 
-// ── gradeHasStreams: set by onGradeChange so loadAnalysis knows the fetch strategy ──
+// ── Whether the currently selected grade actually has stream data ──
+// Used to decide: show stream picker and wait, OR load immediately without stream filter
 let gradeHasStreams = false;
 
 // ══════════════════════════════════════════════════════════════════
 //  AUTH
-//
-//  KEY FIX: Removed the sessionStorage early-return that was
-//  bypassing the profile.schoolId read on every page load where
-//  sessionStorage already had a value (e.g. set by marksheet.html).
-//  When the early-return fired, _analysisSchoolId was set to whatever
-//  value was cached — which could be the admin's Firebase Auth uid
-//  (from old code) rather than their actual schoolId, causing all
-//  Firestore queries to return zero results.
-//
-//  Now we ALWAYS read the Firestore user profile on auth so that
-//  _analysisSchoolId is guaranteed to match the value marksheet
-//  saved data against (profile.schoolId).  We still write the
-//  resolved schoolId back to sessionStorage so the payment gate
-//  and other pages that legitimately use it continue to work.
 // ══════════════════════════════════════════════════════════════════
 const _authReady = new Promise(resolve => {
   const unsub = firebase.auth().onAuthStateChanged(async u => {
     unsub();
     if (!u) { window.location.href = '/admin'; resolve(null); return; }
 
-    // Always read from Firestore profile — never short-circuit via sessionStorage.
-    // sessionStorage may hold a stale/wrong value from a prior session or page.
+    const stored = sessionStorage.getItem('cbe_school_id');
+    if (stored) {
+      _analysisSchoolId = stored;
+      window._schoolId  = stored;
+      resolve(stored);
+      return;
+    }
+
     try {
       const snap = await db.collection('users').doc(u.uid).get();
       if (snap.exists) {
         const profile = snap.data();
         _analysisRole = profile.role;
-
-        // Use profile.schoolId for both admin and teacher — this is the same
-        // value that marksheet.html stores when saving results to Firestore.
         if (profile.role === 'admin') {
           _analysisSchoolId = profile.schoolId || u.uid;
         } else if (profile.role === 'teacher' && profile.schoolId) {
@@ -399,9 +390,7 @@ const _authReady = new Promise(resolve => {
           resolve(null);
           return;
         }
-
         window._schoolId = _analysisSchoolId;
-        // Write correct value back so payment gate and other dependents work
         sessionStorage.setItem('cbe_school_id', _analysisSchoolId);
         resolve(_analysisSchoolId);
       } else {
@@ -463,10 +452,8 @@ function applySchoolSettings(s) {
   }
   if (s.name) document.title = s.name + ' | CBC Analysis';
 
-  if (s.streamsEnabled !== undefined) {
-    streamsEnabled = s.streamsEnabled;
-    _applyStreamMode();
-  }
+  // ── Streams enabled flag — only true if explicitly set in settings ──
+  streamsEnabled = s.streamsEnabled === true;
 
   const strip = el('schoolBrandingStrip');
   if (strip) {
@@ -481,265 +468,99 @@ function applySchoolSettings(s) {
   }
 }
 
-function _applyStreamMode() {
-  const sw = el('streamWrap');
-  const ss = el('selStream');
-  if (!streamsEnabled) {
-    if (sw) sw.style.display = 'none';
-    if (ss) { ss.value = ''; ss.disabled = true; }
-  } else {
+// ── Boot: load settings THEN process URL params ──
+_authReady.then(async sid => {
+  if (!sid) return;
+
+  // Always load settings first — streamsEnabled must be known before onGradeChange
+  await loadSchoolSettings();
+
+  // Payment gate
+  _startPaymentGate(sid);
+
+  // ── URL params from admin quick-launch ──
+  const p = new URLSearchParams(window.location.search);
+  const grade = p.get('grade'), stream = p.get('stream'),
+        term  = p.get('term'),  year   = p.get('year');
+  if (grade) el('selGrade').value = grade;
+  if (term)  el('selTerm').value  = term;
+  if (year)  el('selYear').value  = year;
+  if (grade) SUBS = getSubsForGrade(grade);
+
+  if (grade && stream && streamsEnabled) {
+    // Specific stream provided via URL — populate picker and load
+    const ss = el('selStream'), sw = el('streamWrap');
+    ss.innerHTML = `<option value="${stream}">${stream}</option>`;
     if (sw) sw.style.display = 'flex';
+    ss.value = stream;
+    gradeHasStreams = true;
+    loadAnalysis();
+  } else if (grade) {
+    onGradeChange();
   }
-}
-
-_authReady.then(sid => { if (sid) { loadSchoolSettings(); _startPaymentGate(sid); } });
+});
 
 // ══════════════════════════════════════════════════════════════════
-//  PAYMENT GATE
+//  PAYMENT GATE  (unchanged from original)
 // ══════════════════════════════════════════════════════════════════
-let _payUnsub       = null;
-let _payExpiryTimer = null;
-let _payPollTimer   = null;
-let _payCountdown   = null;
-let _lastExpiry     = null;
-let _renewalShown   = false;
-const WARN_DAYS     = 7;
+let _payUnsub=null,_payExpiryTimer=null,_payPollTimer=null,_payCountdown=null,_lastExpiry=null,_renewalShown=false;
+const WARN_DAYS=7;
 
-function _startPaymentGate(schoolId) {
-  if (_payUnsub) { _payUnsub(); _payUnsub = null; }
+function _startPaymentGate(schoolId){
+  if(_payUnsub){_payUnsub();_payUnsub=null;}
   _clearPayTimers();
-
-  _payUnsub = db.collection('approvedSchools').doc(schoolId)
-    .onSnapshot(snap => {
-      if (!snap.exists) {
-        _stopCountdown(); _hideWarningBar();
-        _showGate({ schoolName: schoolSettings.name },
-          'Access not configured for this school. Please contact the administrator.');
-        _startRenewalPoll(schoolId);
-        return;
-      }
-
-      const d = snap.data(), now = new Date();
-      const newExp = d.subscriptionExpiry?.toDate?.() || null;
-
-      if (d.status === 'suspended') {
-        _stopCountdown(); _hideWarningBar();
-        _showGate(d, 'Your account has been suspended. Contact the administrator to reactivate.');
-        _startRenewalPoll(schoolId);
-        return;
-      }
-
-      if (!newExp && d.message?.trim()) {
-        _stopCountdown(); _hideWarningBar();
-        _showGate(d, d.message);
-        _startRenewalPoll(schoolId);
-        return;
-      }
-
-      if (!newExp) { _hideGate(); return; }
-
-      if (newExp <= now) {
-        _clearPayTimers();
-        _stopCountdown(); _hideWarningBar();
-        const msg = d.message?.trim() || 'Your subscription has expired. Please renew to continue.';
-        _showGate(d, msg);
-        _startExpiredCountdown(newExp);
-        _startRenewalPoll(schoolId);
-        return;
-      }
-
-      if (_lastExpiry && newExp > _lastExpiry) {
-        _clearPayTimers();
-        _lastExpiry = newExp;
-        _showRenewalBanner();
-        _hideGate();
-        _startCountdown(newExp);
-        _scheduleExpiryCheck(schoolId, newExp);
-        return;
-      }
-
-      _lastExpiry = newExp;
-      _hideGate();
-      _startCountdown(newExp);
-      _scheduleExpiryCheck(schoolId, newExp);
-
-    }, () => {
-      _stopCountdown(); _hideWarningBar();
-      _showGate({ schoolName: schoolSettings.name },
-        'Unable to verify subscription. Please check your connection and refresh.');
-    });
+  _payUnsub=db.collection('approvedSchools').doc(schoolId).onSnapshot(snap=>{
+    if(!snap.exists){_stopCountdown();_hideWarningBar();_showGate({schoolName:schoolSettings.name},'Access not configured for this school. Please contact the administrator.');_startRenewalPoll(schoolId);return;}
+    const d=snap.data(),now=new Date(),newExp=d.subscriptionExpiry?.toDate?.()||null;
+    if(d.status==='suspended'){_stopCountdown();_hideWarningBar();_showGate(d,'Your account has been suspended. Contact the administrator to reactivate.');_startRenewalPoll(schoolId);return;}
+    if(!newExp&&d.message?.trim()){_stopCountdown();_hideWarningBar();_showGate(d,d.message);_startRenewalPoll(schoolId);return;}
+    if(!newExp){_hideGate();return;}
+    if(newExp<=now){_clearPayTimers();_stopCountdown();_hideWarningBar();const msg=d.message?.trim()||'Your subscription has expired. Please renew to continue.';_showGate(d,msg);_startExpiredCountdown(newExp);_startRenewalPoll(schoolId);return;}
+    if(_lastExpiry&&newExp>_lastExpiry){_clearPayTimers();_lastExpiry=newExp;_showRenewalBanner();_hideGate();_startCountdown(newExp);_scheduleExpiryCheck(schoolId,newExp);return;}
+    _lastExpiry=newExp;_hideGate();_startCountdown(newExp);_scheduleExpiryCheck(schoolId,newExp);
+  },()=>{_stopCountdown();_hideWarningBar();_showGate({schoolName:schoolSettings.name},'Unable to verify subscription. Please check your connection and refresh.');});
 }
-
-function _showGate(d, message) {
-  const sn = el('_povSchoolName');
-  if (sn) sn.textContent = d?.schoolName || schoolSettings.name || '—';
-  const mg = el('_povMsg');
-  if (mg && message) mg.textContent = message;
-  const ov = el('_payOverlay');
-  if (ov && !ov.classList.contains('show')) ov.classList.add('show');
-}
-
-function _hideGate() {
-  const ov = el('_payOverlay');
-  if (ov && ov.classList.contains('show')) {
-    ov.classList.remove('show');
-    toast('✅ Access restored — subscription active');
-  }
-  if (_payExpiryTimer) { clearTimeout(_payExpiryTimer); _payExpiryTimer = null; }
-  if (_payPollTimer)   { clearInterval(_payPollTimer);  _payPollTimer   = null; }
-  const cd = el('_expiryCountdown');
-  if (cd) { cd.classList.remove('show'); cd.textContent = ''; }
-}
-
-function _clearPayTimers() {
-  if (_payExpiryTimer) { clearTimeout(_payExpiryTimer);  _payExpiryTimer = null; }
-  if (_payPollTimer)   { clearInterval(_payPollTimer);   _payPollTimer   = null; }
-  if (_payCountdown)   { clearInterval(_payCountdown);   _payCountdown   = null; }
-}
-
-function _scheduleExpiryCheck(schoolId, expiresAt) {
-  if (_payExpiryTimer) { clearTimeout(_payExpiryTimer); _payExpiryTimer = null; }
-  const ms = expiresAt - new Date();
-  if (ms <= 0) return;
-  _payExpiryTimer = setTimeout(() => {
-    db.collection('approvedSchools').doc(schoolId).get().then(snap => {
-      if (!snap.exists) {
-        _stopCountdown(); _hideWarningBar();
-        _showGate({ schoolName: schoolSettings.name }, 'Access not configured. Please contact the administrator.');
-        _startRenewalPoll(schoolId);
-        return;
-      }
-      const d = snap.data(), exp = d.subscriptionExpiry?.toDate?.();
-      if (!exp || exp <= new Date()) {
-        _stopCountdown(); _hideWarningBar();
-        _showGate(d, d.message?.trim() || 'Your subscription has expired. Please renew to continue.');
-        if (exp) _startExpiredCountdown(exp);
-        _startRenewalPoll(schoolId);
-      }
-    }).catch(() => {});
-  }, ms + 500);
-}
-
-function _startRenewalPoll(schoolId) {
-  if (_payPollTimer) return;
-  _payPollTimer = setInterval(async () => {
-    try {
-      const snap = await db.collection('approvedSchools').doc(schoolId).get();
-      if (!snap.exists) return;
-      const d = snap.data(), exp = d.subscriptionExpiry?.toDate?.();
-      if (exp && exp > new Date() && d.status !== 'suspended') {
-        _clearPayTimers();
-        _lastExpiry = exp;
-        _renewalShown = false;
-        _showRenewalBanner();
-        _hideGate();
-        _startCountdown(exp);
-        _scheduleExpiryCheck(schoolId, exp);
-      }
-    } catch(_) {}
-  }, 30000);
-}
-
-function _startCountdown(expiresAt) {
-  _stopCountdown();
-  function tick() {
-    const ms = expiresAt - new Date();
-    if (ms <= 0) {
-      _stopCountdown(); _hideWarningBar();
-      if (_analysisSchoolId) {
-        db.collection('approvedSchools').doc(_analysisSchoolId).get().then(snap => {
-          if (!snap.exists) return;
-          const d = snap.data(), exp = d.subscriptionExpiry?.toDate?.();
-          if (!exp || exp <= new Date()) {
-            _showGate(d, d.message?.trim() || 'Your subscription has expired. Please renew to continue.');
-            if (exp) _startExpiredCountdown(exp);
-            _startRenewalPoll(_analysisSchoolId);
-          }
-        }).catch(() => {});
-      }
-      return;
-    }
-    const days = ms / 86400000, hours = ms / 3600000;
-    if (days > WARN_DAYS) { _hideWarningBar(); return; }
-    let timerStr;
-    if (hours < 24) {
-      const h = Math.floor(ms/3600000), m = Math.floor((ms%3600000)/60000), s = Math.floor((ms%60000)/1000);
-      timerStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    } else {
-      timerStr = `${Math.floor(days)}d ${Math.floor((ms%86400000)/3600000)}h`;
-    }
-    _showWarningBar(timerStr, hours < 24);
-  }
-  tick();
-  _payCountdown = setInterval(tick, 1000);
-}
-function _stopCountdown() { if (_payCountdown) { clearInterval(_payCountdown); _payCountdown = null; } }
-
-function _startExpiredCountdown(expiredAt) {
-  const cd = el('_expiryCountdown');
-  if (!cd) return;
-  function render() {
-    const msAgo = new Date() - expiredAt;
-    if (msAgo < 0) { cd.classList.remove('show'); return; }
-    const days = Math.floor(msAgo/86400000);
-    const hours = Math.floor((msAgo%86400000)/3600000);
-    const mins  = Math.floor((msAgo%3600000)/60000);
-    let agoStr;
-    if (days > 0)       agoStr = `${days} day${days>1?'s':''} ${hours}h ago`;
-    else if (hours > 0) agoStr = `${hours}h ${mins}m ago`;
-    else                agoStr = `${mins} minute${mins!==1?'s':''} ago`;
-    cd.innerHTML = `Subscription expired <strong>${agoStr}</strong>`;
-    cd.classList.add('show');
-  }
-  render();
-  setInterval(render, 60_000);
-}
-
-function _showWarningBar(timerStr, urgent) {
-  const b = el('_subBar'); if (!b) return;
-  const t = el('_subBarTimer'); if (t) t.textContent = timerStr;
-  b.className = urgent ? '_subbar-show _subbar-urgent' : '_subbar-show _subbar-warn';
-}
-function _hideWarningBar() { const b = el('_subBar'); if (b) b.className = ''; }
-
-function _showRenewalBanner() {
-  if (_renewalShown) return;
-  _renewalShown = true;
-  const b = el('_renewalBanner'); if (!b) return;
-  b.style.display = 'block'; b.style.opacity = '1'; b.style.transition = '';
-  setTimeout(() => { b.style.opacity = '0'; b.style.transition = 'opacity .6s'; }, 2500);
-  setTimeout(() => { b.style.display = 'none'; b.style.opacity = ''; b.style.transition = ''; _renewalShown = false; }, 3200);
-}
+function _showGate(d,message){const sn=el('_povSchoolName');if(sn)sn.textContent=d?.schoolName||schoolSettings.name||'—';const mg=el('_povMsg');if(mg&&message)mg.textContent=message;const ov=el('_payOverlay');if(ov&&!ov.classList.contains('show'))ov.classList.add('show');}
+function _hideGate(){const ov=el('_payOverlay');if(ov&&ov.classList.contains('show')){ov.classList.remove('show');toast('✅ Access restored — subscription active');}if(_payExpiryTimer){clearTimeout(_payExpiryTimer);_payExpiryTimer=null;}if(_payPollTimer){clearInterval(_payPollTimer);_payPollTimer=null;}const cd=el('_expiryCountdown');if(cd){cd.classList.remove('show');cd.textContent='';}}
+function _clearPayTimers(){if(_payExpiryTimer){clearTimeout(_payExpiryTimer);_payExpiryTimer=null;}if(_payPollTimer){clearInterval(_payPollTimer);_payPollTimer=null;}if(_payCountdown){clearInterval(_payCountdown);_payCountdown=null;}}
+function _scheduleExpiryCheck(schoolId,expiresAt){if(_payExpiryTimer){clearTimeout(_payExpiryTimer);_payExpiryTimer=null;}const ms=expiresAt-new Date();if(ms<=0)return;_payExpiryTimer=setTimeout(()=>{db.collection('approvedSchools').doc(schoolId).get().then(snap=>{if(!snap.exists){_stopCountdown();_hideWarningBar();_showGate({schoolName:schoolSettings.name},'Access not configured. Please contact the administrator.');_startRenewalPoll(schoolId);return;}const d=snap.data(),exp=d.subscriptionExpiry?.toDate?.();if(!exp||exp<=new Date()){_stopCountdown();_hideWarningBar();_showGate(d,d.message?.trim()||'Your subscription has expired. Please renew to continue.');if(exp)_startExpiredCountdown(exp);_startRenewalPoll(schoolId);}}).catch(()=>{});},ms+500);}
+function _startRenewalPoll(schoolId){if(_payPollTimer)return;_payPollTimer=setInterval(async()=>{try{const snap=await db.collection('approvedSchools').doc(schoolId).get();if(!snap.exists)return;const d=snap.data(),exp=d.subscriptionExpiry?.toDate?.();if(exp&&exp>new Date()&&d.status!=='suspended'){_clearPayTimers();_lastExpiry=exp;_renewalShown=false;_showRenewalBanner();_hideGate();_startCountdown(exp);_scheduleExpiryCheck(schoolId,exp);}}catch(_){}},30000);}
+function _startCountdown(expiresAt){_stopCountdown();function tick(){const ms=expiresAt-new Date();if(ms<=0){_stopCountdown();_hideWarningBar();if(_analysisSchoolId){db.collection('approvedSchools').doc(_analysisSchoolId).get().then(snap=>{if(!snap.exists)return;const d=snap.data(),exp=d.subscriptionExpiry?.toDate?.();if(!exp||exp<=new Date()){_showGate(d,d.message?.trim()||'Your subscription has expired. Please renew to continue.');if(exp)_startExpiredCountdown(exp);_startRenewalPoll(_analysisSchoolId);}}).catch(()=>{});}return;}const days=ms/86400000,hours=ms/3600000;if(days>WARN_DAYS){_hideWarningBar();return;}let timerStr;if(hours<24){const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);timerStr=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}else{timerStr=`${Math.floor(days)}d ${Math.floor((ms%86400000)/3600000)}h`;}_showWarningBar(timerStr,hours<24);}tick();_payCountdown=setInterval(tick,1000);}
+function _stopCountdown(){if(_payCountdown){clearInterval(_payCountdown);_payCountdown=null;}}
+function _startExpiredCountdown(expiredAt){const cd=el('_expiryCountdown');if(!cd)return;function render(){const msAgo=new Date()-expiredAt;if(msAgo<0){cd.classList.remove('show');return;}const days=Math.floor(msAgo/86400000),hours=Math.floor((msAgo%86400000)/3600000),mins=Math.floor((msAgo%3600000)/60000);let agoStr;if(days>0)agoStr=`${days} day${days>1?'s':''} ${hours}h ago`;else if(hours>0)agoStr=`${hours}h ${mins}m ago`;else agoStr=`${mins} minute${mins!==1?'s':''} ago`;cd.innerHTML=`Subscription expired <strong>${agoStr}</strong>`;cd.classList.add('show');}render();setInterval(render,60_000);}
+function _showWarningBar(timerStr,urgent){const b=el('_subBar');if(!b)return;const t=el('_subBarTimer');if(t)t.textContent=timerStr;b.className=urgent?'_subbar-show _subbar-urgent':'_subbar-show _subbar-warn';}
+function _hideWarningBar(){const b=el('_subBar');if(b)b.className='';}
+function _showRenewalBanner(){if(_renewalShown)return;_renewalShown=true;const b=el('_renewalBanner');if(!b)return;b.style.display='block';b.style.opacity='1';b.style.transition='';setTimeout(()=>{b.style.opacity='0';b.style.transition='opacity .6s';},2500);setTimeout(()=>{b.style.display='none';b.style.opacity='';b.style.transition='';_renewalShown=false;},3200);}
 
 // ── Subject config ──
 const SUBS_BY_GROUP = {
   '1-3': [
-    {id:'math', label:'Mathematical Activities', icon:'🔢'},
-    {id:'eng',  label:'English',                 icon:'📖'},
-    {id:'kis',  label:'Kiswahili',               icon:'🗣️'},
-    {id:'int',  label:'Integrated Activities',   icon:'🌈'},
-    {id:'crt',  label:'Creative Activities',     icon:'🎨'},
+    {id:'math',label:'Mathematical Activities',icon:'🔢'},
+    {id:'eng', label:'English',                icon:'📖'},
+    {id:'kis', label:'Kiswahili',              icon:'🗣️'},
+    {id:'int', label:'Integrated Activities',  icon:'🌈'},
+    {id:'crt', label:'Creative Activities',    icon:'🎨'},
   ],
   '4-6': [
-    {id:'math',label:'Mathematics',               icon:'🔢'},
-    {id:'eng', label:'English',                   icon:'📖',parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
-    {id:'kis', label:'Kiswahili',                 icon:'🗣️',parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
-    {id:'sci', label:'Science and Technology',    icon:'🔬'},
-    {id:'re',  label:'CRE',                       icon:'✝️'},
-    {id:'soc', label:'Social Studies',            icon:'🌍'},
-    {id:'arts',label:'Creative Art and Sport',    icon:'🎨'},
-    {id:'agri',label:'Agriculture and Nutrition', icon:'🌱'},
+    {id:'math',label:'Mathematics',              icon:'🔢'},
+    {id:'eng', label:'English',                  icon:'📖',parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
+    {id:'kis', label:'Kiswahili',                icon:'🗣️',parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
+    {id:'sci', label:'Science and Technology',   icon:'🔬'},
+    {id:'re',  label:'CRE',                      icon:'✝️'},
+    {id:'soc', label:'Social Studies',           icon:'🌍'},
+    {id:'arts',label:'Creative Art and Sport',   icon:'🎨'},
+    {id:'agri',label:'Agriculture and Nutrition',icon:'🌱'},
   ],
   '7-9': [
-    {id:'eng', label:'English',                  icon:'📖',parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
-    {id:'kis', label:'Kiswahili/KSL',            icon:'🗣️',parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
-    {id:'math',label:'Mathematics',              icon:'🔢'},
-    {id:'sci', label:'Integrated Science',       icon:'🔬'},
-    {id:'soc', label:'Social Studies',           icon:'🌍'},
-    {id:'re',  label:'Religious Ed.',            icon:'✝️'},
-    {id:'arts',label:'Creative Arts & Sports',   icon:'🎨'},
-    {id:'pret',label:'Pre-Technical',            icon:'🔧'},
-    {id:'agri',label:'Agriculture & Nutrition',  icon:'🌱'},
+    {id:'eng', label:'English',                 icon:'📖',parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
+    {id:'kis', label:'Kiswahili/KSL',           icon:'🗣️',parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
+    {id:'math',label:'Mathematics',             icon:'🔢'},
+    {id:'sci', label:'Integrated Science',      icon:'🔬'},
+    {id:'soc', label:'Social Studies',          icon:'🌍'},
+    {id:'re',  label:'Religious Ed.',           icon:'✝️'},
+    {id:'arts',label:'Creative Arts & Sports',  icon:'🎨'},
+    {id:'pret',label:'Pre-Technical',           icon:'🔧'},
+    {id:'agri',label:'Agriculture & Nutrition', icon:'🌱'},
   ],
 };
 function getSubsForGrade(grade) {
@@ -769,59 +590,45 @@ function toast(msg, type='ok') {
 
 let allResults = [], allStudents = [], currentStudent = null;
 
-// ── URL params from admin quick-launch ──
-_authReady.then(() => {
-  const p = new URLSearchParams(window.location.search);
-  const grade = p.get('grade'), stream = p.get('stream'),
-        term  = p.get('term'),  year   = p.get('year');
-  if (grade) el('selGrade').value = grade;
-  if (term)  el('selTerm').value  = term;
-  if (year)  el('selYear').value  = year;
-  if (grade) SUBS = getSubsForGrade(grade);
-  if (grade && stream) {
-    const ss = el('selStream'), sw = el('streamWrap');
-    ss.innerHTML = `<option value="${stream}">${stream}</option>`;
-    ss.disabled = false;
-    if (sw) sw.style.display = 'flex';
-    ss.value = stream;
-    gradeHasStreams = true;
-    loadAnalysis();
-  } else if (grade) {
-    onGradeChange();
-  }
-});
-
 // ══════════════════════════════════════════════════════════════════
 //  GRADE → STREAMS
+//
+//  Strategy:
+//  1. If streamsEnabled=false (school has no streams at all) → load immediately, no stream UI
+//  2. If streamsEnabled=true → check Firestore for actual stream values in this grade
+//     a. No streams found for this grade → gradeHasStreams=false, load immediately
+//     b. Streams found → gradeHasStreams=true, show picker and WAIT for selection
 // ══════════════════════════════════════════════════════════════════
 window.onGradeChange = async function() {
   const grade = el('selGrade').value;
   const ss = el('selStream'), sw = el('streamWrap');
+  gradeHasStreams = false;
   SUBS = getSubsForGrade(grade);
 
   if (!grade) {
-    gradeHasStreams = false;
     ss.innerHTML = '<option value="">-- Stream --</option>';
-    ss.disabled = true;
-    if (sw) sw.style.display = streamsEnabled ? 'flex' : 'none';
+    if (sw) sw.style.display = 'none';
     return;
   }
 
+  // School has no streams at all → skip picker, load directly
   if (!streamsEnabled) {
-    gradeHasStreams = false;
     if (sw) sw.style.display = 'none';
+    ss.value = '';
     loadAnalysis();
     return;
   }
 
+  // School has streams — check whether this grade actually has any
+  if (sw) sw.style.display = 'flex';
   ss.disabled = true;
   ss.innerHTML = '<option value="">Loading…</option>';
-  if (sw) sw.style.display = 'flex';
 
   try {
     const schoolId = await _getSchoolId();
     let arr = [];
 
+    // Check localStorage cache first (written by marksheet/admission pages)
     try {
       const raw = localStorage.getItem('cbe_streams');
       const ts  = localStorage.getItem('cbe_streams_ts');
@@ -831,6 +638,7 @@ window.onGradeChange = async function() {
       }
     } catch(_) {}
 
+    // Always also query live to catch new streams
     const snap = await db.collection('students')
       .where('grade','==',grade)
       .where('schoolId','==',schoolId)
@@ -839,6 +647,7 @@ window.onGradeChange = async function() {
     snap.forEach(d => { const s = d.data(); if (s.stream?.trim()) set.add(s.stream.trim()); });
     arr = [...set].sort();
 
+    // Update cache
     try {
       const raw = localStorage.getItem('cbe_streams');
       const map = raw ? JSON.parse(raw) : {};
@@ -848,95 +657,125 @@ window.onGradeChange = async function() {
     } catch(_) {}
 
     if (!arr.length) {
+      // School uses streams globally but this grade has none assigned
       gradeHasStreams = false;
       if (sw) sw.style.display = 'none';
       ss.innerHTML = '<option value=""></option>';
       ss.value = '';
       ss.disabled = true;
-      loadAnalysis();
+      loadAnalysis(); // load without stream filter
       return;
     }
 
+    // Grade has streams — show picker and wait for selection
     gradeHasStreams = true;
     if (sw) sw.style.display = 'flex';
     ss.innerHTML = '<option value="">-- Stream --</option>' +
       arr.map(s => `<option>${s}</option>`).join('');
     ss.disabled = false;
 
+    // Auto-select if only one stream
     if (arr.length === 1) { ss.value = arr[0]; loadAnalysis(); }
 
   } catch(e) {
     gradeHasStreams = false;
-    ss.innerHTML = '<option value="">-- Stream --</option>';
-    ss.disabled = false;
+    if (sw) sw.style.display = 'none';
+    ss.innerHTML = '<option value=""></option>';
+    ss.disabled = true;
     toast('Failed to load streams: ' + e.message, 'err');
+    loadAnalysis(); // still try to load without stream filter
   }
 };
 
 // ══════════════════════════════════════════════════════════════════
 //  LOAD ANALYSIS
+//
+//  THE KEY FIX — Firestore query strategy:
+//
+//  The marksheet page saves results with:
+//    stream = currentStream  (when grade has streams)
+//    stream = ''             (when grade has NO streams — explicitly empty string)
+//
+//  So the analysis query MUST match exactly:
+//    - Grade WITH streams, stream selected → where('stream','==', selectedStream)
+//    - Grade WITHOUT streams              → NO stream filter at all on Firestore
+//                                           (catches both '' and missing field)
+//
+//  Then we do a client-side reconcile: only keep results whose studentId
+//  exists in the loaded student list for this grade. This is the safety net
+//  that prevents cross-stream contamination regardless of what's in Firestore.
 // ══════════════════════════════════════════════════════════════════
 window.loadAnalysis = async function() {
   const grade  = el('selGrade').value;
-  const stream = el('selStream').value;
+  const stream = gradeHasStreams ? (el('selStream').value || '') : '';
   const term   = el('selTerm').value;
   const year   = el('selYear').value;
 
   if (!grade) return;
   SUBS = getSubsForGrade(grade);
 
-  // Block if grade has streams but none selected yet
-  if (streamsEnabled && gradeHasStreams && !stream) return;
+  // If this grade has streams but user hasn't selected one yet — wait
+  if (gradeHasStreams && !stream) return;
 
-  el('mainContent').innerHTML = `<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading analysis…</div></div>`;
+  el('mainContent').innerHTML = `<div class="empty-msg"><div style="display:inline-flex;align-items:center;gap:9px;color:var(--text3)"><div class="spin"></div>Loading analysis for ${grade}${stream?' '+stream:''}…</div></div>`;
 
   try {
     const schoolId = await _getSchoolId();
 
+    // ── 1. Fetch students for this grade (+ stream filter if applicable) ──
     let stuQuery = db.collection('students')
       .where('grade','==',grade)
       .where('schoolId','==',schoolId);
 
+    // Only filter students by stream when grade actually has streams
+    if (gradeHasStreams && stream) {
+      stuQuery = stuQuery.where('stream','==',stream);
+    }
+
+    // ── 2. Fetch results — NEVER filter by stream in Firestore for no-stream grades ──
+    // Reason: marksheet may have saved with stream='', stream=undefined, or no stream field.
+    // Any Firestore stream filter risks missing records. We reconcile client-side instead.
     let resQuery = db.collection('results')
       .where('grade','==',grade)
       .where('term','==',term)
       .where('year','==',year)
       .where('schoolId','==',schoolId);
 
-    // Mirror marksheet's save strategy exactly:
-    // - Grade WITH streams + stream selected → filter by stream
-    // - Grade WITHOUT streams → filter stream=='' (marksheet saved with stream='')
-    // - Grade with streams, no stream chosen → no filter (all streams, client filters)
-    if (streamsEnabled && gradeHasStreams && stream) {
+    // ONLY add stream filter when the grade genuinely has streams AND user selected one.
+    // For no-stream grades: fetch ALL results for grade+term+year, then reconcile by studentId.
+    if (gradeHasStreams && stream) {
       resQuery = resQuery.where('stream','==',stream);
-    } else if (!streamsEnabled || !gradeHasStreams) {
-      resQuery = resQuery.where('stream','==','');
     }
 
     const [stuSnap, resSnap] = await Promise.all([stuQuery.get(), resQuery.get()]);
 
     allStudents = [];
     stuSnap.forEach(d => allStudents.push({id:d.id,...d.data()}));
-
-    if (streamsEnabled && gradeHasStreams && stream) {
-      allStudents = allStudents.filter(s => (s.stream||'').trim() === stream);
-    } else if (!streamsEnabled || !gradeHasStreams) {
-      const unstreamed = allStudents.filter(s => !(s.stream||'').trim());
-      allStudents = unstreamed.length ? unstreamed : allStudents;
-    }
-
     allStudents.sort((a,b) => (a.name||'').localeCompare(b.name||''));
 
-    allResults = [];
-    resSnap.forEach(d => allResults.push({id:d.id,...d.data()}));
-
-    // Always reconcile against visible students to prevent cross-stream bleed
+    // ── 3. Collect ALL results then reconcile against visible student IDs ──
+    // This is the definitive filter — avoids ANY dependency on the stream field value in results.
     const visibleIds = new Set(allStudents.map(s => s.id));
-    allResults = allResults.filter(r => visibleIds.has(r.studentId));
 
-    renderAnalysis(grade, (streamsEnabled && gradeHasStreams) ? stream : '', term, year);
+    allResults = [];
+    resSnap.forEach(d => {
+      const r = {id:d.id,...d.data()};
+      // Only include results that belong to a student in our visible list
+      if (visibleIds.has(r.studentId)) allResults.push(r);
+    });
+
+    console.log(`[Analysis] Grade:${grade} Stream:${stream||'none'} | Students:${allStudents.length} Results:${allResults.length}`);
+
+    if (!allStudents.length) {
+      const loc = stream ? `${grade} ${stream}` : grade;
+      el('mainContent').innerHTML = `<div class="empty-msg"><div class="ei">👥</div><p>No students found in <strong>${loc}</strong>. Add students via the Admission page first.</p></div>`;
+      return;
+    }
+
+    renderAnalysis(grade, stream, term, year);
 
   } catch(e) {
+    console.error('[Analysis] Load failed:', e);
     el('mainContent').innerHTML = `<div class="empty-msg"><div class="ei">❌</div><p>${e.message}</p></div>`;
   }
 };
@@ -971,7 +810,7 @@ function renderAnalysis(grade, stream, term, year) {
   const classLabel = stream ? `${grade} ${stream}` : grade;
 
   if (!scored.length) {
-    el('mainContent').innerHTML = `<div class="empty-msg"><div class="ei">📭</div><p>No results saved yet for <strong>${classLabel} – ${term} ${year}</strong></p></div>`;
+    el('mainContent').innerHTML = `<div class="empty-msg"><div class="ei">📭</div><p>No results saved yet for <strong>${classLabel} – ${term} ${year}</strong>.<br><span style="font-size:11.5px">Enter marks in the Mark Sheet page first, then click Save.</span></p></div>`;
     return;
   }
 
@@ -1181,7 +1020,7 @@ window.openStudent = function(sid) {
       <div class="print-meta-box"><div class="print-meta-lbl">Term / Year</div><div class="print-meta-val">${rec.term} / ${rec.year}</div></div>
       <div class="print-meta-box" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #93c5fd">
         <div class="print-meta-lbl" style="color:#1e40af">Class Position</div>
-        <div class="print-meta-val" style="color:#1e40af;font-size:18px">${rank} <span style="font-size:11px;font-weight:600;color:#3b82f6">of ${totalEnrolled} students</span></div>
+        <div class="print-meta-val" style="color:#1e40af;font-size:18px">${rank} <span style="font-size:11px;font-weight:600;color:#3b82f6">of ${totalEnrolled}</span></div>
       </div>
     </div>
     <div class="print-section">
@@ -1192,7 +1031,7 @@ window.openStudent = function(sid) {
 
   SUBS.forEach(sub => {
     const sc = getSubjectScore(rec,sub), oof = getSubjectOof(rec,sub);
-    if (sc===null && !SUBS.find(x=>x.id===sub.id&&x.parts)) {
+    if (sc===null && !sub.parts) {
       body += `<tr><td>${sub.icon} ${sub.label}</td>`;
       if (SUBS.some(s=>s.parts)) body += `<td colspan="2" style="text-align:center;color:#9aaabb">—</td>`;
       body += `<td colspan="4" style="text-align:center;color:#9aaabb">No data</td></tr>`;
@@ -1277,23 +1116,19 @@ Needs improvement in: ${weak || 'N/A'}
 Write ONE remark of 2-3 sentences. Use CBC language (Exceeding/Meeting/Approaching/Below Expectation). Address the student by first name. Do not use bullet points. Do not add a heading. Output the remark only.`
       })
     });
-
     const data = await response.json();
     if (data.error) throw new Error(data.error);
     const text = data.text?.trim() || '';
     if (!text) throw new Error('No remark returned from server');
-
     out.style.color = 'var(--text)';
     out.textContent = text;
     textarea.value = text;
     btn.innerHTML = '🔄 Regenerate';
     toast('AI remark generated!', 'ok');
-
   } catch (err) {
     out.innerHTML = `<span style="color:#dc2626;font-size:11.5px">Error: ${err.message}. Check connection and try again.</span>`;
     btn.innerHTML = '✨ Retry';
   }
-
   btn.disabled = false;
 };
 
@@ -1334,9 +1169,7 @@ function confirmPrintAll() {
     </div>
     ${noResults>0?`<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:var(--r2);padding:9px 12px;font-size:12px;color:#92400e;margin-bottom:12px">⚠️ ${noResults} enrolled student${noResults>1?'s':''} have no marks saved — they will be skipped.</div>`:''}
     <div style="font-size:12px;color:var(--text2);line-height:1.7;border-top:1px solid var(--border);padding-top:12px">
-      Reports will be sorted by <strong>class position (rank)</strong>.<br>
-      Each report includes: subject scores, overall %, CBC level, class position, class comparison and signature lines.<br>
-      Each student gets their own page.
+      Reports sorted by <strong>class position (rank)</strong>. Each student gets their own page.
     </div>`;
   el('printAllModal').classList.add('open');
 }
@@ -1349,7 +1182,6 @@ async function printAllReports() {
 
   const {ranked, resMap} = pd;
   const total = ranked.length;
-
   toast(`Generating AI remarks for ${total} students…`, 'info');
 
   const progressDiv = document.createElement('div');
@@ -1363,8 +1195,7 @@ async function printAllReports() {
         <div id="_progressBar" style="height:100%;width:0%;background:#1a56db;border-radius:4px;transition:width .3s ease"></div>
       </div>
       <div id="_progressCount" style="font-size:11px;color:#9aaabb">0 of ${total}</div>
-    </div>
-  `;
+    </div>`;
   document.body.appendChild(progressDiv);
 
   const updateProgress = (i, name) => {
@@ -1382,14 +1213,10 @@ async function printAllReports() {
     const s = ranked[i];
     const rec = resMap[s.id];
     if (!rec || !Number(rec.overallAvg)) continue;
-
     updateProgress(i, s.name);
-
-    const avg = Number(rec.overallAvg).toFixed(1);
-    const lv = getLevel(Number(avg));
+    const avg = Number(rec.overallAvg).toFixed(1), lv = getLevel(Number(avg));
     const firstName = s.name.split(' ')[0];
     const rank = i + 1;
-
     const subScores = SUBS.map(sub => {
       const sc = getSubjectScore(rec, sub), oof = getSubjectOof(rec, sub);
       if (sc === null) return null;
@@ -1397,7 +1224,6 @@ async function printAllReports() {
     }).filter(Boolean).sort((a, b) => b.pct - a.pct);
     const best = subScores.slice(0, 2).map(x => x.label).join(' and ');
     const weak = subScores.slice(-2).map(x => x.label).join(' and ');
-
     try {
       const response = await fetch('https://instasend-backend.onrender.com/api/ai-remark', {
         method: 'POST',
@@ -1419,7 +1245,6 @@ Write ONE remark of 2-3 sentences. Use CBC language (Exceeding/Meeting/Approachi
       console.warn(`Remark failed for ${s.name}:`, err.message);
       remarks[s.id] = '';
     }
-
     await new Promise(r => setTimeout(r, 300));
   }
 
@@ -1436,7 +1261,6 @@ Write ONE remark of 2-3 sentences. Use CBC language (Exceeding/Meeting/Approachi
     allHtml += buildStudentPrintHtml(s, rec, avg, lv, i + 1, allStudents.length, pd, remark);
     if (i < ranked.length - 1) allHtml += '<div style="page-break-after:always;break-after:page"></div>';
   });
-
   triggerPrint(`<div id="all-reports">${allHtml}</div>`);
   toast(`✅ ${total} reports ready — opening print preview…`, 'ok');
 }

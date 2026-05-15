@@ -943,15 +943,33 @@ function onClick(e){e.preventDefault();grecaptcha.enterprise.ready(async()=>{awa
   async function loadReviews(){
     try{
       const snap = await db2.collection(COLL)
-        .where('approved','==',true)
         .orderBy('createdAt','desc')
+        .limit(200)
         .get();
-      _allDocs = snap.docs.map(d=>({id:d.id,...d.data()}));
+      _allDocs = snap.docs
+        .map(d=>({id:d.id,...d.data()}))
+        .filter(d=>d.approved!==false);
       _shown = PAGE;
       renderSummary();
       renderCards();
     }catch(e){
-      document.getElementById('testiGrid').innerHTML=`<div class="testi-empty">Could not load reviews. Try refreshing.</div>`;
+      // Fallback: index may not exist yet — fetch without orderBy
+      try{
+        const snap2 = await db2.collection(COLL).get();
+        _allDocs = snap2.docs
+          .map(d=>({id:d.id,...d.data()}))
+          .filter(d=>d.approved!==false)
+          .sort((a,b)=>{
+            const ta = a.createdAt?.toDate?.()?.getTime()||0;
+            const tb = b.createdAt?.toDate?.()?.getTime()||0;
+            return tb-ta;
+          });
+        _shown = PAGE;
+        renderSummary();
+        renderCards();
+      }catch(e2){
+        document.getElementById('testiGrid').innerHTML='<div class="testi-empty">No reviews yet — be the first! ☝️</div>';
+      }
     }
   }
 

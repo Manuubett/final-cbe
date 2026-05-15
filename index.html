@@ -712,6 +712,9 @@ footer{background:var(--ink);color:rgba(255,255,255,.5);padding:52px 36px 30px}
     </div>
 
     <!-- Reviews grid -->
+    <div id="testiFilterNote" style="display:none;font-size:11.5px;color:var(--ink3);margin-bottom:12px;text-align:right">
+      Showing top-rated reviews &nbsp;·&nbsp; <span id="testiTotalCount"></span> total submitted
+    </div>
     <div class="testi-grid" id="testiGrid">
       <div class="testi-empty">⏳ Loading reviews…</div>
     </div>
@@ -895,9 +898,10 @@ function onClick(e){e.preventDefault();grecaptcha.enterprise.ready(async()=>{awa
 (function(){
   const db2 = firebase.firestore();
   const COLL = 'testimonials';
-  const PAGE = 6;
+  const PAGE = 3;
   let _star = 0;
-  let _allDocs = [];
+  let _allDocs = [];     // all approved reviews (for stats)
+  let _displayDocs = []; // quality-filtered reviews (for cards)
   let _shown = PAGE;
 
   // ── Star picker ──
@@ -942,34 +946,36 @@ function onClick(e){e.preventDefault();grecaptcha.enterprise.ready(async()=>{awa
   // ── Load ──
   async function loadReviews(){
     try{
-      const snap = await db2.collection(COLL)
-        .orderBy('createdAt','desc')
-        .limit(200)
-        .get();
-      _allDocs = snap.docs
+      const snap = await db2.collection(COLL).get();
+      const all = snap.docs
         .map(d=>({id:d.id,...d.data()}))
-        .filter(d=>d.approved!==false);
+        .filter(d=>d.approved!==false)
+        .sort((a,b)=>{
+          const ta=a.createdAt?.toDate?.()?.getTime()||0;
+          const tb=b.createdAt?.toDate?.()?.getTime()||0;
+          return tb-ta;
+        });
+
+      // All approved → honest summary stats
+      _allDocs = all;
+
+      // Quality gate: 4+ stars, 30+ char review, sorted 5★ first then newest, capped at 9
+      _displayDocs = all
+        .filter(d=>(d.rating||0)>=4 && (d.text||'').trim().length>=30)
+        .sort((a,b)=>{
+          if((b.rating||0)!==(a.rating||0)) return (b.rating||0)-(a.rating||0);
+          const ta=a.createdAt?.toDate?.()?.getTime()||0;
+          const tb=b.createdAt?.toDate?.()?.getTime()||0;
+          return tb-ta;
+        })
+        .slice(0,9);
+
       _shown = PAGE;
       renderSummary();
       renderCards();
     }catch(e){
-      // Fallback: index may not exist yet — fetch without orderBy
-      try{
-        const snap2 = await db2.collection(COLL).get();
-        _allDocs = snap2.docs
-          .map(d=>({id:d.id,...d.data()}))
-          .filter(d=>d.approved!==false)
-          .sort((a,b)=>{
-            const ta = a.createdAt?.toDate?.()?.getTime()||0;
-            const tb = b.createdAt?.toDate?.()?.getTime()||0;
-            return tb-ta;
-          });
-        _shown = PAGE;
-        renderSummary();
-        renderCards();
-      }catch(e2){
-        document.getElementById('testiGrid').innerHTML='<div class="testi-empty">No reviews yet — be the first! ☝️</div>';
-      }
+      document.getElementById('testiGrid').innerHTML='<div class="testi-empty">No reviews yet — be the first! ☝️</div>';
+      console.warn('Reviews load error:',e.message);
     }
   }
 
@@ -995,10 +1001,18 @@ function onClick(e){e.preventDefault();grecaptcha.enterprise.ready(async()=>{awa
     }
     document.getElementById('ratingBars').innerHTML=barsHtml;
     document.getElementById('testiSummary').style.display='flex';
+
+    // Show filter note if we're hiding some reviews
+    const note = document.getElementById('testiFilterNote');
+    const countEl = document.getElementById('testiTotalCount');
+    if(note && countEl && docs.length > 0){
+      note.style.display = 'block';
+      countEl.textContent = docs.length + ' review'+(docs.length!==1?'s':'');
+    }
   }
 
   function renderCards(){
-    const slice = _allDocs.slice(0, _shown);
+    const slice = _displayDocs.slice(0, _shown);
     if(!slice.length){
       document.getElementById('testiGrid').innerHTML='<div class="testi-empty">No reviews yet — be the first! ☝️</div>';
       document.getElementById('loadMoreWrap').style.display='none';
@@ -1024,11 +1038,11 @@ function onClick(e){e.preventDefault();grecaptcha.enterprise.ready(async()=>{awa
         </div>
       </div>`;
     }).join('');
-    document.getElementById('loadMoreWrap').style.display = _allDocs.length > _shown ? 'flex' : 'none';
+    document.getElementById('loadMoreWrap').style.display = _displayDocs.length > _shown ? 'flex' : 'none';
   }
 
   window.loadMoreReviews = function(){
-    _shown += PAGE;
+    _shown = Math.min(_shown + PAGE, 9); // never exceed 9 on landing
     renderCards();
   };
 

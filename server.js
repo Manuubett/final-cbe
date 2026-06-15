@@ -232,16 +232,18 @@ app.post('/api/stk-push', async (req, res) => {
 // }
 app.get('/api/test-at', async (req, res) => {
   try {
-    const response = await axios.get(
-      'https://api.africastalking.com/version1/user',
-      {
-        headers: {
-          apiKey: 'atsk_6a1d3ef8b82cf338dda4a4f04479c49bc7fe4680c0d80c540c2314fec770c72dd61c413a',
-          Accept: 'application/json'
-        },
-        validateStatus: () => true
-      }
-    );
+   const response = await axios.get(
+  'https://api.africastalking.com/version1/user',
+  {
+    params: {
+      username: 'sandbox'
+    },
+    headers: {
+      apiKey: 'atsk_...',
+      Accept: 'application/json'
+    }
+  }
+);
 
     res.status(response.status).json(response.data);
 
@@ -252,12 +254,16 @@ app.get('/api/test-at', async (req, res) => {
 // ── SMS proxy (Africa's Talking) ──────────────────────────────────────────
 app.post('/api/sms/send', async (req, res) => {
   const { apiKey, username, to, message, from } = req.body;
+console.log("Username:", JSON.stringify(username));
+console.log("API Key Length:", apiKey?.length);
 
-  console.log({
-    username,
-    apiKeyPresent: !!apiKey,
-    apiKeyLength: apiKey?.length
-  });
+const params = new URLSearchParams({
+  username: username?.trim(),
+  to,
+  message
+});
+
+console.log("BODY:", params.toString());
 
   try {
     const params = new URLSearchParams({

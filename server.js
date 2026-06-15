@@ -269,6 +269,8 @@ app.post('/api/sms/send', async (req, res) => {
   } catch(err) {
     console.error(err.response?.data || err.message);
     return res.status(500).json(err.response?.data || {error:err.message});
+    console.log("Username:", JSON.stringify(username));
+console.log("API Key:", JSON.stringify(apiKey));
   }
 });
 app.post('/api/webhook', async (req, res) => {

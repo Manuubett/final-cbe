@@ -232,18 +232,28 @@ app.post('/api/stk-push', async (req, res) => {
 // }
 app.get('/api/test-at', async (req, res) => {
   try {
-   const response = await axios.get(
-  'https://api.africastalking.com/version1/user',
-  {
-    params: {
-      username: 'sandbox'
-    },
-    headers: {
-      apiKey: 'atsk_...',
-      Accept: 'application/json'
-    }
+app.get('/api/test-at', async (req, res) => {
+  try {
+    const response = await axios.get(
+      'https://api.africastalking.com/version1/user',
+      {
+        params: {
+          username: 'sandbox'
+        },
+        headers: {
+          apiKey: 'atsk_ee77e12f7363be4efff2fed5278e4572e66423a4be59689635e848f50aa28382d49c2942',
+          Accept: 'application/json'
+        },
+        validateStatus: () => true
+      }
+    );
+
+    res.status(response.status).json(response.data);
+
+  } catch (err) {
+    res.status(500).json(err.message);
   }
-);
+});
 
     res.status(response.status).json(response.data);
 

@@ -229,7 +229,26 @@ app.post('/api/stk-push', async (req, res) => {
 //     Amount: 1,
 //     customer: { mobile_number: "254..." }
 //   }
-// }  
+// }
+app.get('/api/test-at', async (req, res) => {
+  try {
+    const response = await axios.get(
+      'https://api.africastalking.com/version1/user',
+      {
+        headers: {
+          apiKey: 'atsk_6a1d3ef8b82cf338dda4a4f04479c49bc7fe4680c0d80c540c2314fec770c72dd61c413a',
+          Accept: 'application/json'
+        },
+        validateStatus: () => true
+      }
+    );
+
+    res.status(response.status).json(response.data);
+
+  } catch (err) {
+    res.status(500).json(err.message);
+  }
+});
 // ── SMS proxy (Africa's Talking) ──────────────────────────────────────────
 app.post('/api/sms/send', async (req, res) => {
   const { apiKey, username, to, message, from } = req.body;

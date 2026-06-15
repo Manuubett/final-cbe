@@ -229,7 +229,38 @@ app.post('/api/stk-push', async (req, res) => {
 //     Amount: 1,
 //     customer: { mobile_number: "254..." }
 //   }
-// }
+// }  
+// ── SMS proxy (Africa's Talking) ──────────────────────────────────────────
+app.post('/api/sms/send', async (req, res) => {
+  const { apiKey, username, to, message, from } = req.body;
+
+  if (!apiKey || !username || !to || !message) {
+    return res.status(400).json({ success: false, message: 'apiKey, username, to, message are required' });
+  }
+
+  try {
+    const params = new URLSearchParams({ username, to, message });
+    if (from) params.append('from', from);
+
+    const response = await axios.post(
+      'https://api.africastalking.com/version1/messaging',
+      params.toString(),
+      {
+        headers: {
+          apiKey,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
+        validateStatus: () => true,
+      }
+    );
+
+    res.status(response.status).json(response.data);
+  } catch (err) {
+    console.error('[SMS] Error:', err.response?.data || err.message);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
 app.post('/api/webhook', async (req, res) => {
   res.json({ received: true });
   try {

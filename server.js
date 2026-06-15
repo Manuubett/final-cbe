@@ -234,12 +234,19 @@ app.post('/api/stk-push', async (req, res) => {
 app.post('/api/sms/send', async (req, res) => {
   const { apiKey, username, to, message, from } = req.body;
 
-  if (!apiKey || !username || !to || !message) {
-    return res.status(400).json({ success: false, message: 'apiKey, username, to, message are required' });
-  }
+  console.log({
+    username,
+    apiKeyPresent: !!apiKey,
+    apiKeyLength: apiKey?.length
+  });
 
   try {
-    const params = new URLSearchParams({ username, to, message });
+    const params = new URLSearchParams({
+      username,
+      to,
+      message
+    });
+
     if (from) params.append('from', from);
 
     const response = await axios.post(
@@ -248,17 +255,20 @@ app.post('/api/sms/send', async (req, res) => {
       {
         headers: {
           apiKey,
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json',
+          'Content-Type':'application/x-www-form-urlencoded'
         },
-        validateStatus: () => true,
+        validateStatus:()=>true
       }
     );
 
-    res.status(response.status).json(response.data);
-  } catch (err) {
-    console.error('[SMS] Error:', err.response?.data || err.message);
-    res.status(500).json({ success: false, message: err.message });
+    console.log("AT STATUS:", response.status);
+    console.log("AT DATA:", response.data);
+
+    return res.status(response.status).json(response.data);
+
+  } catch(err) {
+    console.error(err.response?.data || err.message);
+    return res.status(500).json(err.response?.data || {error:err.message});
   }
 });
 app.post('/api/webhook', async (req, res) => {

@@ -241,17 +241,20 @@ app.get('/api/test-at', async (req, res) => {
           username: 'sandbox'
         },
         headers: {
-          apiKey: 'atsk_ee77e12f7363be4efff2fed5278e4572e66423a4be59689635e848f50aa28382d49c2942',
+          apiKey: 'atsk_6a1d3ef8b82cf338dda4a4f04479c49bc7fe4680c0d80c540c2314fec770c72dd61c413a',
           Accept: 'application/json'
         },
         validateStatus: () => true
       }
     );
 
-    res.status(response.status).json(response.data);
+    return res.status(response.status).json(response.data);
 
   } catch (err) {
-    res.status(500).json(err.message);
+    console.error(err.response?.data || err.message);
+    return res.status(500).json({
+      error: err.response?.data || err.message
+    });
   }
 });
 

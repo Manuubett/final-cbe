@@ -231,6 +231,45 @@ app.post('/api/stk-push', async (req, res) => {
 //   }
 // }
 // ── Test AT credentials ───────────────────────────────────────────────────────
+app.post('/api/sms/send', async (req, res) => {
+  const { apiKey, username, to, message, from } = req.body;
+
+  console.log('Username:', JSON.stringify(username));
+  console.log('API Key Length:', apiKey?.length);
+
+  if (!apiKey || !username || !to || !message) {
+    return res.status(400).json({ error: 'apiKey, username, to and message are all required' });
+  }
+
+  try {
+    const params = new URLSearchParams({ username: username.trim(), to, message });
+    if (from) params.append('from', from);
+
+    console.log('BODY:', params.toString());
+
+    const response = await axios.post(
+      'https://api.africastalking.com/version1/messaging',
+      params.toString(),
+      {
+        headers: {
+          apiKey,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Accept: 'application/json',
+        },
+        validateStatus: () => true,
+      }
+    );
+
+    console.log('AT STATUS:', response.status);
+    console.log('AT DATA:',   response.data);
+
+    return res.status(response.status).json(response.data);
+
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    return res.status(500).json(err.response?.data || { error: err.message });
+  }
+});
 app.get('/api/test-at', async (req, res) => {
   try {
     const response = await axios.get(

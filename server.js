@@ -414,7 +414,7 @@ app.post('/api/sms/send-school', async (req, res) => {
 app.post('/api/sms/send-bulk-school', async (req, res) => {
   if (!db) return res.status(503).json({ error: 'Firebase not configured' });
 
-  const { schoolId, recipients, requestId } = req.body;
+  const { schoolId, recipients, requestId, type } = req.body;
   if (!schoolId)              return res.status(400).json({ error: 'schoolId required' });
   if (!Array.isArray(recipients) || recipients.length === 0) {
     return res.status(400).json({ error: 'recipients array required' });
@@ -450,7 +450,7 @@ app.post('/api/sms/send-bulk-school', async (req, res) => {
   const canSend  = recipients.slice(0, maxSend);
   const willSkip = recipients.slice(maxSend);
 
-  console.log(`[Bulk SMS] schoolId:${schoolId} balance:${balance} sending:${canSend.length} skipping:${willSkip.length}`);
+  console.log(`[Bulk SMS][${type || 'results'}] schoolId:${schoolId} balance:${balance} sending:${canSend.length} skipping:${willSkip.length}`);
 
   // ── Send loop ────────────────────────────────────────────────
   const results = [];
@@ -512,6 +512,7 @@ app.post('/api/sms/send-bulk-school', async (req, res) => {
           cost:      wasAccepted ? SMS_COST_PER_MSG : 0,
           messageId: recipient?.messageId || '',
           meta:      r.meta || {},
+          type:      type || 'results',
           sentAt:    new Date().toISOString(),
         });
       } catch (_) {}

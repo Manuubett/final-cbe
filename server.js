@@ -465,6 +465,20 @@ app.post('/api/sms/send-bulk-school', async (req, res) => {
       const wasAccepted = atStatus.includes('success') || atStatus.includes('sent') ||
                           atStatus.includes('queued')   || atStatus.includes('submitted');
 
+      // Per-recipient diagnostic log — without this, a "failed" entry in the
+      // UI gives no clue why AT rejected it (wrong sender ID, AT account out
+      // of credit, invalid number, blacklisted, etc.) and you'd have to dig
+      // through Firestore smsLogs to find out.
+      console.log(
+        `[Bulk SMS] to:${r.to} httpStatus:${response.status} ` +
+        `atStatus:${recipient?.status || 'none'} ` +
+        `cost:${recipient?.cost || '-'} messageId:${recipient?.messageId || '-'} ` +
+        `→ ${wasAccepted ? 'ACCEPTED' : 'REJECTED'}`
+      );
+      if (!wasAccepted) {
+        console.log(`[Bulk SMS] Full AT response for ${r.to}:`, JSON.stringify(response.data));
+      }
+
       if (wasAccepted) {
         try { await deductWallet(schoolId, SMS_COST_PER_MSG); } catch (_) {}
       }
@@ -494,6 +508,7 @@ app.post('/api/sms/send-bulk-school', async (req, res) => {
       await new Promise(r => setTimeout(r, 120));
 
     } catch (err) {
+      console.log(`[Bulk SMS] to:${r.to} → THREW: ${err.message}`);
       results.push({ to: r.to, status: 'error', reason: err.message, meta: r.meta || {} });
     }
   }

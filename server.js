@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
 const axios   = require('axios');
-const path    = require('path');
 const admin   = require('firebase-admin');
 
 // ── Firebase init ────────────────────────────────────────────────────────────
@@ -45,6 +44,25 @@ async function sendTelegram(text) {
   } catch (err) {
     console.error('[Telegram] Failed:', err.response?.data || err.message);
   }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  REQUEST DEDUPE GUARD — protects against double-submits / races
+//  (in-memory; fine for a single Render instance. If this service
+//   ever runs on multiple instances/dynos, swap this for a
+//   Firestore- or Redis-backed check instead.)
+// ════════════════════════════════════════════════════════════════
+const _recentRequests  = new Map(); // dedupeKey -> timestamp
+const DEDUPE_WINDOW_MS = 30_000;    // ignore exact repeats within 30s
+
+function isDuplicateRequest(key) {
+  const now = Date.now();
+  for (const [k, ts] of _recentRequests) {
+    if (now - ts > DEDUPE_WINDOW_MS) _recentRequests.delete(k);
+  }
+  if (_recentRequests.has(key)) return true;
+  _recentRequests.set(key, now);
+  return false;
 }
 
 // ── App setup ────────────────────────────────────────────────────────────────
@@ -164,18 +182,27 @@ app.get('/api/wallet/balance/:schoolId', async (req, res) => {
 
 /**
  * POST /api/wallet/topup
- * Body: { schoolId, amount, phone }
+ * Body: { schoolId, amount, phone, requestId? }
  * Triggers STK push. On webhook confirm → wallet is credited.
  */
 app.post('/api/wallet/topup', async (req, res) => {
   if (!db) return res.status(503).json({ error: 'Firebase not configured' });
-  const { schoolId, amount, phone } = req.body;
+  const { schoolId, amount, phone, requestId } = req.body;
 
   if (!schoolId) return res.status(400).json({ error: 'schoolId required' });
   if (!amount || isNaN(amount) || Number(amount) < 10) {
     return res.status(400).json({ error: 'Minimum top-up is KES 10' });
   }
   if (!phone) return res.status(400).json({ error: 'phone required' });
+
+  // Guard against double STK pushes (double-click, accidental resubmit, etc.)
+  const dedupeKey = `topup:${requestId || `${schoolId}:${amount}:${phone}`}`;
+  if (isDuplicateRequest(dedupeKey)) {
+    return res.status(409).json({
+      error:   'DUPLICATE_REQUEST',
+      message: 'A top-up for this amount/phone was already initiated moments ago — check your M-Pesa messages before retrying.',
+    });
+  }
 
   if (!API_KEY || !USER_EMAIL || !MERCHANT_CODE) {
     return res.status(500).json({ error: 'Payment gateway not configured on server' });
@@ -251,7 +278,7 @@ app.get('/api/wallet/topup-status/:txRef', async (req, res) => {
 
 /**
  * POST /api/sms/send-school
- * Body: { schoolId, to, message, from? }
+ * Body: { schoolId, to, message, from?, requestId? }
  *
  * 1. Checks school wallet has enough balance
  * 2. Sends SMS via YOUR AT account
@@ -261,11 +288,20 @@ app.get('/api/wallet/topup-status/:txRef', async (req, res) => {
 app.post('/api/sms/send-school', async (req, res) => {
   if (!db) return res.status(503).json({ error: 'Firebase not configured' });
 
-  const { schoolId, to, message, from } = req.body;
+  const { schoolId, to, message, from, requestId } = req.body;
 
   if (!schoolId) return res.status(400).json({ error: 'schoolId required' });
   if (!to)       return res.status(400).json({ error: 'to (phone) required' });
   if (!message)  return res.status(400).json({ error: 'message required' });
+
+  // Guard against the same SMS being submitted twice in quick succession
+  const dedupeKey = `single:${requestId || `${schoolId}:${to}:${message}`}`;
+  if (isDuplicateRequest(dedupeKey)) {
+    return res.status(409).json({
+      error:   'DUPLICATE_REQUEST',
+      message: 'This SMS was already submitted moments ago — ignoring the repeat.',
+    });
+  }
 
   if (!AT_API_KEY || !AT_USERNAME) {
     return res.status(500).json({ error: 'Central AT credentials not configured on server (set AT_API_KEY, AT_USERNAME)' });
@@ -358,7 +394,7 @@ app.post('/api/sms/send-school', async (req, res) => {
 
 /**
  * POST /api/sms/send-bulk-school
- * Body: { schoolId, recipients: [{to, message, from?}] }
+ * Body: { schoolId, recipients: [{to, message, from?}], requestId? }
  *
  * Checks balance covers ALL recipients upfront.
  * Sends one by one, deducting per success.
@@ -366,11 +402,23 @@ app.post('/api/sms/send-school', async (req, res) => {
 app.post('/api/sms/send-bulk-school', async (req, res) => {
   if (!db) return res.status(503).json({ error: 'Firebase not configured' });
 
-  const { schoolId, recipients } = req.body;
+  const { schoolId, recipients, requestId } = req.body;
   if (!schoolId)              return res.status(400).json({ error: 'schoolId required' });
   if (!Array.isArray(recipients) || recipients.length === 0) {
     return res.status(400).json({ error: 'recipients array required' });
   }
+
+  // Guard against the same batch being submitted twice in quick succession
+  // (double-click, two tabs, slow network causing a client-side retry, etc.)
+  const dedupeKey = `bulk:${requestId || `${schoolId}:${JSON.stringify(recipients)}`}`;
+  if (isDuplicateRequest(dedupeKey)) {
+    console.warn(`[Bulk SMS] Ignored duplicate batch — schoolId:${schoolId} recipients:${recipients.length}`);
+    return res.status(409).json({
+      error:   'DUPLICATE_REQUEST',
+      message: 'This batch was already submitted moments ago — ignoring the repeat to avoid double-sending and double-charging.',
+    });
+  }
+
   if (!AT_API_KEY || !AT_USERNAME) {
     return res.status(500).json({ error: 'Central AT credentials not configured' });
   }
@@ -751,11 +799,19 @@ app.post('/api/notify', async (req, res) => {
   res.json({ success: true });
 });
 
-// ── Static + SPA catch-all ───────────────────────────────────────────────────
-app.use(express.static(path.join(__dirname, 'public')));
-app.get('*splat', (req, res, next) => {
-  if (req.path.startsWith('/api/')) return next();
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// ── Root + 404 ────────────────────────────────────────────────────────────────
+// This service has no bundled frontend, so there is nothing to serve for
+// non-API routes. Previously this fell through to express.static + a
+// sendFile('public/index.html') catch-all, which threw ENOENT on every
+// non-API hit (Render's own health pings, stray browser visits to "/",
+// favicon requests, etc.) because that file/folder was never built or
+// committed for this service.
+app.get('/', (req, res) => {
+  res.json({ ok: true, service: 'instasend-backend', ts: new Date().toISOString() });
+});
+
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found', path: req.path });
 });
 
 app.listen(PORT, () => {

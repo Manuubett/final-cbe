@@ -27,6 +27,18 @@ const AT_USERNAME = process.env.AT_USERNAME;
 if (!AT_API_KEY)  console.warn('⚠️  AT_API_KEY not set — central SMS will not work');
 if (!AT_USERNAME) console.warn('⚠️  AT_USERNAME not set — central SMS will not work');
 
+// Masked diagnostic — lets you confirm in Render's logs exactly what got
+// loaded (catches trailing newlines/spaces/quotes pasted into env vars,
+// or accidentally pointing at the wrong app's key) without leaking the
+// full secret. Compare username/length/prefix/suffix against the AT
+// dashboard for the "bett254" app.
+if (AT_API_KEY && AT_USERNAME) {
+  console.log(
+    `[AT Config] username:"${AT_USERNAME}" (len:${AT_USERNAME.length}) ` +
+    `apiKey:${AT_API_KEY.slice(0, 6)}…${AT_API_KEY.slice(-4)} (len:${AT_API_KEY.length})`
+  );
+}
+
 // ── SMS cost per message (KES) ───────────────────────────────────────────────
 const SMS_COST_PER_MSG = 1; // KES 1 per SMS, you pay ~0.80 → 0.20 margin
 

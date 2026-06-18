@@ -40,7 +40,7 @@ if (AT_API_KEY && AT_USERNAME) {
 }
 
 // ── SMS cost per message (KES) ───────────────────────────────────────────────
-const SMS_COST_PER_MSG = 1; // KES 1 per SMS, you pay ~0.80 → 0.20 margin
+const SMS_COST_PER_MSG = 1.20; // KES 1.20 per SMS
 
 // ── Telegram Notifier ────────────────────────────────────────────────────────
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;

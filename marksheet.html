@@ -1,4 +1,3 @@
-
 <!--
   CBE Mark Sheet System
   Copyright © 2026 Bett Emanuel — https://bett.website
@@ -32,15 +31,123 @@
   --be1-bg:#fecaca;--be1-tx:#991b1b;--be2-bg:#fca5a5;--be2-tx:#7f1d1d;
   --sh:0 1px 3px rgba(0,0,0,.05);--sh2:0 8px 24px rgba(0,0,0,.1);
   --r:10px;--r2:6px;
+  --drawer-w:280px;
+  --hdr-h:52px;
 }
-body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh}
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:var(--sh)}
-.logo{display:flex;align-items:center;gap:9px}
-.lm{width:30px;height:30px;background:var(--accent);border-radius:7px;display:grid;place-items:center;color:#fff;font-size:15px}
-.lt{font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;letter-spacing:-.3px}
-.ls{font-size:10px;color:var(--text3)}
-.hdr-r{display:flex;align-items:center;gap:7px}
-.toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;position:sticky;top:52px;z-index:190;box-shadow:var(--sh)}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;overflow-x:hidden}
+
+/* ── HEADER ─────────────────────────────────── */
+header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 16px;height:var(--hdr-h);display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:200;
+  box-shadow:var(--sh);gap:8px;
+}
+.logo{display:flex;align-items:center;gap:9px;min-width:0;flex:1}
+.lm{width:30px;height:30px;background:var(--accent);border-radius:7px;display:grid;place-items:center;color:#fff;font-size:15px;flex-shrink:0}
+.lt{font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ls{font-size:10px;color:var(--text3);white-space:nowrap}
+.hdr-r{display:flex;align-items:center;gap:7px;flex-shrink:0}
+
+/* hamburger */
+.ham-btn{
+  display:none;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:var(--r2);border:1.5px solid var(--border);
+  background:none;cursor:pointer;color:var(--text2);font-size:18px;
+  transition:all .14s;flex-shrink:0;
+}
+.ham-btn:hover{background:var(--bg);color:var(--text)}
+
+/* ── DRAWER OVERLAY ─────────────────────────── */
+.drawer-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:300;opacity:0;transition:opacity .25s;
+}
+.drawer-overlay.open{display:block;opacity:1}
+
+/* ── DRAWER PANEL ───────────────────────────── */
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:var(--drawer-w);
+  background:var(--surface);z-index:301;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;box-shadow:-8px 0 32px rgba(0,0,0,.15);
+  overflow-y:auto;
+}
+.drawer.open{transform:translateX(0)}
+
+.drawer-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.drawer-title{font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:800;letter-spacing:-.2px}
+.drawer-close{
+  width:30px;height:30px;border-radius:6px;border:1.5px solid var(--border);
+  background:none;cursor:pointer;font-size:16px;color:var(--text3);
+  display:flex;align-items:center;justify-content:center;transition:all .14s;
+}
+.drawer-close:hover{background:var(--bg);color:var(--text)}
+
+.drawer-user{
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  display:flex;flex-direction:column;gap:4px;
+}
+.drawer-user-name{font-weight:700;font-size:13px;color:var(--text)}
+.drawer-user-role{font-size:11px;color:var(--accent);font-weight:700;background:var(--alight);border:1px solid #c7d9ff;border-radius:20px;padding:2px 10px;display:inline-block;width:fit-content}
+
+.drawer-section-label{
+  font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;
+  color:var(--text3);padding:14px 16px 6px;
+}
+.drawer-nav{display:flex;flex-direction:column;gap:2px;padding:0 8px}
+.drawer-link{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border-radius:8px;font-size:13px;font-weight:600;color:var(--text2);
+  text-decoration:none;cursor:pointer;border:none;background:none;
+  width:100%;text-align:left;transition:all .14s;
+}
+.drawer-link:hover{background:var(--bg);color:var(--text)}
+.drawer-link.active{background:var(--alight);color:var(--accent)}
+.drawer-link .dl-icon{width:32px;height:32px;border-radius:7px;background:var(--surf2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.drawer-link.active .dl-icon{background:#dbeafe}
+.drawer-link .dl-text{display:flex;flex-direction:column;gap:1px}
+.drawer-link .dl-label{font-size:12.5px;font-weight:700}
+.drawer-link .dl-sub{font-size:10.5px;color:var(--text3);font-weight:500}
+
+.drawer-divider{height:1px;background:var(--border);margin:8px 16px}
+
+.drawer-theme-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;margin:0 8px;border-radius:8px;
+}
+.drawer-theme-row span{font-size:12.5px;font-weight:600;color:var(--text2)}
+.theme-toggle{
+  display:flex;align-items:center;gap:4px;padding:4px 10px;
+  border-radius:6px;border:1.5px solid var(--border);background:none;
+  font-size:12px;font-weight:700;cursor:pointer;color:var(--text2);
+  transition:all .14s;
+}
+.theme-toggle:hover{background:var(--bg)}
+
+.drawer-footer{
+  margin-top:auto;padding:12px 8px;border-top:1px solid var(--border);
+}
+.drawer-signout{
+  display:flex;align-items:center;gap:8px;width:100%;padding:10px 12px;
+  border-radius:8px;border:none;background:none;cursor:pointer;
+  font-size:12.5px;font-weight:700;color:#f87171;font-family:inherit;
+  transition:all .14s;
+}
+.drawer-signout:hover{background:#fef2f2}
+
+/* ── DESKTOP-only header controls (hidden on mobile) ── */
+.hdr-desktop{display:flex;align-items:center;gap:7px}
+
+/* ── TOOLBAR ────────────────────────────────── */
+.toolbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:8px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  position:sticky;top:var(--hdr-h);z-index:190;box-shadow:var(--sh);
+}
 .fsel{padding:5px 9px;border:1.5px solid var(--border);border-radius:var(--r2);font-family:inherit;font-size:12.5px;color:var(--text);background:var(--surface);cursor:pointer;outline:none;height:32px}
 .fsel:focus{border-color:var(--accent)}
 .btn{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:var(--r2);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:none;transition:all .14s;white-space:nowrap;height:32px}
@@ -56,19 +163,25 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .cat-tab.active-3{background:#fdf4ff;border-color:#d8b4fe;color:#7e22ce}
 .cat-tab:hover:not([class*="active"]){background:var(--bg)}
 .cat-tabs-wrap{display:flex;gap:4px;align-items:center}
-.legend{padding:5px 20px;background:var(--surf2);border-bottom:1px solid var(--border);display:flex;gap:5px;align-items:center;flex-wrap:wrap;font-size:10.5px}
+
+/* ── LEGEND ─────────────────────────────────── */
+.legend{padding:5px 16px;background:var(--surf2);border-bottom:1px solid var(--border);display:flex;gap:5px;align-items:center;flex-wrap:wrap;font-size:10.5px}
 .legend strong{color:var(--text2);font-weight:700;margin-right:3px}
 .lbadge{padding:1px 6px;border-radius:5px;font-size:10px;font-weight:700}
 .ee1{background:var(--ee1-bg);color:var(--ee1-tx)}.ee2{background:var(--ee2-bg);color:var(--ee2-tx)}
 .me1{background:var(--me1-bg);color:var(--me1-tx)}.me2{background:var(--me2-bg);color:var(--me2-tx)}
 .ae1{background:var(--ae1-bg);color:var(--ae1-tx)}.ae2{background:var(--ae2-bg);color:var(--ae2-tx)}
 .be1{background:var(--be1-bg);color:var(--be1-tx)}.be2{background:var(--be2-bg);color:var(--be2-tx)}
-.outer{padding:14px 20px}
+
+/* ── OUTER ──────────────────────────────────── */
+.outer{padding:14px 16px}
 .info-strip{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
 .sheet-title{font-family:'Familjen Grotesk',sans-serif;font-size:16px;font-weight:800}
 .pills{display:flex;gap:6px;flex-wrap:wrap}
 .pill{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:4px}
 .pill .pv{color:var(--text);font-weight:700}
+
+/* ── TABLE CARD ─────────────────────────────── */
 .sheet-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
 .tbl-scroll{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 220px)}
 table{border-collapse:collapse;width:max-content;min-width:100%}
@@ -132,6 +245,8 @@ tfoot td.cad{left:189px}
 .empty-msg .ei{font-size:36px;margin-bottom:10px}
 .spin{width:17px;height:17px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .65s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── TOAST ──────────────────────────────────── */
 #tc{position:fixed;top:62px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
 .t{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:var(--r2);font-size:12.5px;font-weight:500;box-shadow:var(--sh2);animation:tin .25s ease;min-width:210px}
 .t.ok{background:#064e3b;color:#ecfdf5;border-left:3px solid #10b981}
@@ -139,6 +254,8 @@ tfoot td.cad{left:189px}
 .t.info{background:#1e3a5f;color:#dbeafe;border-left:3px solid var(--accent)}
 @keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes tout{to{transform:translateX(110%);opacity:0}}
+
+/* ── DARK MODE ──────────────────────────────── */
 body.dark{--bg:#0c0f18;--surface:#141924;--surf2:#1a2030;--border:#252d42;--text:#e0e8f8;--text2:#7a90b8;--text3:#3d4f72;--alight:#172050}
 body.dark thead th{background:#0e1829;border-color:#1a2640;color:#7090c0}
 body.dark thead tr:nth-child(2) th{background:#111f38}
@@ -149,6 +266,11 @@ body.dark tbody tr:hover td{background:#1a2848 !important}
 body.dark .si:focus{background:#2a2000 !important}
 body.dark .tot-c{background:#1a2848}
 body.dark .pct-c{background:#161d2e}
+body.dark .drawer{box-shadow:-8px 0 32px rgba(0,0,0,.5)}
+body.dark .drawer-link:hover{background:var(--surf2)}
+body.dark .drawer-signout:hover{background:#450a0a}
+
+/* ── NET BAR ────────────────────────────────── */
 #netBar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:998;padding:8px 16px;font-size:12.5px;font-weight:700;text-align:center;transition:all .3s}
 #netBar.offline{display:block;background:#7f1d1d;color:#fef2f2}
 #netBar.saving{display:block;background:#1e3a5f;color:#dbeafe}
@@ -162,21 +284,100 @@ body.dark .pct-c{background:#161d2e}
 .si.over-limit{background:#fef2f2 !important;outline:2px solid #ef4444 !important;color:#dc2626 !important}
 body.dark .si.over-limit{background:#450a0a !important}
 #draftBadge{display:none;background:#fef3c7;border:1px solid #fcd34d;color:#92400e;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;cursor:pointer}
+
+/* ── RESPONSIVE ─────────────────────────────── */
 @media(max-width:768px){
-  .outer{padding:8px 8px}.toolbar{padding:6px 10px;gap:6px}
+  .ham-btn{display:flex}
+  .hdr-desktop{display:none}
+  #draftBadge{font-size:10px;padding:2px 8px}
+  .outer{padding:8px 8px}
+  .toolbar{padding:6px 10px;gap:6px}
   .si{height:38px !important;font-size:15px !important;min-width:44px}
   .oof{height:34px !important;font-size:13px !important}
   .sv-btn{padding:6px 12px !important;font-size:12px !important;min-height:34px}
   .tbl-scroll{max-height:calc(100vh - 160px)}
   #netBar{padding:10px 16px;font-size:13px}
+  .lt{font-size:13px}
+  .ls{display:none}
+  #tc{right:8px;left:8px}
+  #tc .t{min-width:unset}
 }
-@media print{header,.toolbar,.legend,#tc{display:none}.outer{padding:0}.tbl-scroll{max-height:none;overflow:visible}.sheet-card{box-shadow:none;border:none}}
+@media(min-width:769px){
+  .ham-btn{display:none}
+  .hdr-desktop{display:flex}
+}
+@media print{
+  header,.toolbar,.legend,#tc,.drawer,.drawer-overlay{display:none}
+  .outer{padding:0}
+  .tbl-scroll{max-height:none;overflow:visible}
+  .sheet-card{box-shadow:none;border:none}
+}
 </style>
 </head>
 <body>
 <div id="tc"></div>
 <div id="netBar"></div>
 
+<!-- ── DRAWER OVERLAY ──────────────────────── -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- ── DRAWER PANEL ────────────────────────── -->
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <span class="drawer-title">Menu</span>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+
+  <!-- User info (populated by JS) -->
+  <div class="drawer-user" id="drawerUser" style="display:none">
+    <div class="drawer-user-name" id="drawerUserName">—</div>
+    <div class="drawer-user-role" id="drawerUserRole">—</div>
+  </div>
+
+  <div class="drawer-section-label">Navigation</div>
+  <div class="drawer-nav">
+    <a class="drawer-link active" href="#" onclick="closeDrawer()">
+      <div class="dl-icon">📊</div>
+      <div class="dl-text">
+        <span class="dl-label">Mark Sheet</span>
+        <span class="dl-sub">Enter & save marks</span>
+      </div>
+    </a>
+    <a class="drawer-link" href="https://resource-hub.bett.website/" target="_blank" rel="noopener" onclick="closeDrawer()">
+      <div class="dl-icon">📚</div>
+      <div class="dl-text">
+        <span class="dl-label">Resource Hub</span>
+        <span class="dl-sub">Teaching materials & guides</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="drawer-divider"></div>
+  <div class="drawer-section-label">Preferences</div>
+
+  <!-- Draft badge in drawer -->
+  <div class="drawer-nav">
+    <div class="drawer-theme-row">
+      <span>🌙 Dark mode</span>
+      <button class="theme-toggle" id="drawerThemeBtn" onclick="toggleTheme()">Toggle</button>
+    </div>
+    <button class="drawer-link" onclick="openDraftFromDrawer()" id="drawerDraftBtn" style="display:none">
+      <div class="dl-icon">📋</div>
+      <div class="dl-text">
+        <span class="dl-label">Restore Draft</span>
+        <span class="dl-sub" id="drawerDraftSub">Unsaved local data</span>
+      </div>
+    </button>
+  </div>
+
+  <div class="drawer-footer">
+    <button class="drawer-signout" onclick="doLogout()">
+      🚪 Sign Out
+    </button>
+  </div>
+</div>
+
+<!-- ── HEADER ───────────────────────────────── -->
 <header>
   <div class="logo">
     <div class="lm" id="hdrLogo">📊</div>
@@ -186,14 +387,17 @@ body.dark .si.over-limit{background:#450a0a !important}
     </div>
   </div>
   <div class="hdr-r">
-    <div id="hdrUserInfo" style="display:none;align-items:center;gap:6px">
+    <!-- Desktop-only controls -->
+    <div class="hdr-desktop" id="hdrUserInfo" style="display:none">
       <span id="hdrUserName" style="font-size:11.5px;color:var(--text2);font-weight:700"></span>
       <span id="hdrUserClass" style="font-size:10.5px;background:var(--alight);color:var(--accent);border:1px solid #c7d9ff;padding:2px 8px;border-radius:20px;font-weight:700"></span>
     </div>
-    <span id="draftBadge" onclick="restoreDraft()">📋 Draft</span>
-    <button class="btn btn-outline btn-sm" id="themeBtn">🌙</button>
-    <a href="analysis" class="btn btn-outline btn-sm">📈 Analysis</a>
-    <button class="btn btn-outline btn-sm" onclick="doLogout()" style="color:#f87171;border-color:rgba(248,113,113,.3)">🚪 Sign Out</button>
+    <span id="draftBadge" onclick="restoreDraft()" class="hdr-desktop">📋 Draft</span>
+    <button class="btn btn-outline btn-sm hdr-desktop" id="themeBtn" onclick="toggleTheme()">🌙</button>
+    <a href="https://resource-hub.bett.website/" target="_blank" rel="noopener" class="btn btn-outline btn-sm hdr-desktop">📚 Resources</a>
+    <button onclick="doLogout()" class="btn btn-outline btn-sm hdr-desktop" style="color:#f87171;border-color:rgba(248,113,113,.3)">🚪 Sign Out</button>
+    <!-- Mobile hamburger -->
+    <button class="ham-btn" id="hamBtn" onclick="openDrawer()" aria-label="Open menu">☰</button>
   </div>
 </header>
 
@@ -225,7 +429,7 @@ body.dark .si.over-limit{background:#450a0a !important}
   <input type="number" class="fsel" id="selYear" value="2026" min="2020" max="2040" style="width:68px" onchange="loadStudents()">
   <div class="sep"></div>
   <button class="btn btn-success" onclick="saveAll()">💾 Save All</button>
-  <span style="margin-left:auto;font-size:10.5px;color:var(--text3)">
+  <span style="margin-left:auto;font-size:10.5px;color:var(--text3);display:none" class="hdr-desktop">
     ✏️ Edit <span style="color:#fbbf24;font-weight:700">Out Of</span> row to set max marks &nbsp;|&nbsp; ⌨️ Tab · Enter · Arrows
   </span>
 </div>
@@ -252,9 +456,6 @@ body.dark .si.over-limit{background:#450a0a !important}
   <input type="number" class="fsel" id="selYearT" value="2026" min="2020" max="2040" style="width:68px" onchange="loadStudents()">
   <div class="sep"></div>
   <button class="btn btn-success" onclick="saveAll()">💾 Save All</button>
-  <span style="margin-left:auto;font-size:10.5px;color:var(--text3)">
-    ✏️ Edit <span style="color:#fbbf24;font-weight:700">Out Of</span> row to set max marks &nbsp;|&nbsp; ⌨️ Tab · Enter · Arrows
-  </span>
 </div>
 
 <div class="legend">
@@ -291,11 +492,51 @@ body.dark .si.over-limit{background:#450a0a !important}
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="school-settings.js"></script>
 <script>
-// ── Single el() definition — DO NOT duplicate ──
+// ── Single el() definition ──
 const el = id => document.getElementById(id);
 
 // ══════════════════════════════════════════════
-// INLINE FALLBACKS — in case subjects.js fails to load
+// DRAWER
+// ══════════════════════════════════════════════
+function openDrawer(){
+  el('drawer').classList.add('open');
+  el('drawerOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeDrawer(){
+  el('drawer').classList.remove('open');
+  el('drawerOverlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+// Close on Escape key
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+// Swipe-to-close (right swipe)
+(function(){
+  let startX=0;
+  el('drawer').addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
+  el('drawer').addEventListener('touchend',e=>{if(e.changedTouches[0].clientX-startX>60)closeDrawer();},{passive:true});
+})();
+
+function openDraftFromDrawer(){closeDrawer();restoreDraft();}
+
+// ══════════════════════════════════════════════
+// THEME
+// ══════════════════════════════════════════════
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  const dark=document.body.classList.contains('dark');
+  el('themeBtn').textContent=dark?'☀️':'🌙';
+  el('drawerThemeBtn').textContent=dark?'☀️ Light':'🌙 Dark';
+  localStorage.setItem('cbe_theme',dark?'dark':'light');
+}
+if(localStorage.getItem('cbe_theme')==='dark'){
+  document.body.classList.add('dark');
+  el('themeBtn').textContent='☀️';
+  el('drawerThemeBtn').textContent='☀️ Light';
+}else{el('drawerThemeBtn').textContent='🌙 Dark';}
+
+// ══════════════════════════════════════════════
+// INLINE FALLBACKS
 // ══════════════════════════════════════════════
 if(typeof isSeniorGrade==='undefined'){
   window.isSeniorGrade=function(g){const n=parseInt((g||'').replace(/\D/g,''),10)||0;return n>=10&&n<=12;};
@@ -312,49 +553,20 @@ if(typeof getLevel==='undefined'){
   };
 }
 if(typeof getSubs==='undefined'){
-  const SL=[{id:'math',label:'Mathematical Activities',icon:'🔢',gc:'g-math',sc:'s-math'},{id:'eng',label:'English',icon:'📖',gc:'g-eng',sc:'s-eng'},{id:'kis',label:'Kiswahili',icon:'🗣️',gc:'g-kis',sc:'s-kis'},{id:'int',label:'Integrated Activities',icon:'🌈',gc:'g-sci',sc:'s-sci'},{id:'crt',label:'Creative Activities',icon:'🎨',gc:'g-arts',sc:'s-arts'}];
+  const SL=[{id:'math',label:'Mathematical Activities',icon:'🔢',gc:'g-math',sc:'s-math'},{id:'eng',label:'English',icon:'📖',gc:'g-eng',sc:'s-eng'},{id:'kis',label:'Kiswahili',icon:'🗣️',gc:'g-kis',sc:'s-kis'},{id:'int',label:'Integrated Activities',icon:'🌈',gc:'g-sci',sc:'s-sci'},{id:'crt',label:'Creative Activities',icon:'🎨',gc:'g-arts',sc:'s-arts'},{id:'cre',label:'CRE',icon:'✝️',gc:'g-re',sc:'s-re'}];
   const SU=[{id:'math',label:'Mathematics',icon:'🔢',gc:'g-math',sc:'s-math'},{id:'eng',label:'English',icon:'📖',gc:'g-eng',sc:'s-eng',parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},{id:'kis',label:'Kiswahili',icon:'🗣️',gc:'g-kis',sc:'s-kis',parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},{id:'sci',label:'Science and Technology',icon:'🔬',gc:'g-sci',sc:'s-sci'},{id:'re',label:'CRE',icon:'✝️',gc:'g-re',sc:'s-re'},{id:'soc',label:'Social Studies',icon:'🌍',gc:'g-soc',sc:'s-soc'},{id:'arts',label:'Creative Art and Sport',icon:'🎨',gc:'g-arts',sc:'s-arts'},{id:'agri',label:'Agriculture and Nutrition',icon:'🌱',gc:'g-agri',sc:'s-agri'}];
   const SJ=[{id:'eng',label:'English',icon:'📖',gc:'g-eng',sc:'s-eng',parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},{id:'kis',label:'Kiswahili/KSL',icon:'🗣️',gc:'g-kis',sc:'s-kis',parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},{id:'math',label:'Mathematics',icon:'🔢',gc:'g-math',sc:'s-math'},{id:'sci',label:'Integrated Science',icon:'🔬',gc:'g-sci',sc:'s-sci'},{id:'soc',label:'Social Studies',icon:'🌍',gc:'g-soc',sc:'s-soc'},{id:'re',label:'Religious Ed.',icon:'✝️',gc:'g-re',sc:'s-re'},{id:'arts',label:'Creative Arts & Sports',icon:'🎨',gc:'g-arts',sc:'s-arts'},{id:'pret',label:'Pre-Technical',icon:'🔧',gc:'g-pret',sc:'s-pret'},{id:'agri',label:'Agriculture & Nutrition',icon:'🌱',gc:'g-agri',sc:'s-agri'}];
   const SS=[{id:'eng',label:'English',icon:'📖',gc:'g-eng',sc:'s-eng',parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},{id:'kis',label:'Kiswahili/KSL',icon:'🗣️',gc:'g-kis',sc:'s-kis',parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},{id:'math',label:'Mathematics',icon:'🔢',gc:'g-math',sc:'s-math'},{id:'bio',label:'Biology',icon:'🧬',gc:'g-sci',sc:'s-sci'},{id:'chem',label:'Chemistry',icon:'🧪',gc:'g-sci',sc:'s-sci'},{id:'phy',label:'Physics',icon:'⚛️',gc:'g-sci',sc:'s-sci'},{id:'hist',label:'History & Citizenship',icon:'🏛️',gc:'g-soc',sc:'s-soc'},{id:'geo',label:'Geography',icon:'🌍',gc:'g-soc',sc:'s-soc'},{id:'biz',label:'Business Studies',icon:'💼',gc:'g-soc',sc:'s-soc'}];
   window.getSubs=function(g){const n=parseInt((g||'').replace(/\D/g,''),10)||0;if(n>=1&&n<=3)return SL;if(n>=4&&n<=6)return SU;if(n>=7&&n<=9)return SJ;if(n>=10&&n<=12)return SS;return SJ;};
 }
 if(typeof getAllSeniorSubs==='undefined'){
-  window.getAllSeniorSubs=function(){
-    return[
-      {id:'eng',label:'English',icon:'📖',gc:'g-eng',sc:'s-eng',parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},
-      {id:'kis',label:'Kiswahili/KSL',icon:'🗣️',gc:'g-kis',sc:'s-kis',parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},
-      {id:'math',label:'Mathematics',icon:'🔢',gc:'g-math',sc:'s-math'},
-      {id:'phy',label:'Physics',icon:'⚛️',gc:'g-sci',sc:'s-sci'},
-      {id:'chem',label:'Chemistry',icon:'🧪',gc:'g-sci',sc:'s-sci'},
-      {id:'bio',label:'Biology',icon:'🧬',gc:'g-sci',sc:'s-sci'},
-      {id:'hist',label:'History & Citizenship',icon:'🏛️',gc:'g-soc',sc:'s-soc'},
-      {id:'geo',label:'Geography',icon:'🌍',gc:'g-soc',sc:'s-soc'},
-      {id:'biz',label:'Business Studies',icon:'💼',gc:'g-soc',sc:'s-soc'},
-      {id:'cre',label:'CRE',icon:'✝️',gc:'g-re',sc:'s-re'},
-      {id:'ire',label:'IRE',icon:'☪️',gc:'g-re',sc:'s-re'},
-      {id:'music',label:'Music and Dance',icon:'🎵',gc:'g-arts',sc:'s-arts'},
-      {id:'farts',label:'Fine Arts',icon:'🎨',gc:'g-arts',sc:'s-arts'},
-      {id:'comp',label:'Computer Studies',icon:'🖥️',gc:'g-pret',sc:'s-pret'},
-      {id:'agri',label:'Agriculture',icon:'🌱',gc:'g-agri',sc:'s-agri'},
-      {id:'home',label:'Home Science',icon:'🏠',gc:'g-agri',sc:'s-agri'},
-      {id:'elec',label:'Electricity',icon:'⚡',gc:'g-pret',sc:'s-pret'},
-      {id:'bldg',label:'Building & Construction',icon:'🏗️',gc:'g-pret',sc:'s-pret'},
-      {id:'draw',label:'Drawing & Design',icon:'📏',gc:'g-pret',sc:'s-pret'},
-    ];
-  };
+  window.getAllSeniorSubs=function(){return[{id:'eng',label:'English',icon:'📖',gc:'g-eng',sc:'s-eng',parts:[{id:'lang',label:'Language'},{id:'comp',label:'Composition'}]},{id:'kis',label:'Kiswahili/KSL',icon:'🗣️',gc:'g-kis',sc:'s-kis',parts:[{id:'lugha',label:'Lugha'},{id:'insha',label:'Insha'}]},{id:'math',label:'Mathematics',icon:'🔢',gc:'g-math',sc:'s-math'},{id:'phy',label:'Physics',icon:'⚛️',gc:'g-sci',sc:'s-sci'},{id:'chem',label:'Chemistry',icon:'🧪',gc:'g-sci',sc:'s-sci'},{id:'bio',label:'Biology',icon:'🧬',gc:'g-sci',sc:'s-sci'},{id:'hist',label:'History & Citizenship',icon:'🏛️',gc:'g-soc',sc:'s-soc'},{id:'geo',label:'Geography',icon:'🌍',gc:'g-soc',sc:'s-soc'},{id:'biz',label:'Business Studies',icon:'💼',gc:'g-soc',sc:'s-soc'},{id:'cre',label:'CRE',icon:'✝️',gc:'g-re',sc:'s-re'},{id:'ire',label:'IRE',icon:'☪️',gc:'g-re',sc:'s-re'},{id:'music',label:'Music and Dance',icon:'🎵',gc:'g-arts',sc:'s-arts'},{id:'farts',label:'Fine Arts',icon:'🎨',gc:'g-arts',sc:'s-arts'},{id:'comp',label:'Computer Studies',icon:'🖥️',gc:'g-pret',sc:'s-pret'},{id:'agri',label:'Agriculture',icon:'🌱',gc:'g-agri',sc:'s-agri'},{id:'home',label:'Home Science',icon:'🏠',gc:'g-agri',sc:'s-agri'},{id:'elec',label:'Electricity',icon:'⚡',gc:'g-pret',sc:'s-pret'},{id:'bldg',label:'Building & Construction',icon:'🏗️',gc:'g-pret',sc:'s-pret'},{id:'draw',label:'Drawing & Design',icon:'📏',gc:'g-pret',sc:'s-pret'}];};
 }
 if(typeof getSeniorClassSubs==='undefined'){
-  window.getSeniorClassSubs=function(arr){
-    const seen=new Set();arr.forEach(s=>(s.subjects||[]).forEach(id=>seen.add(id)));
-    if(!seen.size)return getSubs('Grade 10');
-    return getAllSeniorSubs().filter(s=>seen.has(s.id));
-  };
+  window.getSeniorClassSubs=function(arr){const seen=new Set();arr.forEach(s=>(s.subjects||[]).forEach(id=>seen.add(id)));if(!seen.size)return getSubs('Grade 10');return getAllSeniorSubs().filter(s=>seen.has(s.id));};
 }
 if(typeof getStudentSubs==='undefined'){
-  window.getStudentSubs=function(ids){
-    if(!Array.isArray(ids)||!ids.length)return getSubs('Grade 10');
-    return getAllSeniorSubs().filter(s=>ids.includes(s.id));
-  };
+  window.getStudentSubs=function(ids){if(!Array.isArray(ids)||!ids.length)return getSubs('Grade 10');return getAllSeniorSubs().filter(s=>ids.includes(s.id));};
 }
 
 // ══════════════════════════════════════════════
@@ -461,11 +673,17 @@ async function initUser(fbUser){
       try{await loadStreamsEnabledSetting(currentUser.schoolId);}
       catch(_){_settingsReady=true;_settingsResolve();}
     }else{_settingsReady=true;_settingsResolve();}
+    // Populate drawer user info
+    const dUser=el('drawerUser');if(dUser)dUser.style.display='';
+    const dName=el('drawerUserName');if(dName)dName.textContent='👤 '+(currentUser.fullName||'Teacher');
+    const dRole=el('drawerUserRole');if(dRole)dRole.textContent=(currentUser.role||'admin').toUpperCase();
+    // Desktop header
     const infoEl=el('hdrUserInfo');if(infoEl)infoEl.style.display='flex';
     const nameEl=el('hdrUserName');if(nameEl)nameEl.textContent='👤 '+(currentUser.fullName||'Teacher');
     const classEl=el('hdrUserClass');
     if(currentUser.role==='teacher'){
       if(classEl)classEl.textContent=(currentUser.grade||'No grade')+(currentUser.stream?' · '+currentUser.stream:'');
+      if(dRole)dRole.textContent=(currentUser.grade||'Teacher')+(currentUser.stream?' · '+currentUser.stream:'');
       lockTeacherSelectors();
       loadStudents();
     }else{
@@ -511,19 +729,9 @@ function lockTeacherSelectors(){
 
 function _getClassSelectors(){
   if(currentUser?.role==='teacher'){
-    return{
-      grade:currentUser.grade||'',
-      stream:currentUser.stream||'',
-      term:el('selTermT')?.value||'Term 1',
-      year:el('selYearT')?.value||'2026'
-    };
+    return{grade:currentUser.grade||'',stream:currentUser.stream||'',term:el('selTermT')?.value||'Term 1',year:el('selYearT')?.value||'2026'};
   }
-  return{
-    grade:el('selGrade')?.value||'',
-    stream:el('selStream')?.value||'',
-    term:el('selTerm')?.value||'Term 1',
-    year:el('selYear')?.value||'2026'
-  };
+  return{grade:el('selGrade')?.value||'',stream:el('selStream')?.value||'',term:el('selTerm')?.value||'Term 1',year:el('selYear')?.value||'2026'};
 }
 
 auth.onAuthStateChanged(initUser);
@@ -653,7 +861,6 @@ function renderTable(){
     else h+=`<col style="width:56px">`;
   });
   h+=`<col style="width:60px"><col style="width:82px"><col style="width:36px"><col style="width:${isSenior?'110':'58'}px"></colgroup>`;
-  // Header row 1
   h+=`<thead><tr>
     <th class="cn" rowspan="3">#</th>
     <th class="cna" rowspan="3" style="text-align:left;padding:0 8px">Student</th>
@@ -664,14 +871,12 @@ function renderTable(){
   });
   h+=`<th colspan="3" class="g-ovr">Overall</th>
       <th class="g-ovr" rowspan="3" style="font-size:9px">${isSenior?'Subjects / Save':'Save'}</th></tr>`;
-  // Header row 2
   h+=`<tr>`;
   CLASS_SUBS.forEach(s=>{
     if(s.parts){s.parts.forEach(p=>h+=`<th class="${s.sc}">${p.label}</th>`);h+=`<th class="${s.sc}">Total</th>`;}
     else h+=`<th class="${s.sc}">Score</th>`;
   });
   h+=`<th class="s-ovr">Avg%</th><th class="s-ovr">Level</th><th class="s-ovr">Pts</th></tr>`;
-  // Header row 3: Out Of
   h+=`<tr class="out-of-row">`;
   CLASS_SUBS.forEach(s=>{
     if(s.parts){
@@ -686,7 +891,6 @@ function renderTable(){
     }
   });
   h+=`<th colspan="3" class="oof-label">Out Of ↑</th></tr></thead>`;
-  // Body
   h+=`<tbody>`;
   students.forEach((s,i)=>{
     const rec=savedMap[s.id],yes=!!rec;
@@ -732,7 +936,6 @@ function renderTable(){
     h+=`</tr>`;
   });
   h+=`</tbody>`;
-  // Footer
   h+=`<tfoot><tr><td colspan="3" class="lbl cn cna" style="left:0;min-width:269px">CLASS AVG</td>`;
   CLASS_SUBS.forEach(sub=>{
     if(sub.parts){sub.parts.forEach(p=>h+=`<td id="ca_${sub.id}_${p.id}"></td>`);h+=`<td id="ca_${sub.id}_tot"></td>`;}
@@ -752,9 +955,7 @@ function renderTable(){
 window.openAssignModal=function(sid){
   const s=students.find(x=>x.id===sid);if(!s)return;
   const current=Array.isArray(s.subjects)?s.subjects:[];
-  const groupLabels={'g-eng':'Languages','g-kis':'Kiswahili','g-math':'Mathematics',
-    'g-sci':'Sciences','g-soc':'Humanities & Social','g-re':'Religious Education',
-    'g-arts':'Creative & Performing Arts','g-pret':'Technical & Applied','g-agri':'Agriculture & Home Science'};
+  const groupLabels={'g-eng':'Languages','g-kis':'Kiswahili','g-math':'Mathematics','g-sci':'Sciences','g-soc':'Humanities & Social','g-re':'Religious Education','g-arts':'Creative & Performing Arts','g-pret':'Technical & Applied','g-agri':'Agriculture & Home Science'};
   const groups={};
   getAllSeniorSubs().forEach(sub=>{const g=sub.gc||'other';if(!groups[g])groups[g]=[];groups[g].push(sub);});
   let body=`<div style="max-height:60vh;overflow-y:auto;padding-right:4px">
@@ -807,7 +1008,7 @@ window.saveStudentSubs=async function(sid){
   if(!ids.length){toast('Select at least one subject','err');return;}
   const s=students.find(x=>x.id===sid);if(!s)return;
   try{
-    await db.collection('students').doc(sid).update({ subjects: ids });
+    await db.collection('students').doc(sid).update({subjects:ids});
     s.subjects=ids;
     toast(`Subjects saved for ${s.name} (${ids.length} subjects)`);
     closeAssignModal();_cacheInvalidate();renderTable();
@@ -941,7 +1142,7 @@ window.addEventListener('online',()=>{showNetBar('✅ Back online — syncing…
 function setDot(state){const dot=el('autoSaveDot');if(dot)dot.className='as-dot '+state;}
 
 // ══════════════════════════════════════════════
-// DRAFT — localStorage backup
+// DRAFT
 // ══════════════════════════════════════════════
 let _draftKey=null;
 function getDraftKey(){
@@ -959,7 +1160,14 @@ function draftSave(sid){
     localStorage.setItem(key,JSON.stringify(draft));
     const unsaved=Object.keys(draft).filter(id=>!savedMap[id]?.updatedAt);
     const badge=el('draftBadge');
-    if(badge&&unsaved.length>0){badge.style.display='inline-block';badge.textContent=`📋 Draft (${unsaved.length})`;}
+    const drawerBtn=el('drawerDraftBtn');
+    if(badge&&unsaved.length>0){
+      badge.style.display='inline-block';badge.textContent=`📋 Draft (${unsaved.length})`;
+    }
+    if(drawerBtn&&unsaved.length>0){
+      drawerBtn.style.display='flex';
+      const sub=el('drawerDraftSub');if(sub)sub.textContent=`${unsaved.length} unsaved row${unsaved.length>1?'s':''}`;
+    }
   }catch(_){}
 }
 function loadDraft(){
@@ -972,14 +1180,12 @@ function loadDraft(){
       if(draft[s.id]&&!savedMap[s.id]){
         const d=draft[s.id];
         SUBS.forEach(sub=>{
-          if(sub.parts){
-            sub.parts.forEach(p=>{const oi=el(`oof_${sub.id}_${p.id}`);if(oi&&d[`oof_${sub.id}_${p.id}`])oi.value=d[`oof_${sub.id}_${p.id}`];});
-          }else{const oi=el(`oof_${sub.id}`);if(oi&&d[`oof_${sub.id}`])oi.value=d[`oof_${sub.id}`];}
+          if(sub.parts){sub.parts.forEach(p=>{const oi=el(`oof_${sub.id}_${p.id}`);if(oi&&d[`oof_${sub.id}_${p.id}`])oi.value=d[`oof_${sub.id}_${p.id}`];});}
+          else{const oi=el(`oof_${sub.id}`);if(oi&&d[`oof_${sub.id}`])oi.value=d[`oof_${sub.id}`];}
         });
         SUBS.forEach(sub=>{
-          if(sub.parts){
-            sub.parts.forEach(p=>{const inp=el(`${sub.id}_${p.id}_${s.id}`);if(inp&&d[`${sub.id}_${p.id}`]!==undefined&&d[`${sub.id}_${p.id}`]!==0)inp.value=d[`${sub.id}_${p.id}`];});
-          }else{const inp=el(`${sub.id}_s_${s.id}`);if(inp&&d[`${sub.id}_score`]!==undefined&&d[`${sub.id}_score`]!==0)inp.value=d[`${sub.id}_score`];}
+          if(sub.parts){sub.parts.forEach(p=>{const inp=el(`${sub.id}_${p.id}_${s.id}`);if(inp&&d[`${sub.id}_${p.id}`]!==undefined&&d[`${sub.id}_${p.id}`]!==0)inp.value=d[`${sub.id}_${p.id}`];});}
+          else{const inp=el(`${sub.id}_s_${s.id}`);if(inp&&d[`${sub.id}_score`]!==undefined&&d[`${sub.id}_score`]!==0)inp.value=d[`${sub.id}_score`];}
         });
         calcRow(s.id);restored++;
       }
@@ -988,6 +1194,8 @@ function loadDraft(){
     if(restored>0){
       const badge=el('draftBadge');
       if(badge){badge.style.display='inline-block';badge.textContent=`📋 Draft (${restored})`;}
+      const drawerBtn=el('drawerDraftBtn');
+      if(drawerBtn){drawerBtn.style.display='flex';const sub=el('drawerDraftSub');if(sub)sub.textContent=`${restored} unsaved row${restored>1?'s':''}`;}
       toast(`📋 ${restored} unsaved draft${restored>1?'s':''} restored`,'info');
     }
   }catch(e){console.warn('Draft restore failed:',e.message);}
@@ -997,8 +1205,15 @@ function clearDraft(sid){
   try{
     const key=getDraftKey(),raw=localStorage.getItem(key);if(!raw)return;
     const draft=JSON.parse(raw);delete draft[sid];
-    if(Object.keys(draft).length===0){localStorage.removeItem(key);const badge=el('draftBadge');if(badge)badge.style.display='none';}
-    else{localStorage.setItem(key,JSON.stringify(draft));const badge=el('draftBadge');if(badge)badge.textContent=`📋 Draft (${Object.keys(draft).length})`;}
+    if(Object.keys(draft).length===0){
+      localStorage.removeItem(key);
+      const badge=el('draftBadge');if(badge)badge.style.display='none';
+      const drawerBtn=el('drawerDraftBtn');if(drawerBtn)drawerBtn.style.display='none';
+    }else{
+      localStorage.setItem(key,JSON.stringify(draft));
+      const badge=el('draftBadge');if(badge)badge.textContent=`📋 Draft (${Object.keys(draft).length})`;
+      const sub=el('drawerDraftSub');if(sub)sub.textContent=`${Object.keys(draft).length} unsaved rows`;
+    }
   }catch(_){}
 }
 
@@ -1078,12 +1293,8 @@ async function _saveRowSilent(sid){
   _cacheUpdateSave(ck,sid,savedMap[sid]);
   el(`tr-${sid}`)?.classList.add('saved');
   const actEl=el(`act_${sid}`);
-  if(actEl&&!window._isSenior){
-    actEl.innerHTML=`<span class="sv-done">✓</span>`;
-  }else if(actEl&&window._isSenior){
-    const dot=actEl.querySelector('span:last-child');
-    if(dot)dot.outerHTML=`<span class="sv-done" style="display:block;text-align:center">✓ saved</span>`;
-  }
+  if(actEl&&!window._isSenior){actEl.innerHTML=`<span class="sv-done">✓</span>`;}
+  else if(actEl&&window._isSenior){const dot=actEl.querySelector('span:last-child');if(dot)dot.outerHTML=`<span class="sv-done" style="display:block;text-align:center">✓ saved</span>`;}
   clearDraft(sid);_pendingSync.delete(sid);
 }
 async function syncPendingRows(){
@@ -1131,10 +1342,7 @@ window.saveRow=async function(sid){
     el(`tr-${sid}`)?.classList.add('saved');
     const actEl=el(`act_${sid}`);
     if(actEl&&!window._isSenior)actEl.innerHTML=`<span class="sv-done">✓</span>`;
-    else if(actEl&&window._isSenior){
-      const saveBtn=actEl.querySelector('.sv-btn:last-child');
-      if(saveBtn)saveBtn.outerHTML=`<span class="sv-done" style="display:block;text-align:center">✓ saved</span>`;
-    }
+    else if(actEl&&window._isSenior){const saveBtn=actEl.querySelector('.sv-btn:last-child');if(saveBtn)saveBtn.outerHTML=`<span class="sv-done" style="display:block;text-align:center">✓ saved</span>`;}
     clearDraft(sid);_pendingSync.delete(sid);
     toast(`Saved: ${s.name}`);
   }catch(e){
@@ -1167,21 +1375,19 @@ function toast(msg,type='ok'){
 }
 
 // ══════════════════════════════════════════════
-// DARK MODE & LOGOUT
+// LOGOUT
 // ══════════════════════════════════════════════
-document.getElementById('themeBtn').addEventListener('click',function(){
-  document.body.classList.toggle('dark');
-  this.textContent=document.body.classList.contains('dark')?'☀️':'🌙';
-  localStorage.setItem('cbe_theme',document.body.classList.contains('dark')?'dark':'light');
-});
-if(localStorage.getItem('cbe_theme')==='dark'){document.body.classList.add('dark');el('themeBtn').textContent='☀️';}
-
 async function doLogout(){
-  try{['cbe_streams','cbe_streams_ts'].forEach(k=>localStorage.removeItem(k));await auth.signOut();window.location.href='login';}
-  catch(e){toast('Sign out failed: '+e.message,'err');}
+  try{
+    ['cbe_streams','cbe_streams_ts'].forEach(k=>localStorage.removeItem(k));
+    await auth.signOut();
+    window.location.href='login';
+  }catch(e){toast('Sign out failed: '+e.message,'err');}
 }
 
-window.addEventListener('beforeprint',function(e){if(currentUser?.role==='teacher'){e.preventDefault();toast('Printing restricted to admin/secretary','err');}});
+window.addEventListener('beforeprint',function(e){
+  if(currentUser?.role==='teacher'){e.preventDefault();toast('Printing restricted to admin/secretary','err');}
+});
 
 // ══════════════════════════════════════════════
 // SESSION TIMEOUT

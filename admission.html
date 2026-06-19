@@ -226,6 +226,16 @@ body.dark{--bg:#0d1017;--surface:#161a24;--surf2:#1c2030;--border:#272d3e;--text
           <label class="fl">Academic Year <span class="req">*</span></label>
           <input class="fi" id="editYear" type="number" min="2020" max="2040">
         </div>
+        <div class="form-group">
+          <label class="fl">Parent/Guardian Name</label>
+          <input class="fi" id="editParentName" type="text" placeholder="Optional">
+        </div>
+        <div class="form-group">
+          <label class="fl">Parent/Guardian Phone
+            <span style="font-size:10px;color:var(--text3);font-weight:400"> — for SMS results</span>
+          </label>
+          <input class="fi" id="editParentPhone" type="tel" placeholder="e.g. 0712345678">
+        </div>
       </div>
       <!-- Senior subject picker shown when grade is 10-12 -->
       <div id="editSubjectSection" style="display:none;margin-top:16px">
@@ -920,6 +930,8 @@ window.openEdit=function(id){
   editId=id;
   el('editName').value=s.name;el('editAdm').value=s.admissionNumber;el('editGender').value=s.gender;
   el('editGrade').value=s.grade;el('editStream').value=s.stream||'';el('editYear').value=s.year||'2026';
+  el('editParentName').value  = s.parentName  || '';
+  el('editParentPhone').value = s.parentPhone || '';
   // Senior subject picker
   const section=el('editSubjectSection');
   if(isSeniorGrade(s.grade)){
@@ -951,10 +963,17 @@ window.saveEdit=async function(){
     await db.collection('students').doc(editId).update({
       ...(_schoolId?{schoolId:_schoolId}:{}),
       name,admissionNumber:admNo,gender,grade,stream,year,subjects,
+      parentName:  el('editParentName').value.trim()  || null,
+      parentPhone: el('editParentPhone').value.trim() || null,
       updatedAt:firebase.firestore.FieldValue.serverTimestamp()
     });
     const idx=allStudents.findIndex(s=>s.id===editId);
-    if(idx>-1)allStudents[idx]={...allStudents[idx],name,admissionNumber:admNo,gender,grade,stream,year,subjects};
+    if(idx>-1)allStudents[idx]={
+      ...allStudents[idx],
+      name,admissionNumber:admNo,gender,grade,stream,year,subjects,
+      parentName:  el('editParentName').value.trim()  || null,
+      parentPhone: el('editParentPhone').value.trim() || null,
+    };
     saveToCache(allStudents);buildStreamList();updateStats();filterTable();updatePromoQuickStats();
     toast(`${name} updated${subjects.length?' · '+subjects.length+' subjects':''}`);
     closeEditModal();
@@ -1165,5 +1184,6 @@ window.openHistoryModal=async function(){
   }catch(e){el('historyBody').innerHTML=`<div class="empty"><div class="ei">❌</div><p>${e.message}</p></div>`;}
 };
 </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"9a6fdd38ee454483a9aa3baf59e5691f","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>

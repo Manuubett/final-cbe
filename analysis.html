@@ -22,35 +22,162 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#e8ecf4;--surface:#fff;--surf2:#f3f5fa;--border:#dce1ec;
+  --bg:#eef1f8;--surface:#fff;--surf2:#f3f5fa;--border:#dce1ec;
   --text:#131c2e;--text2:#4f6080;--text3:#9aaabb;
   --accent:#1a56db;--ah:#1447c0;--alight:#eff4ff;
   --ee1-bg:#c6f6d5;--ee1-tx:#166534;--ee2-bg:#bbf7d0;--ee2-tx:#15803d;
   --me1-bg:#fef9c3;--me1-tx:#854d0e;--me2-bg:#fef3c7;--me2-tx:#92400e;
   --ae1-bg:#ffedd5;--ae1-tx:#9a3412;--ae2-bg:#fed7aa;--ae2-tx:#9a3412;
   --be1-bg:#fecaca;--be1-tx:#991b1b;--be2-bg:#fca5a5;--be2-tx:#7f1d1d;
-  --sh:0 1px 3px rgba(0,0,0,.05);--sh2:0 8px 24px rgba(0,0,0,.1);--r:10px;--r2:6px;
+  --sh:0 1px 3px rgba(0,0,0,.05);--sh2:0 8px 24px rgba(0,0,0,.1);
+  --r:10px;--r2:6px;
+  --sb-width:220px;
 }
-body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px;min-height:100vh}
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:var(--sh)}
-.logo{display:flex;align-items:center;gap:9px}
-.lm{width:30px;height:30px;background:var(--accent);border-radius:7px;display:grid;place-items:center;color:#fff;font-size:15px}
-.lt{font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:800;letter-spacing:-.3px}
-.ls{font-size:10px;color:var(--text3)}
-.hdr-r{display:flex;align-items:center;gap:7px}
-.toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;position:sticky;top:52px;z-index:190;box-shadow:var(--sh)}
-.fsel{padding:5px 9px;border:1.5px solid var(--border);border-radius:var(--r2);font-family:inherit;font-size:12.5px;color:var(--text);background:var(--surface);cursor:pointer;outline:none;height:32px}
+
+/* ── Base ─────────────────────────────────────────────── */
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);color:var(--text);font-size:13px;
+  min-height:100vh;overflow:hidden;
+}
+
+/* ── App shell ────────────────────────────────────────── */
+.cbe-layout{
+  display:flex;height:100vh;width:100vw;overflow:hidden;
+}
+
+/* ════════════ SIDEBAR ════════════ */
+.cbe-sidebar{
+  width:var(--sb-width);flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  height:100vh;overflow:hidden;
+  position:relative;z-index:100;
+}
+
+/* School identity block */
+.sb-identity{
+  padding:16px 14px 12px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  flex-shrink:0;
+}
+.sb-logo{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--accent);display:grid;place-items:center;
+  color:#fff;font-size:16px;flex-shrink:0;overflow:hidden;
+}
+.sb-logo img{width:100%;height:100%;object-fit:contain;border-radius:inherit}
+.sb-name{font-family:'Familjen Grotesk',sans-serif;font-size:13px;font-weight:800;
+  color:var(--text);line-height:1.2;letter-spacing:-.2px}
+.sb-sub{font-size:10px;color:var(--text3);margin-top:1px}
+
+/* Nav sections */
+.sb-scroll{flex:1;overflow-y:auto;padding:6px 0}
+.sb-scroll::-webkit-scrollbar{width:3px}
+.sb-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.sb-section-lbl{
+  font-size:9.5px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.6px;color:var(--text3);
+  padding:12px 16px 4px;
+}
+.sb-section-lbl:first-child{padding-top:8px}
+
+.sb-link{
+  display:flex;align-items:center;gap:9px;
+  padding:7px 10px;margin:1px 8px;
+  border-radius:7px;cursor:pointer;
+  font-size:12.5px;font-weight:500;color:var(--text2);
+  border:none;background:none;width:calc(100% - 16px);
+  text-align:left;transition:all .12s;
+  text-decoration:none;
+}
+.sb-link:hover:not(.active){background:var(--bg);color:var(--text)}
+.sb-link.active{
+  background:var(--alight);color:var(--accent);font-weight:700;
+}
+.sb-link .icon{
+  font-size:15px;flex-shrink:0;width:18px;text-align:center;
+  opacity:.8;
+}
+.sb-link.active .icon{opacity:1}
+.sb-link .sb-badge{
+  margin-left:auto;font-size:10px;font-weight:700;
+  background:var(--bg);color:var(--text3);
+  border-radius:20px;padding:1px 7px;
+}
+.sb-link.active .sb-badge{
+  background:rgba(26,86,219,.12);color:var(--accent);
+}
+
+/* Divider */
+.sb-divider{height:1px;background:var(--border);margin:6px 16px}
+
+/* Wallet card at bottom */
+.sb-footer{
+  padding:10px 12px 12px;border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+.sb-wallet{
+  background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+  border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;
+}
+.sw-lbl{font-size:9.5px;font-weight:700;color:#065f46;
+  text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.sw-bal{font-family:'Familjen Grotesk',sans-serif;font-size:20px;
+  font-weight:900;color:#0f172a;letter-spacing:-.5px;line-height:1}
+.sw-sms{font-size:10px;color:#064e3b;margin-top:1px;margin-bottom:7px}
+.sw-btn{
+  display:block;width:100%;padding:5px;border-radius:6px;
+  background:#059669;color:#fff;border:none;font-family:inherit;
+  font-size:11.5px;font-weight:700;cursor:pointer;text-align:center;
+  transition:background .12s;
+}
+.sw-btn:hover{background:#047857}
+
+/* ════════════ MAIN AREA ════════════ */
+.cbe-main{
+  flex:1;display:flex;flex-direction:column;
+  overflow:hidden;min-width:0;
+}
+
+/* Top bar */
+.cbe-topbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 18px;height:50px;
+  display:flex;align-items:center;gap:8px;
+  flex-shrink:0;box-shadow:var(--sh);
+}
+.tb-lbl{font-size:11px;color:var(--text3);font-weight:600;white-space:nowrap}
+.fsel{
+  padding:5px 9px;border:1.5px solid var(--border);border-radius:var(--r2);
+  font-family:inherit;font-size:12.5px;color:var(--text);
+  background:var(--surface);cursor:pointer;outline:none;height:32px;
+}
 .fsel:focus{border-color:var(--accent)}
-.btn{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:var(--r2);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:none;transition:all .14s;white-space:nowrap;height:32px}
+.tb-sep{width:1px;height:20px;background:var(--border)}
+.btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 13px;border-radius:var(--r2);
+  font-family:inherit;font-size:12.5px;font-weight:600;
+  cursor:pointer;border:none;transition:all .14s;
+  white-space:nowrap;height:32px;
+}
 .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--ah)}
 .btn-success{background:#059669;color:#fff}.btn-success:hover{background:#047857}
-.btn-outline{background:none;border:1.5px solid var(--border);color:var(--text2)}.btn-outline:hover{background:var(--bg);color:var(--text)}
+.btn-outline{background:none;border:1.5px solid var(--border);color:var(--text2)}
+.btn-outline:hover{background:var(--bg);color:var(--text)}
 .btn-sm{padding:3px 9px;font-size:11.5px;height:26px}
-.sep{width:1px;height:20px;background:var(--border)}
-.tb-lbl{font-size:11px;color:var(--text3);font-weight:600}
 
-/* CAT mode pills */
-.cat-tab{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);transition:all .14s}
+/* CAT tabs in topbar */
+.cat-tab{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 12px;border-radius:6px;font-size:11.5px;font-weight:700;
+  cursor:pointer;border:1.5px solid var(--border);
+  background:var(--surface);color:var(--text2);transition:all .14s;
+}
 .cat-tab.active-1{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}
 .cat-tab.active-2{background:#f0fdf4;border-color:#86efac;color:#166534}
 .cat-tab.active-3{background:#fdf4ff;border-color:#d8b4fe;color:#7e22ce}
@@ -58,16 +185,23 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .cat-tab:hover:not([class*="active"]){background:var(--bg)}
 .cat-tabs-wrap{display:flex;gap:4px;align-items:center}
 
-.outer{padding:14px 20px}
+/* Content scroll area */
+.cbe-content{
+  flex:1;overflow-y:auto;padding:18px 22px;
+}
+.cbe-content::-webkit-scrollbar{width:5px}
+.cbe-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ════════════ CONTENT ELEMENTS ════════════ */
 .info-strip{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
 .sheet-title{font-family:'Familjen Grotesk',sans-serif;font-size:16px;font-weight:800}
 .pills{display:flex;gap:6px;flex-wrap:wrap}
 .pill{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:4px}
 .pill .pv{color:var(--text);font-weight:700}
-.tabs{display:flex;gap:2px;margin-bottom:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px;width:fit-content}
-.tab{padding:5px 16px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--text2);transition:all .15s}
-.tab.active{background:var(--accent);color:#fff}
-.tab:hover:not(.active){background:var(--bg);color:var(--text)}
+
+/* Hide the old inline tab row — navigation is in the sidebar now */
+.tabs{display:none!important}
+
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh)}
 .stat-label{font-size:10.5px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
@@ -91,7 +225,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .analysis-card td{padding:8px 10px;border:1px solid var(--border);font-size:12.5px;vertical-align:middle}
 .analysis-card tbody tr:hover td{background:var(--alight)}
 .analysis-card tbody tr:nth-child(even) td{background:var(--surf2)}
-.student-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px}
+.student-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
 .stu-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--sh);cursor:pointer;transition:all .15s}
 .stu-card:hover{border-color:var(--accent);box-shadow:var(--sh2);transform:translateY(-1px)}
 .stu-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
@@ -107,29 +241,41 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:0
 .me1{background:var(--me1-bg);color:var(--me1-tx)}.me2{background:var(--me2-bg);color:var(--me2-tx)}
 .ae1{background:var(--ae1-bg);color:var(--ae1-tx)}.ae2{background:var(--ae2-bg);color:var(--ae2-tx)}
 .be1{background:var(--be1-bg);color:var(--be1-tx)}.be2{background:var(--be2-bg);color:var(--be2-tx)}
-
-/* CAT comparison mini-bars */
 .cat-bar-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
 .cat-bar-label{font-size:10px;font-weight:700;width:40px;color:var(--text2)}
 .cat-bar-track{flex:1;height:7px;background:var(--bg);border-radius:3px;overflow:hidden}
 .cat-bar-fill{height:100%;border-radius:3px}
-.cat-bar-val{font-size:10px;font-weight:800;width:36px;text-align:right;color:var(--text2)}
+.cat-bar-val{font-size:10px;font-weight:700;color:var(--text2);min-width:36px;text-align:right}
 .cat-1-fill{background:#93c5fd}.cat-2-fill{background:#86efac}.cat-3-fill{background:#d8b4fe}
-
 .spin{width:17px;height:17px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .65s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .empty-msg{text-align:center;padding:60px 20px;color:var(--text3)}
 .empty-msg .ei{font-size:36px;margin-bottom:10px}
-#tc{position:fixed;top:62px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
+
+/* Toasts */
+#tc{position:fixed;top:14px;right:16px;z-index:999;display:flex;flex-direction:column;gap:6px}
 .t{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:var(--r2);font-size:12.5px;font-weight:500;box-shadow:var(--sh2);animation:tin .25s ease;min-width:210px}
 .t.ok{background:#064e3b;color:#ecfdf5;border-left:3px solid #10b981}
 .t.err{background:#7f1d1d;color:#fef2f2;border-left:3px solid #ef4444}
 .t.info{background:#1e3a5f;color:#dbeafe;border-left:3px solid var(--accent)}
 @keyframes tin{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes tout{to{transform:translateX(110%);opacity:0}}
-body.dark{--bg:#0c0f18;--surface:#141924;--surf2:#1a2030;--border:#252d42;--text:#e0e8f8;--text2:#7a90b8;--text3:#3d4f72;--alight:#172050}
+
+/* Dark mode */
+body.dark{
+  --bg:#0c0f18;--surface:#141924;--surf2:#1a2030;--border:#252d42;
+  --text:#e0e8f8;--text2:#7a90b8;--text3:#3d4f72;--alight:#172050;
+}
 body.dark .analysis-card tbody tr:nth-child(even) td{background:#161d2e}
 body.dark .level-row .bar-wrap{background:#1a2030}
+body.dark .cbe-sidebar{background:#0e1320;border-right-color:#1e2840}
+body.dark .sb-identity{border-bottom-color:#1e2840}
+body.dark .sb-wallet{background:linear-gradient(135deg,#052e16,#064e3b);border-color:#065f46}
+body.dark .sw-bal{color:#e0e8f8}
+body.dark .sw-sms{color:#6ee7b7}
+body.dark .sw-lbl{color:#6ee7b7}
+
+/* Modals */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
 .modal{background:var(--surface);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:100%;max-width:720px;max-height:90vh;overflow:auto;transform:scale(.96);transition:transform .2s}
@@ -140,8 +286,8 @@ body.dark .level-row .bar-wrap{background:#1a2030}
 .close-btn{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text3);padding:2px 6px;border-radius:4px}
 .close-btn:hover{background:var(--bg);color:var(--text)}
 
-/* Print styles */
-@media print{header,.toolbar,#tc{display:none!important}}
+/* Print */
+@media print{.cbe-sidebar,.cbe-topbar,#tc{display:none!important}.cbe-content{padding:0!important}}
 .print-page{font-family:'Plus Jakarta Sans',sans-serif;background:#fff;color:#000;padding:24px 28px;max-width:800px;margin:0 auto}
 .print-school-header{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #1a56db;padding-bottom:12px;margin-bottom:16px}
 .print-school-name{font-family:'Familjen Grotesk',sans-serif;font-size:20px;font-weight:800;color:#1a56db}
@@ -183,7 +329,7 @@ body.dark .level-row .bar-wrap{background:#1a2030}
 .print-dist-count{font-family:'Familjen Grotesk',sans-serif;font-size:20px;font-weight:800}
 .print-dist-lbl{font-size:9px;color:#4f6080;font-weight:700;text-transform:uppercase;margin-top:1px}
 
-/* Payment gate (unchanged) */
+/* Payment gate */
 #_payOverlay{display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,12,28,.82);backdrop-filter:blur(20px) saturate(.3);-webkit-backdrop-filter:blur(20px) saturate(.3);align-items:center;justify-content:center;padding:20px;font-family:'Plus Jakarta Sans',sans-serif}
 #_payOverlay.show{display:flex}
 ._pov-card{background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.55);width:100%;max-width:400px;overflow:hidden;animation:_povin .32s cubic-bezier(.22,1,.36,1) both}
@@ -221,61 +367,136 @@ body.dark .level-row .bar-wrap{background:#1a2030}
 <div id="tc"></div>
 <div id="printArea"></div>
 
-<header>
-  <div class="logo">
-    <div class="lm" id="hdrLogo">📈</div>
-    <div>
-      <div class="lt" id="hdrSchoolName">CBE Analysis</div>
-      <div class="ls" id="hdrSchoolSub">Junior School · Kenya CBC</div>
+<!-- ══════════════ SIDEBAR LAYOUT ══════════════ -->
+<div class="cbe-layout">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="cbe-sidebar" aria-label="Main navigation">
+
+    <!-- School identity -->
+    <div class="sb-identity">
+      <div class="sb-logo" id="hdrLogo">📈</div>
+      <div>
+        <div class="sb-name" id="hdrSchoolName">CBE Analysis</div>
+        <div class="sb-sub" id="hdrSchoolSub">Junior School · Kenya CBC</div>
+      </div>
     </div>
-  </div>
-  <div class="hdr-r">
-    <button class="btn btn-outline btn-sm" id="themeBtn">🌙</button>
-    <a href="admin" class="btn btn-outline btn-sm">📋 DASHBOARD</a>
-  </div>
-</header>
 
-<div class="toolbar">
-  <span class="tb-lbl">Grade</span>
-  <select class="fsel" id="selGrade" onchange="onGradeChange()">
-    <option value="">-- Grade --</option>
-    <option>Grade 1</option><option>Grade 2</option><option>Grade 3</option>
-    <option>Grade 4</option><option>Grade 5</option><option>Grade 6</option>
-    <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
-    <option>Grade 10</option><option>Grade 11</option><option>Grade 12</option>
-    
-  </select>
-  <span id="streamWrap" style="display:flex;align-items:center;gap:8px">
-    <span class="tb-lbl">Stream</span>
-    <select class="fsel" id="selStream" disabled onchange="loadAnalysis()">
-      <option value="">All / No Stream</option>
-    </select>
-  </span>
-  <span class="tb-lbl">Term</span>
-  <select class="fsel" id="selTerm" onchange="onTermChange()">
-    <option>Term 1</option><option>Term 2</option><option>Term 3</option>
-  </select>
+    <div class="sb-scroll">
 
-  <!-- CAT / Exam selector — shown for grades 7-14 -->
-  <span class="tb-lbl" id="catSelectorLabel" style="display:none">Exam</span>
-  <div class="cat-tabs-wrap" id="catTabsWrap" style="display:none">
-   <button class="cat-tab" id="catBtn_Exam 1" onclick="selectCat('Exam 1')">Exam 1</button>
-<button class="cat-tab" id="catBtn_Exam 2" onclick="selectCat('Exam 2')">Exam 2</button>
-<button class="cat-tab" id="catBtn_Exam 3" onclick="selectCat('Exam 3')">Exam 3</button>
-<button class="cat-tab" id="catBtn_Term Avg" onclick="selectCat('Term Avg')" title="Average of all 3 Exams">📊 Term Avg</button>   </div> 
+      <!-- Analysis views -->
+      <div class="sb-section-lbl">Analysis</div>
+      <button class="sb-link active" id="sbOverview" onclick="_sbTab('overview',this)">
+        <span class="icon">📊</span> Overview
+      </button>
+      <button class="sb-link" id="sbStudents" onclick="_sbTab('students',this)">
+        <span class="icon">👥</span> Students
+        <span class="sb-badge" id="sbStudentCount">—</span>
+      </button>
+      <button class="sb-link" id="sbRanking" onclick="_sbTab('ranking',this)">
+        <span class="icon">🏆</span> Ranking
+      </button>
+      <button class="sb-link" id="sbSubjects" onclick="_sbTab('subjects',this)">
+        <span class="icon">📚</span> Subjects
+      </button>
+      <button class="sb-link" id="sbCatcomp" onclick="_sbTab('catcomp',this)" style="display:none">
+        <span class="icon">📈</span> CAT Compare
+      </button>
 
-  <span class="tb-lbl">Year</span>
-  <input type="number" class="fsel" id="selYear" value="2026" min="2020" max="2040" style="width:68px" onchange="loadAnalysis()">
-  <div class="sep"></div>
-  <button class="btn btn-success" onclick="printClassReport()">🖨️ Class Report</button>
-  <button class="btn btn-primary" id="printAllBtn" onclick="confirmPrintAll()" style="display:none">🖨️ Print All Reports</button>
-</div>
+      <div class="sb-divider"></div>
 
+      <!-- Communication -->
+      <div class="sb-section-lbl">Communication</div>
+      <button class="sb-link" id="smsBtn" onclick="sendResultsSMS()" style="display:none">
+        <span class="icon">📱</span> Send Results SMS
+      </button>
+      <button class="sb-link" id="annBtn" onclick="sendAnnouncementSMS()" style="display:none">
+        <span class="icon">📢</span> Announcement
+      </button>
 
-</div>
-<div class="outer" id="mainContent" style="padding-top:0">
-  <div class="empty-msg"><div class="ei">📈</div><p>Select a <strong>Grade</strong> to view analysis</p></div>
-</div>
+      <div class="sb-divider"></div>
+
+      <!-- Reports -->
+      <div class="sb-section-lbl">Reports</div>
+      <button class="sb-link" onclick="printClassReport()">
+        <span class="icon">🖨️</span> Class Report
+      </button>
+      <button class="sb-link" id="printAllBtn" onclick="confirmPrintAll()" style="display:none">
+        <span class="icon">📄</span> Print All Reports
+      </button>
+
+      <div class="sb-divider"></div>
+
+      <!-- System -->
+      <div class="sb-section-lbl">System</div>
+      <a href="admin" class="sb-link">
+        <span class="icon">📋</span> Dashboard
+      </a>
+      <button class="sb-link" id="themeBtn" onclick="_toggleTheme()">
+        <span class="icon" id="themeBtnIcon">🌙</span> <span id="themeBtnLabel">Dark mode</span>
+      </button>
+
+    </div><!-- end sb-scroll -->
+
+    <!-- Wallet card -->
+    <div class="sb-footer">
+      <div class="sb-wallet">
+        <div class="sw-lbl">💳 SMS Wallet</div>
+        <div class="sw-bal" id="sbWalletBal">KES —</div>
+        <div class="sw-sms" id="sbWalletSms">— SMS remaining</div>
+        <button class="sw-btn" onclick="_openWallet()">+ Top Up</button>
+      </div>
+    </div>
+
+  </nav><!-- end sidebar -->
+
+  <!-- ── MAIN AREA ── -->
+  <div class="cbe-main">
+
+    <!-- Slim topbar: selectors + exam tabs -->
+    <div class="cbe-topbar">
+      <span class="tb-lbl">Grade</span>
+      <select class="fsel" id="selGrade" onchange="onGradeChange()">
+        <option value="">-- Grade --</option>
+        <option>Grade 1</option><option>Grade 2</option><option>Grade 3</option>
+        <option>Grade 4</option><option>Grade 5</option><option>Grade 6</option>
+        <option>Grade 7</option><option>Grade 8</option><option>Grade 9</option>
+        <option>Grade 10</option><option>Grade 11</option><option>Grade 12</option>
+      </select>
+
+      <span id="streamWrap" style="display:flex;align-items:center;gap:8px">
+        <span class="tb-lbl">Stream</span>
+        <select class="fsel" id="selStream" disabled onchange="loadAnalysis()">
+          <option value="">All / No Stream</option>
+        </select>
+      </span>
+
+      <span class="tb-lbl">Term</span>
+      <select class="fsel" id="selTerm" onchange="onTermChange()">
+        <option>Term 1</option><option>Term 2</option><option>Term 3</option>
+      </select>
+
+      <!-- CAT exam tabs -->
+      <span class="tb-lbl" id="catSelectorLabel" style="display:none">Exam</span>
+      <div class="cat-tabs-wrap" id="catTabsWrap" style="display:none">
+        <button class="cat-tab" id="catBtn_Exam 1" onclick="selectCat('Exam 1')">Exam 1</button>
+        <button class="cat-tab" id="catBtn_Exam 2" onclick="selectCat('Exam 2')">Exam 2</button>
+        <button class="cat-tab" id="catBtn_Exam 3" onclick="selectCat('Exam 3')">Exam 3</button>
+        <button class="cat-tab" id="catBtn_Term Avg" onclick="selectCat('Term Avg')" title="Average of all 3 Exams">📊 Term Avg</button>
+      </div>
+
+      <span class="tb-lbl">Year</span>
+      <input type="number" class="fsel" id="selYear" value="2026"
+        min="2020" max="2040" style="width:68px" onchange="loadAnalysis()">
+    </div>
+
+    <!-- Scrollable content -->
+    <div class="cbe-content" id="mainContent">
+      <div class="empty-msg"><div class="ei">📈</div><p>Select a <strong>Grade</strong> to view analysis</p></div>
+    </div>
+
+  </div><!-- end cbe-main -->
+</div><!-- end cbe-layout -->
 
 <!-- PRINT ALL MODAL -->
 <div class="modal-overlay" id="printAllModal">
@@ -333,6 +554,91 @@ body.dark .level-row .bar-wrap{background:#1a2030}
   <a class="_subbar-renew" href="/renew?from=analysis-bar">🔄 Renew</a>
 </div>
 <div id="_renewalBanner">🎉 Renewal detected — access restored!</div>
+
+<!-- ══════════════ SIDEBAR BRIDGE SCRIPT (load before main logic) ══════════════ -->
+<script>
+/* Sidebar tab switching */
+window._sbTab = function(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(e => e.style.display = 'none');
+  const panel = document.getElementById('tab-' + name);
+  if (panel) panel.style.display = '';
+  document.querySelectorAll('.sb-link').forEach(e => e.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+};
+
+/* Keep old showTab() working (called from renderAnalysis innerHTML) */
+window.showTab = function(name, _btn) {
+  const sbId = {
+    overview:'sbOverview', students:'sbStudents', ranking:'sbRanking',
+    subjects:'sbSubjects', catcomp:'sbCatcomp'
+  }[name];
+  window._sbTab(name, document.getElementById(sbId));
+};
+
+/* Theme toggle */
+window._toggleTheme = function() {
+  document.body.classList.toggle('dark');
+  const dark  = document.body.classList.contains('dark');
+  const icon  = document.getElementById('themeBtnIcon');
+  const label = document.getElementById('themeBtnLabel');
+  if (icon)  icon.textContent  = dark ? '☀️' : '🌙';
+  if (label) label.textContent = dark ? 'Light mode' : 'Dark mode';
+  localStorage.setItem('cbe_theme', dark ? 'dark' : 'light');
+  if (typeof _refreshWallet === 'function') _refreshWallet();
+};
+if (localStorage.getItem('cbe_theme') === 'dark') {
+  document.body.classList.add('dark');
+  document.addEventListener('DOMContentLoaded', () => {
+    const icon  = document.getElementById('themeBtnIcon');
+    const label = document.getElementById('themeBtnLabel');
+    if (icon)  icon.textContent  = '☀️';
+    if (label) label.textContent = 'Light mode';
+  });
+}
+
+/* Open wallet modal from sidebar */
+window._openWallet = function() {
+  const schoolId = window._schoolId || sessionStorage.getItem('cbe_school_id');
+  if (typeof window.CBE_SMS !== 'undefined' && schoolId) {
+    CBE_SMS.openWalletModal(schoolId);
+  }
+};
+
+/* Wallet balance in sidebar */
+window._refreshWallet = function() {
+  const schoolId = window._schoolId || sessionStorage.getItem('cbe_school_id');
+  if (!schoolId || typeof window.CBE_SMS === 'undefined') return;
+  CBE_SMS.getWalletBalance(schoolId).then(w => {
+    const bal = document.getElementById('sbWalletBal');
+    const sms = document.getElementById('sbWalletSms');
+    if (bal) bal.textContent = `KES ${w.balance.toFixed(2)}`;
+    if (sms) sms.textContent = `${Math.floor(w.balance / 1.20)} SMS remaining`;
+  }).catch(() => {});
+};
+
+/* Update the student count badge in the sidebar */
+window._updateSbStudentCount = function(n) {
+  const el = document.getElementById('sbStudentCount');
+  if (el) el.textContent = n > 0 ? n : '—';
+};
+
+/* Show/hide the CAT Compare nav item */
+window._setSbCatCompVisible = function(show) {
+  const el = document.getElementById('sbCatcomp');
+  if (el) el.style.display = show ? '' : 'none';
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  /* Refresh wallet once SMS module is ready */
+  const waitSMS = setInterval(() => {
+    if (typeof window.CBE_SMS !== 'undefined') {
+      clearInterval(waitSMS);
+      setTimeout(_refreshWallet, 800);
+    }
+  }, 300);
+});
+</script>
+
 <script src="subjects.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -389,7 +695,7 @@ function applyCatUI(gradeStr){
 function updateCatTabUI(){
   ['Exam 1','Exam 2','Exam 3','Term Avg'].forEach(c=>{
     const btn=el(`catBtn_${c}`); if(!btn) return;
-    btn.className='cat-tab'; // reset first
+    btn.className='cat-tab';
     if(currentCat===c){
       const cls=c==='Exam 1'?'active-1':c==='Exam 2'?'active-2':c==='Exam 3'?'active-3':'active-avg';
       btn.classList.add(cls);
@@ -454,7 +760,10 @@ function applySchoolSettings(s){
   schoolSettings={...schoolSettings,...s};
   const nameEl=el('hdrSchoolName'); if(nameEl&&s.name) nameEl.textContent=s.name+' · Analysis';
   const subEl=el('hdrSchoolSub'); if(subEl) subEl.textContent=[s.motto,s.county,'Kenya CBC'].filter(Boolean).join(' · ');
-  if(s.logoUrl){ const lm=el('hdrLogo'); if(lm) lm.innerHTML=`<img src="${s.logoUrl}" style="width:100%;height:100%;object-fit:contain;border-radius:inherit" onerror="this.parentElement.innerHTML='📈'">`; }
+  if(s.logoUrl){
+    const lm=el('hdrLogo');
+    if(lm) lm.innerHTML=`<img src="${s.logoUrl}" style="width:100%;height:100%;object-fit:contain;border-radius:inherit" onerror="this.parentElement.innerHTML='📈'">`;
+  }
   if(s.primaryColor){ document.documentElement.style.setProperty('--accent',s.primaryColor); document.documentElement.style.setProperty('--ah',s.primaryColor); }
   if(s.name) document.title=s.name+' | CBC Analysis';
   const strip=el('schoolBrandingStrip');
@@ -463,12 +772,14 @@ function applySchoolSettings(s){
     strip.innerHTML=`<div style="display:flex;align-items:center;gap:12px">${logoHtml}<div><div style="font-family:'Familjen Grotesk',sans-serif;font-size:16px;font-weight:800;color:var(--text)">${s.name||'Junior School'}</div><div style="font-size:11px;color:var(--text3);margin-top:1px">${[s.motto,s.county,'Kenya CBC'].filter(Boolean).join(' · ')}</div></div></div>`;
     strip.style.display='flex';
   }
+  // Refresh wallet after settings load (school name ready)
+  setTimeout(_refreshWallet, 500);
 }
 
 _authReady.then(sid=>{ if(sid){ loadSchoolSettings(); _startPaymentGate(sid); } });
 
 // ══════════════════════════════════════════════
-// PAYMENT GATE (unchanged from original)
+// PAYMENT GATE
 // ══════════════════════════════════════════════
 let _payUnsub=null,_payExpiryTimer=null,_payPollTimer=null,_payCountdown=null,_lastExpiry=null,_renewalShown=false;
 const WARN_DAYS=7;
@@ -498,7 +809,7 @@ function _hideWarningBar(){ const b=el('_subBar');if(b)b.className=''; }
 function _showRenewalBanner(){ if(_renewalShown)return;_renewalShown=true;const b=el('_renewalBanner');if(!b)return;b.style.display='block';b.style.opacity='1';b.style.transition='';setTimeout(()=>{b.style.opacity='0';b.style.transition='opacity .6s';},2500);setTimeout(()=>{b.style.display='none';b.style.opacity='';b.style.transition='';_renewalShown=false;},3200); }
 
 // ══════════════════════════════════════════════
-// SUBJECT CONFIG (mirrors marksheet.html)
+// SUBJECT CONFIG
 // ══════════════════════════════════════════════
 const DEFAULT_OOF = 100;
 function getSubsForGrade(grade) {
@@ -525,8 +836,7 @@ function toast(msg,type='ok'){
 // DATA STATE
 // ══════════════════════════════════════════════
 let allResults=[], allStudents=[], currentStudent=null;
-// For CAT mode: stores individual CAT results keyed by studentId+exam
-let catResultsMap={}; // { studentId: { 'CAT 1': rec, 'CAT 2': rec, 'CAT 3': rec } }
+let catResultsMap={};
 
 // ── URL params ──
 _authReady.then(()=>{
@@ -549,7 +859,6 @@ window.onGradeChange=async function(){
   const grade=el('selGrade').value,ss=el('selStream'),streamWrap=el('streamWrap');
   SUBS=getSubsForGrade(grade);
   applyCatUI(grade);
-  // Auto-select current CAT when grade changes
   if(gradeUsesCats(grade)){
     const month=new Date().getMonth()+1;
     const mInTerm=month<=4?month:month<=8?month-4:month-8;
@@ -557,7 +866,7 @@ window.onGradeChange=async function(){
     updateCatTabUI();
   }
   ss.disabled=true; ss.innerHTML='<option value="">Loading…</option>';
-  if(!grade){ ss.innerHTML='<option value="">-- Stream --</option>'; ss.disabled=false; if(streamWrap) streamWrap.style.display=''; return; }
+  if(!grade){ ss.innerHTML='<option value="">-- Stream --</option>'; ss.disabled=false; if(streamWrap) streamWrap.style.display=''; const annBtn=el('annBtn'); if(annBtn) annBtn.style.display='none'; const smsBtn=el('smsBtn'); if(smsBtn) smsBtn.style.display='none'; return; }
   try{
     const schoolId=await _getSchoolId();
     let arr=[];
@@ -573,7 +882,7 @@ window.onGradeChange=async function(){
 };
 
 // ══════════════════════════════════════════════
-// LOAD ANALYSIS — handles both legacy (no exam) and CAT mode
+// LOAD ANALYSIS
 // ══════════════════════════════════════════════
 window.loadAnalysis=async function(){
   const grade=el('selGrade').value,stream=el('selStream').value,
@@ -596,15 +905,20 @@ window.loadAnalysis=async function(){
     stuSnap.forEach(d=>allStudents.push({id:d.id,...d.data()}));
     if(hasStream) allStudents=allStudents.filter(s=>(s.stream||'').trim()===stream);
     allStudents.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-    // Rebuild SUBS from actual student subjects for senior grades
-if(isSeniorGrade(grade)){
-  SUBS=getSeniorClassSubs(allStudents);
-}else{
-  SUBS=getSubsForGrade(grade);
-}
+
+    // Update sidebar student count badge
+    _updateSbStudentCount(allStudents.length);
+
+    const annBtn=el('annBtn');
+    if(annBtn) annBtn.style.display=allStudents.length?'':'none';
+
+    if(isSeniorGrade(grade)){
+      SUBS=getSeniorClassSubs(allStudents);
+    }else{
+      SUBS=getSubsForGrade(grade);
+    }
 
     if(!usesCats){
-      // ── Legacy mode (grades 1-6): single result per student per term ──
       let rsQuery=db.collection('results').where('grade','==',grade).where('term','==',term).where('year','==',year).where('schoolId','==',schoolId);
       if(hasStream) rsQuery=rsQuery.where('stream','==',stream);
       const rsSnap=await rsQuery.get();
@@ -613,17 +927,14 @@ if(isSeniorGrade(grade)){
       catResultsMap={};
       renderAnalysis(grade,hasStream?stream:'',term,year,false);
     } else {
-      // ── CAT mode (grades 7-14): fetch all 3 CATs ──
       const cats=['Exam 1','Exam 2','Exam 3'];
       const allCatResults={};
       cats.forEach(c=>allCatResults[c]=[]);
 
-      // Fetch all results for this grade/term/year (all CATs in one query)
       let rsQuery=db.collection('results').where('grade','==',grade).where('term','==',term).where('year','==',year).where('schoolId','==',schoolId);
       if(hasStream) rsQuery=rsQuery.where('stream','==',stream);
       const rsSnap=await rsQuery.get();
 
-      // Separate by exam field
       catResultsMap={};
       rsSnap.forEach(d=>{
         const rec={id:d.id,...d.data()};
@@ -636,7 +947,6 @@ if(isSeniorGrade(grade)){
       });
 
       if(currentCat==='Term Avg'){
-        // Build synthetic averaged results from all 3 CATs
         allResults=buildTermAvgResults();
       } else {
         allResults=allCatResults[currentCat]||[];
@@ -648,18 +958,14 @@ if(isSeniorGrade(grade)){
   }
 };
 
-// ── Build synthetic term-average results by averaging CAT 1+2+3 per student ──
 function buildTermAvgResults(){
   const cats=['Exam 1','Exam 2','Exam 3'];
   const averaged=[];
   allStudents.forEach(s=>{
     const catRecs=cats.map(c=>catResultsMap[s.id]?.[c]).filter(Boolean);
     if(!catRecs.length) return;
-    // Average overallAvg across available CATs
     const avgPct=catRecs.reduce((a,r)=>a+(Number(r.overallAvg)||0),0)/catRecs.length;
-    // Build a synthetic record — subject scores averaged too
     const synth={studentId:s.id,studentName:s.name,admissionNumber:s.admissionNumber||'',overallAvg:avgPct,_isSynthetic:true,_catCount:catRecs.length};
-    // Average each subject score
     SUBS.forEach(sub=>{
       if(sub.parts){
         sub.parts.forEach(p=>{
@@ -713,6 +1019,10 @@ function renderAnalysis(grade,stream,term,year,usesCats){
   const examLabel=usesCats?` · ${currentCat}`:'';
   const displayLabel=`${classLabel} — ${term}${examLabel} ${year}`;
 
+  // Update sidebar badges
+  _updateSbStudentCount(allStudents.length);
+  _setSbCatCompVisible(usesCats);
+
   if(!scored.length){
     const msg=usesCats&&currentCat==='Term Avg'?`No CAT results saved yet for <strong>${classLabel}</strong>. Enter marks for at least one CAT.`:`No results saved yet for <strong>${classLabel} – ${term}${examLabel} ${year}</strong>`;
     el('mainContent').innerHTML=`<div class="empty-msg"><div class="ei">📭</div><p>${msg}</p></div>`;
@@ -731,10 +1041,9 @@ function renderAnalysis(grade,stream,term,year,usesCats){
     return{sub,avg,count:vals.length};
   });
 
-  // CAT progress section: only shown in single-CAT view for grades 7-14
+  // CAT progress section
   let catProgressHtml='';
   if(usesCats&&currentCat!=='Term Avg'){
-    // Show how many students have each CAT recorded
     const cats=['Exam 1','Exam 2','Exam 3'];
     catProgressHtml=`<div class="analysis-card" style="margin-bottom:14px">
       <div style="padding:12px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Term CAT Progress</div>
@@ -742,7 +1051,7 @@ function renderAnalysis(grade,stream,term,year,usesCats){
     cats.forEach((cat,ci)=>{
       const count=allStudents.filter(s=>catResultsMap[s.id]?.[cat]?.overallAvg>0).length;
       const pct=allStudents.length?Math.round(count/allStudents.length*100):0;
-      const cls=['cat-1','cat-2','cat-3'][ci]; const fillCls=['cat-1-fill','cat-2-fill','cat-3-fill'][ci];
+      const fillCls=['cat-1-fill','cat-2-fill','cat-3-fill'][ci];
       const isActive=currentCat===cat;
       catProgressHtml+=`<div style="border:1.5px solid var(--border);border-radius:8px;padding:12px;${isActive?'border-color:var(--accent);background:var(--alight)':''}">
         <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);margin-bottom:4px">${cat}</div>
@@ -844,7 +1153,6 @@ function renderAnalysis(grade,stream,term,year,usesCats){
   });
   html+=`</div>`;
 
-  // CAT Comparison tab — only for grades 7-14
   if(usesCats){
     html+=`<div id="tab-catcomp" class="tab-content" style="display:none">
     <div class="analysis-card">
@@ -858,9 +1166,9 @@ function renderAnalysis(grade,stream,term,year,usesCats){
         <th style="text-align:center">Trend</th>
       </tr></thead><tbody>`;
     allStudents.forEach(s=>{
-      const c1=catResultsMap[s.id]?.['Exam 1']?.overallAvg
-const c2=catResultsMap[s.id]?.['Exam 2']?.overallAvg
-const c3=catResultsMap[s.id]?.['Exam 3']?.overallAvg
+      const c1=catResultsMap[s.id]?.['Exam 1']?.overallAvg;
+      const c2=catResultsMap[s.id]?.['Exam 2']?.overallAvg;
+      const c3=catResultsMap[s.id]?.['Exam 3']?.overallAvg;
       const vals=[c1,c2,c3].filter(v=>v!=null&&v>0);
       if(!vals.length) return;
       const termAvg=vals.reduce((a,b)=>a+b,0)/vals.length;
@@ -880,13 +1188,14 @@ const c3=catResultsMap[s.id]?.['Exam 3']?.overallAvg
 
   el('mainContent').innerHTML=html;
   window._printData={grade,stream,classLabel,displayLabel,term,year,ranked,resMap,scored,classAvg,levelCounts,subjectStats,usesCats,currentCat:currentCat};
-  const btn=el('printAllBtn'); if(btn) btn.style.display=scored.length?'inline-flex':'none';
+  const btn=el('printAllBtn'); if(btn) btn.style.display=scored.length?'':'none';
+  const smsBtn=el('smsBtn'); if(smsBtn) smsBtn.style.display=scored.length?'':'none';
 }
 
 window.showTab=function(name,btn){
-  document.querySelectorAll('.tab-content').forEach(e=>e.style.display='none');
-  document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
-  el('tab-'+name).style.display=''; btn.classList.add('active');
+  // Redirect to sidebar tab switcher for consistency
+  const sbId={overview:'sbOverview',students:'sbStudents',ranking:'sbRanking',subjects:'sbSubjects',catcomp:'sbCatcomp'}[name];
+  window._sbTab(name, document.getElementById(sbId));
 };
 
 window.openStudent=function(sid){
@@ -902,7 +1211,6 @@ window.openStudent=function(sid){
   const pd=window._printData;
   const usesCats=pd?.usesCats;
 
-  // CAT mini-comparison for this student
   let catMiniHtml='';
   if(usesCats){
     const cats=['Exam 1','Exam 2','Exam 3'];
@@ -1002,7 +1310,7 @@ window.closeModal=function(){
   if(textarea) textarea.value=''; if(btn){ btn.innerHTML='✨ Generate AI Remark'; btn.disabled=false; }
 };
 
-// ── Print functions (unchanged logic, updated to pass exam label) ──
+// ── Print functions ──
 function confirmPrintAll(){
   const pd=window._printData; if(!pd||!pd.scored.length){ toast('No results to print','err'); return; }
   const{grade,stream,displayLabel,term,year,scored,classAvg}=pd;
@@ -1145,11 +1453,94 @@ window.printClassReport=async function(){
   triggerPrint(h);
 };
 
-// ── Dark mode ──
-el('themeBtn').addEventListener('click',function(){ document.body.classList.toggle('dark'); this.textContent=document.body.classList.contains('dark')?'☀️':'🌙'; localStorage.setItem('cbe_theme',document.body.classList.contains('dark')?'dark':'light'); });
-if(localStorage.getItem('cbe_theme')==='dark'){ document.body.classList.add('dark'); el('themeBtn').textContent='☀️'; }
-</script>
+// ══════════════════════════════════════════════
+// SEND RESULTS SMS
+// ══════════════════════════════════════════════
+window.sendResultsSMS = async function() {
+  if(typeof window.CBE_SMS === 'undefined'){
+    toast('SMS module not loaded — check sms-integration.js','err'); return;
+  }
+  const grade  = el('selGrade').value;
+  const stream = el('selStream').value;
+  const term   = el('selTerm').value;
+  const year   = el('selYear').value;
+  if(!grade){ toast('Select a grade first','err'); return; }
+  if(!allResults.length){ toast('No results loaded — select a grade and term first','err'); return; }
+  const schoolId = await _getSchoolId();
+  const snap = await db.collection('settings').doc(schoolId).get();
+  const s    = snap.exists ? snap.data() : {};
+  if(!s.atApiKey || !s.atUsername){
+    toast('SMS not configured — go to Settings → SMS Setup','err');
+    setTimeout(() => CBE_SMS.openSettingsModal(), 800);
+    return;
+  }
+  const phoneMap = {};
+  allStudents.forEach(s => {
+    const phone = s.parentPhone || s.guardianPhone || s.motherPhone || '';
+    if(phone) phoneMap[s.id] = phone;
+  });
+  const resMap = {};
+  allResults.forEach(r => resMap[r.studentId] = r);
+  const ranked = allStudents
+    .filter(s => resMap[s.id]?.overallAvg > 0)
+    .sort((a, b) => resMap[b.id].overallAvg - resMap[a.id].overallAvg);
+  const rankMap = {};
+  ranked.forEach((s, i) => { rankMap[s.id] = i + 1; });
+  const recipients = ranked.map(s => {
+    const rec = resMap[s.id];
+    const avg = Number(rec.overallAvg).toFixed(1);
+    const lv  = getLevel(Number(avg));
+    const subjects = SUBS.map(sub => {
+      const sc  = getSubjectScore(rec, sub);
+      const oof = getSubjectOof(rec, sub);
+      if(sc === null) return null;
+      const pct = (sc / oof) * 100;
+      return { name: sub.label, score: typeof sc === 'number' ? sc.toFixed(1) : sc, grade: getLevel(pct).l };
+    }).filter(Boolean);
+    return {
+      studentId:     s.id,
+      studentName:   s.name,
+      grade:         rec.grade  || grade,
+      stream:        rec.stream || stream,
+      parentPhone:   phoneMap[s.id] || rec.parentPhone || '',
+      subjects,
+      overallAvg:    avg,
+      level:         lv.l,
+      points:        lv.p,
+      rank:          rankMap[s.id],
+      totalStudents: ranked.length,
+    };
+  });
+  const schoolName = s.name || schoolSettings.name || '';
+  const senderId   = s.smsSenderId || '';
+  CBE_SMS.openSendModal(recipients, schoolId, { name: schoolName, term, year, senderId });
+};
 
+// ══════════════════════════════════════════════
+// SEND ANNOUNCEMENT SMS
+// ══════════════════════════════════════════════
+window.sendAnnouncementSMS = async function() {
+  if(typeof window.CBE_SMS === 'undefined'){
+    toast('SMS module not loaded — check sms-integration.js','err'); return;
+  }
+  const grade = el('selGrade').value;
+  if(!grade){ toast('Select a grade first','err'); return; }
+  if(!allStudents.length){ toast('No students loaded for this grade/stream','err'); return; }
+  const schoolId = await _getSchoolId();
+  const snap = await db.collection('settings').doc(schoolId).get();
+  const s    = snap.exists ? snap.data() : {};
+  const roster = allStudents.map(st => ({
+    studentName: st.name,
+    grade:       st.grade  || grade,
+    stream:      st.stream || '',
+    parentPhone: st.parentPhone || st.guardianPhone || st.motherPhone || '',
+  }));
+  const schoolName = s.name || schoolSettings.name || '';
+  const senderId    = s.smsSenderId || '';
+  CBE_SMS.openAnnouncementModal(roster, schoolId, { name: schoolName, senderId });
+};
+</script>
+<script src="sms-integration.js?v=6"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"9a6fdd38ee454483a9aa3baf59e5691f","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>

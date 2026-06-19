@@ -846,3 +846,152 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 https://instasend-backend.onrender.com`);
 });
+app.post('/api/sms/owner-broadcast', async (req, res) => {
+  if (!db) return res.status(503).json({ error: 'Firebase not configured' });
+ 
+  const { recipients, requestId, label } = req.body;
+  if (!Array.isArray(recipients) || recipients.length === 0) {
+    return res.status(400).json({ error: 'recipients array required' });
+  }
+ 
+  // Guard against the same broadcast being submitted twice in quick succession
+  const dedupeKey = `broadcast:${requestId || `${label || ''}:${JSON.stringify(recipients.map(r => r.to))}`}`;
+  if (isDuplicateRequest(dedupeKey)) {
+    return res.status(409).json({
+      error:   'DUPLICATE_REQUEST',
+      message: 'This broadcast was already submitted moments ago — ignoring the repeat.',
+    });
+  }
+ 
+  if (!AT_API_KEY || !AT_USERNAME) {
+    return res.status(500).json({ error: 'Central AT credentials not configured on server' });
+  }
+ 
+  // Create a broadcast record up front so the frontend can poll/show progress
+  const broadcastRef = db.collection('ownerBroadcasts').doc();
+  await broadcastRef.set({
+    label:        label || 'Broadcast',
+    totalCount:   recipients.length,
+    sentCount:    0,
+    failedCount:  0,
+    status:       'sending',
+    createdAt:    new Date().toISOString(),
+  });
+ 
+  console.log(`[Owner Broadcast] id:${broadcastRef.id} label:"${label || ''}" recipients:${recipients.length}`);
+ 
+  const results = [];
+  let sentCount = 0, failedCount = 0;
+ 
+  for (const r of recipients) {
+    if (!r.to || !r.message) {
+      results.push({ to: r.to || '', schoolId: r.schoolId || '', status: 'skipped', reason: 'Missing to/message' });
+      continue;
+    }
+    try {
+      const mobile = normalisePhone(r.to);
+      const params = new URLSearchParams({ username: AT_USERNAME, to: mobile, message: r.message });
+ 
+      const response = await axios.post(
+        'https://api.africastalking.com/version1/messaging',
+        params.toString(),
+        {
+          headers: {
+            apiKey:         AT_API_KEY,
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Accept:         'application/json',
+          },
+          validateStatus: () => true,
+        }
+      );
+ 
+      const recipient   = response.data?.SMSMessageData?.Recipients?.[0];
+      const atStatus    = (recipient?.status || '').toLowerCase();
+      const wasAccepted = atStatus.includes('success') || atStatus.includes('sent') ||
+                          atStatus.includes('queued')   || atStatus.includes('submitted');
+ 
+      console.log(
+        `[Owner Broadcast] to:${mobile} schoolId:${r.schoolId || '-'} httpStatus:${response.status} ` +
+        `atStatus:${recipient?.status || 'none'} → ${wasAccepted ? 'ACCEPTED' : 'REJECTED'}`
+      );
+ 
+      if (wasAccepted) sentCount++; else failedCount++;
+ 
+      results.push({
+        to:         mobile,
+        schoolId:   r.schoolId || '',
+        schoolName: r.schoolName || '',
+        status:     wasAccepted ? 'sent' : 'failed',
+        atStatus:   recipient?.status || '',
+        messageId:  recipient?.messageId || '',
+      });
+ 
+      // Per-recipient audit log under the broadcast doc
+      try {
+        await broadcastRef.collection('recipients').add({
+          to:         mobile,
+          schoolId:   r.schoolId || '',
+          schoolName: r.schoolName || '',
+          message:    r.message,
+          status:     wasAccepted ? 'sent' : 'failed',
+          atStatus:   recipient?.status || '',
+          messageId:  recipient?.messageId || '',
+          sentAt:     new Date().toISOString(),
+        });
+      } catch (_) { /* non-critical */ }
+ 
+      // 120ms between messages (AT rate limit) — same pacing as send-bulk-school
+      await new Promise(res2 => setTimeout(res2, 120));
+ 
+    } catch (err) {
+      console.log(`[Owner Broadcast] to:${r.to} → THREW: ${err.message}`);
+      failedCount++;
+      results.push({ to: r.to, schoolId: r.schoolId || '', status: 'error', reason: err.message });
+    }
+  }
+ 
+  await broadcastRef.set({
+    status:      'done',
+    sentCount,
+    failedCount,
+    completedAt: new Date().toISOString(),
+  }, { merge: true });
+ 
+  sendTelegram(
+    `📢 <b>OWNER BROADCAST SENT</b>\n\n` +
+    `🏷️ Label: ${label || 'Broadcast'}\n` +
+    `✅ Sent: ${sentCount}\n` +
+    `❌ Failed: ${failedCount}\n` +
+    `📊 Total: ${recipients.length}\n` +
+    `⏰ ${new Date().toLocaleString('en-KE')}`
+  );
+ 
+  return res.json({
+    success:     true,
+    broadcastId: broadcastRef.id,
+    summary:     { total: recipients.length, sent: sentCount, failed: failedCount },
+    results,
+  });
+});
+ 
+/**
+ * GET /api/sms/owner-broadcast/:id
+ * Fetch status + per-recipient results for a broadcast (for the
+ * Communications page to poll/show history).
+ */
+app.get('/api/sms/owner-broadcast/:id', async (req, res) => {
+  if (!db) return res.status(503).json({ error: 'Firebase not configured' });
+  try {
+    const snap = await db.collection('ownerBroadcasts').doc(req.params.id).get();
+    if (!snap.exists) return res.status(404).json({ error: 'Not found' });
+    const recipSnap = await db.collection('ownerBroadcasts').doc(req.params.id)
+      .collection('recipients').orderBy('sentAt', 'asc').get();
+    res.json({
+      id: snap.id,
+      ...snap.data(),
+      recipients: recipSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
